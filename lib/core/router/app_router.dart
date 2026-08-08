@@ -7,9 +7,7 @@ import 'package:lens_wise/features/settings/presentation/pages/settings_page.dar
 import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.dart';
 
 // History Pages
-import 'package:lens_wise/features/history/presentation/pages/receipt_history_page.dart';
-import 'package:lens_wise/features/history/presentation/pages/product_history_page.dart';
-import 'package:lens_wise/features/history/presentation/pages/comparison_history_page.dart';
+import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 
 // Result Pages
 import 'package:lens_wise/features/product_lens/presentation/pages/product_result_page.dart';
@@ -70,25 +68,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // History Pages
       GoRoute(
-        path: '/history/receipts',
+        path: '/history',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => const CupertinoPage(
-          child: ReceiptHistoryPage(),
-        ),
-      ),
-      GoRoute(
-        path: '/history/products',
-        parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => const CupertinoPage(
-          child: ProductHistoryPage(),
-        ),
-      ),
-      GoRoute(
-        path: '/history/comparisons',
-        parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => const CupertinoPage(
-          child: ComparisonHistoryPage(),
-        ),
+        pageBuilder: (context, state) {
+          final tabIndexStr = state.uri.queryParameters['tab'];
+          final initialIndex = tabIndexStr != null ? int.tryParse(tabIndexStr) ?? 0 : 0;
+          return CupertinoPage(
+            child: UnifiedHistoryPage(initialTabIndex: initialIndex),
+          );
+        },
       ),
     ],
   );

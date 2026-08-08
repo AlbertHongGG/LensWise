@@ -98,9 +98,9 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
                       onTap: () {
                         final mode = ref.read(scannerModeProvider);
                         switch (mode) {
-                          case ScannerMode.receipt: context.push('/history/receipts'); break;
-                          case ScannerMode.product: context.push('/history/products'); break;
-                          case ScannerMode.comparison: context.push('/history/comparisons'); break;
+                          case ScannerMode.receipt: context.push('/history?tab=0'); break;
+                          case ScannerMode.product: context.push('/history?tab=1'); break;
+                          case ScannerMode.comparison: context.push('/history?tab=2'); break;
                         }
                       },
                     ),
