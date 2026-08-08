@@ -6,21 +6,28 @@ abstract class ScannerModeStrategy {
   /// The title for the current mode, displayed at the top or in the mode switcher.
   String get modeTitle;
 
-  /// Number of shots required before processing.
-  int get requiredShots => 1;
+  /// Minimum number of shots required before processing is allowed.
+  int get minShotsRequired => 1;
+
+  /// Maximum number of shots allowed. null means infinite.
+  int? get maxShotsAllowed => 1;
+  
+  /// If true, processImage is automatically called when minShotsRequired is reached.
+  /// If false, the UI should present a "Done" button when minShotsRequired is reached.
+  bool get isAutoProcess => true;
 
   /// The images captured so far in the current session.
   final List<Uint8List> capturedImages = [];
 
   /// Called when a new image is captured.
   void onImageCaptured(Uint8List image) {
-    if (capturedImages.length < requiredShots) {
+    if (maxShotsAllowed == null || capturedImages.length < maxShotsAllowed!) {
       capturedImages.add(image);
     }
   }
 
-  /// Checks if enough images have been captured to proceed.
-  bool get isReadyToProcess => capturedImages.length >= requiredShots;
+  /// Checks if enough images have been captured to proceed manually or automatically.
+  bool get hasReachedMinShots => capturedImages.length >= minShotsRequired;
 
   /// Resets the current session.
   void reset() {

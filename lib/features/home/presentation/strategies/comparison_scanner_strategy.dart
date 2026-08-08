@@ -9,30 +9,23 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
   String get modeTitle => '比對';
 
   @override
-  int get requiredShots => 2;
+  int get minShotsRequired => 2;
+
+  @override
+  int? get maxShotsAllowed => null;
+
+  @override
+  bool get isAutoProcess => false;
 
   @override
   Widget buildOverlay(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final boxSize = constraints.maxWidth * 0.75;
-        final currentShot = capturedImages.length + 1;
+        final count = capturedImages.length;
         
         return Stack(
           children: [
-            Center(
-              child: Container(
-                width: boxSize,
-                height: boxSize * 1.2,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 2),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(color: Colors.purpleAccent.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: 5)
-                  ],
-                ),
-              ),
-            ),
+            // No bounding box, just full screen
             Positioned(
               top: 100,
               left: 0,
@@ -57,7 +50,10 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      currentShot == 1 ? '請拍攝「第一樣」商品' : '請拍攝「第二樣」商品',
+                      count < 1 
+                          ? '請拍攝「第一樣」商品'
+                          : '已拍攝 $count 樣商品，\n請繼續拍攝或點擊「開始比對」',
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -75,7 +71,7 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
 
   @override
   Future<void> processImage(BuildContext context, WidgetRef ref) async {
-    if (capturedImages.length < 2) return;
+    if (capturedImages.length < minShotsRequired) return;
     context.push('/result/comparison');
   }
 }

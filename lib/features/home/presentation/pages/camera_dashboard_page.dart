@@ -35,13 +35,13 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
         // Collect image
         strategy.onImageCaptured(bytes);
         
-        if (strategy.isReadyToProcess) {
+        if (strategy.isAutoProcess && strategy.hasReachedMinShots) {
           // Process and Navigate
           await strategy.processImage(context, ref);
           // Reset for next time
           strategy.reset();
         } else {
-          // Just force a rebuild to update the overlay (e.g. shot counter)
+          // Just force a rebuild to update the overlay (e.g. shot counter or show Done button)
           setState(() {});
         }
       }
@@ -132,6 +132,32 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Floating "Done" Button for manual processing
+                if (!strategy.isAutoProcess && strategy.hasReachedMinShots)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        setState(() { _isProcessing = true; });
+                        try {
+                          await strategy.processImage(context, ref);
+                          strategy.reset();
+                        } finally {
+                          if (mounted) setState(() { _isProcessing = false; });
+                        }
+                      },
+                      icon: const Icon(Icons.auto_awesome),
+                      label: Text('開始比對 (${strategy.capturedImages.length} 項)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purpleAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        elevation: 8,
+                      ),
+                    ),
+                  ),
+
                 // Shutter Button
                 GestureDetector(
                   onTap: () => _takePicture(strategy),

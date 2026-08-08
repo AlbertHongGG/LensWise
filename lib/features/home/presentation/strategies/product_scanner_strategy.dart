@@ -11,28 +11,7 @@ class ProductScannerStrategy extends ScannerModeStrategy {
 
   @override
   Widget buildOverlay(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final boxSize = constraints.maxWidth * 0.75;
-        return Stack(
-          children: [
-            Center(
-              child: Container(
-                width: boxSize,
-                height: boxSize * 1.2,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 2),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(color: Colors.cyan.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: 5)
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    return const SizedBox.shrink(); // No borders or boxes, full screen immersion
   }
 
   @override
