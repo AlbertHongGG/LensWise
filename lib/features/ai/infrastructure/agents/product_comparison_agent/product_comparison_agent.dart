@@ -4,6 +4,7 @@ import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/console_ai_logger.dart';
+import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
 class ProductComparisonResult {
@@ -23,12 +24,14 @@ class ProductComparisonResult {
 }
 
 class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductComparisonResult> {
-  ProductComparisonAgent(super.agentName, super.provider, super.logger);
+  final String targetLanguage;
+
+  ProductComparisonAgent(super.agentName, super.provider, super.logger, {required this.targetLanguage});
 
   @override
   Future<ProductComparisonResult> execute(List<Uint8List> input) async {
     final request = GenerateRequest(
-      systemPrompt: buildProductComparisonSystemPrompt(),
+      systemPrompt: buildProductComparisonSystemPrompt(targetLanguage),
       prompt: buildProductComparisonUserPrompt(),
       images: input,
     );
@@ -48,9 +51,11 @@ class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductCompariso
 }
 
 final productComparisonAgentProvider = Provider.autoDispose<ProductComparisonAgent>((ref) {
+  final language = ref.watch(settingsProvider).targetLanguage;
   return ProductComparisonAgent(
     'ProductComparison',
     ref.watch(aiProviderProvider),
     ref.watch(aiLoggerProvider),
+    targetLanguage: language,
   );
 });

@@ -4,6 +4,7 @@ import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/console_ai_logger.dart';
+import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
 class ProductAnalysisResult {
@@ -22,15 +23,17 @@ class ProductAnalysisResult {
   }
 }
 
-class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductAnalysisResult> {
-  ProductAnalysisAgent(super.agentName, super.provider, super.logger);
+class ProductAnalysisAgent extends BaseAgent<Uint8List, ProductAnalysisResult> {
+  final String targetLanguage;
+
+  ProductAnalysisAgent(super.agentName, super.provider, super.logger, {required this.targetLanguage});
 
   @override
-  Future<ProductAnalysisResult> execute(List<Uint8List> input) async {
+  Future<ProductAnalysisResult> execute(Uint8List input) async {
     final request = GenerateRequest(
-      systemPrompt: buildProductAnalysisSystemPrompt(),
+      systemPrompt: buildProductAnalysisSystemPrompt(targetLanguage),
       prompt: buildProductAnalysisUserPrompt(),
-      images: input,
+      images: [input],
     );
 
     final responseText = await executePrompt(request);
@@ -48,9 +51,11 @@ class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductAnalysisRes
 }
 
 final productAnalysisAgentProvider = Provider.autoDispose<ProductAnalysisAgent>((ref) {
+  final language = ref.watch(settingsProvider).targetLanguage;
   return ProductAnalysisAgent(
     'ProductAnalysis',
     ref.watch(aiProviderProvider),
     ref.watch(aiLoggerProvider),
+    targetLanguage: language,
   );
 });

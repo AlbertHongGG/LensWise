@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
+import 'package:lens_wise/core/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/product_result_card.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/product_analysis_agent/product_analysis_agent.dart';
@@ -38,16 +39,16 @@ class _ProductLensPageState extends ConsumerState<ProductLensPage> {
           // 2. Loading Overlay
           if (isLoading)
             Container(
-              color: Colors.black54,
+              color: Colors.black.withValues(alpha: 0.8),
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.white),
-                    SizedBox(height: 16),
+                    ThinkingOrb(size: 80, isDark: true),
+                    SizedBox(height: 24),
                     Text(
-                      'AI is analyzing the product...',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+                      'AI 智慧解析中...',
+                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

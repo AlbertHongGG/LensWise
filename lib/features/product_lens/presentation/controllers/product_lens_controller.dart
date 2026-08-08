@@ -38,7 +38,7 @@ class ProductLensController extends Notifier<ProductLensState> {
     state = state.copyWith(status: ProductLensStatus.loading);
     try {
       final agent = ref.read(productAnalysisAgentProvider);
-      final result = await agent.execute([imageBytes]);
+      final result = await agent.execute(imageBytes);
       
       if (result.status == 'success') {
         state = state.copyWith(

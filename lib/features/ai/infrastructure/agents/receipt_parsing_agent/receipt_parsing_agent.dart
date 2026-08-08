@@ -4,6 +4,7 @@ import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/console_ai_logger.dart';
+import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
 class ReceiptParsingResult {
@@ -22,15 +23,17 @@ class ReceiptParsingResult {
   }
 }
 
-class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptParsingResult> {
-  ReceiptParsingAgent(super.agentName, super.provider, super.logger);
+class ReceiptParsingAgent extends BaseAgent<Uint8List, ReceiptParsingResult> {
+  final String targetLanguage;
+
+  ReceiptParsingAgent(super.agentName, super.provider, super.logger, {required this.targetLanguage});
 
   @override
-  Future<ReceiptParsingResult> execute(List<Uint8List> input) async {
+  Future<ReceiptParsingResult> execute(Uint8List input) async {
     final request = GenerateRequest(
-      systemPrompt: buildReceiptParsingSystemPrompt(),
+      systemPrompt: buildReceiptParsingSystemPrompt(targetLanguage),
       prompt: buildReceiptParsingUserPrompt(),
-      images: input,
+      images: [input],
     );
 
     final responseText = await executePrompt(request);
@@ -48,9 +51,11 @@ class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptParsingResul
 }
 
 final receiptParsingAgentProvider = Provider.autoDispose<ReceiptParsingAgent>((ref) {
+  final language = ref.watch(settingsProvider).targetLanguage;
   return ReceiptParsingAgent(
     'ReceiptParsing',
     ref.watch(aiProviderProvider),
     ref.watch(aiLoggerProvider),
+    targetLanguage: language,
   );
 });
