@@ -1,4 +1,6 @@
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
+import 'package:lens_wise/features/ai/infrastructure/agents/product_analysis_agent/product_analysis_data.dart';
 
 class ProductRecord {
   final String id;
@@ -22,6 +24,20 @@ class ProductRecord {
     required this.whenRecommended,
     required this.whenNotRecommended,
   });
+
+  factory ProductRecord.fromAnalysisData(ProductAnalysisData data) {
+    return ProductRecord(
+      id: const Uuid().v4(),
+      timestamp: DateTime.now(),
+      productName: data.productName.isNotEmpty ? data.productName : (data.originalName.isNotEmpty ? data.originalName : '未知商品'),
+      brand: data.brand,
+      summary: data.summary,
+      ingredients: data.ingredients,
+      allergenAlerts: data.allergens,
+      whenRecommended: data.recommendedFor,
+      whenNotRecommended: data.notRecommendedFor,
+    );
+  }
 }
 
 class ProductRecordAdapter extends TypeAdapter<ProductRecord> {

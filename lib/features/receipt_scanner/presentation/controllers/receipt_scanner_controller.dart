@@ -1,13 +1,23 @@
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/receipt_scanner/infrastructure/engine/stitching_engine.dart';
+import 'package:lens_wise/features/receipt_scanner/application/receipt_scanner_service.dart';
+import 'package:lens_wise/features/ai/infrastructure/agents/receipt_parsing_agent/receipt_parsing_agent.dart';
 
 class ReceiptScannerState {
   final EngineState engineState;
   final int stitchedHeight;
   final String? errorMessage;
   final bool isScanning;
+  final ReceiptParsingResult? parsingResult;
 
   ReceiptScannerState({
+    this.engineState = EngineState.tracking,
+    this.stitchedHeight = 0,
+    this.errorMessage,
+    this.isScanning = false,
+    this.parsingResult,
+  });
     this.engineState = EngineState.tracking,
     this.stitchedHeight = 0,
     this.errorMessage,
@@ -19,12 +29,14 @@ class ReceiptScannerState {
     int? stitchedHeight,
     String? errorMessage,
     bool? isScanning,
+    ReceiptParsingResult? parsingResult,
   }) {
     return ReceiptScannerState(
       engineState: engineState ?? this.engineState,
       stitchedHeight: stitchedHeight ?? this.stitchedHeight,
       errorMessage: errorMessage ?? this.errorMessage,
       isScanning: isScanning ?? this.isScanning,
+      parsingResult: parsingResult ?? this.parsingResult,
     );
   }
 }
@@ -53,7 +65,17 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
 
   void stopScanning() {
     state = state.copyWith(isScanning: false);
-    // Here we would normally trigger the agent submission
+  }
+
+  Future<void> analyzeReceipt(Uint8List imageBytes) async {
+    state = state.copyWith(errorMessage: null);
+    try {
+      final service = ref.read(receiptScannerServiceProvider);
+      final result = await service.analyzeAndSave(imageBytes);
+      state = state.copyWith(parsingResult: result);
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+    }
   }
 
   void processCameraImage(dynamic image) {

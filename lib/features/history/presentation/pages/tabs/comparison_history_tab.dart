@@ -67,7 +67,9 @@ class ComparisonHistoryTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '\${record.productA} vs \${record.productB}',
+                        record.products.isNotEmpty 
+                            ? record.products.map((p) => p['name'] ?? '未知商品').join(' vs ') 
+                            : '未命名商品比對',
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
@@ -78,7 +80,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '推薦: \${record.recommendation}',
+                        record.valueAnalysis ?? '尚未產生價值分析',
                         style: TextStyle(
                           color: isDark ? Colors.white70 : Colors.black54,
                           fontSize: 13,

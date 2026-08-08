@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 class ComparisonRecord {
   final String id;
@@ -16,6 +17,29 @@ class ComparisonRecord {
     this.valueAnalysis,
     required this.decisionTree,
   });
+
+  factory ComparisonRecord.fromAnalysisData(Map<String, dynamic> data) {
+    List<Map<String, dynamic>> parseList(String key) {
+      final list = <Map<String, dynamic>>[];
+      if (data[key] is List) {
+        for (final item in data[key] as List) {
+          if (item is Map) {
+            list.add(Map<String, dynamic>.from(item));
+          }
+        }
+      }
+      return list;
+    }
+
+    return ComparisonRecord(
+      id: const Uuid().v4(),
+      timestamp: DateTime.now(),
+      products: parseList('products'),
+      differences: data['differences'] is Map ? Map<String, dynamic>.from(data['differences'] as Map) : {},
+      valueAnalysis: data['value_analysis']?.toString(),
+      decisionTree: parseList('decision_tree'),
+    );
+  }
 }
 
 class ComparisonRecordAdapter extends TypeAdapter<ComparisonRecord> {

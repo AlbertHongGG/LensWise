@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lens_wise/features/product_lens/application/product_analysis_service.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/product_analysis_agent/product_analysis_agent.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 
@@ -51,8 +52,8 @@ class ProductLensController extends Notifier<ProductLensState> {
 
     state = state.copyWith(status: ProductLensStatus.loading, imageBytes: imageBytes);
     try {
-      final agent = ref.read(productAnalysisAgentProvider);
-      final result = await agent.execute(imageBytes);
+      final service = ref.read(productAnalysisServiceProvider);
+      final result = await service.analyzeAndSave(imageBytes);
       
       if (result.status == 'success') {
         state = state.copyWith(

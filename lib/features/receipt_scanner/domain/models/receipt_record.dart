@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 class ReceiptRecord {
   final String id;
@@ -14,6 +15,26 @@ class ReceiptRecord {
     this.totalAmount,
     required this.items,
   });
+
+  factory ReceiptRecord.fromAnalysisData(Map<String, dynamic> data) {
+    // Process items if they exist in the map
+    final List<Map<String, dynamic>> processedItems = [];
+    if (data['items'] is List) {
+      for (final item in data['items'] as List) {
+        if (item is Map) {
+          processedItems.add(Map<String, dynamic>.from(item));
+        }
+      }
+    }
+
+    return ReceiptRecord(
+      id: const Uuid().v4(),
+      timestamp: DateTime.now(),
+      storeName: data['store_name']?.toString() ?? '未知商店',
+      totalAmount: data['total_amount']?.toString() ?? '0',
+      items: processedItems,
+    );
+  }
 }
 
 class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
