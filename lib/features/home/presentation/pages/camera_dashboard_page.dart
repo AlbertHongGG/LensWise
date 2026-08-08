@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lens_wise/core/providers/camera_provider.dart';
 import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_controller.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
@@ -15,11 +16,18 @@ class CameraDashboardPage extends ConsumerStatefulWidget {
 }
 
 class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
-  CameraController? _cameraController;
   bool _isProcessing = false;
 
-  Future<void> _takePicture(ScannerModeStrategy strategy) async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized || _isProcessing) {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(cameraControllerProvider.notifier).initializeCamera();
+    });
+  }
+
+  Future<void> _takePicture(ScannerModeStrategy strategy, CameraController cameraController) async {
+    if (!cameraController.value.isInitialized || _isProcessing) {
       return;
     }
 
@@ -28,7 +36,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     });
 
     try {
-      final xFile = await _cameraController!.takePicture();
+      final xFile = await cameraController.takePicture();
       final bytes = await xFile.readAsBytes();
       
       if (mounted) {
@@ -56,10 +64,10 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     }
   }
 
-  @override
   Widget build(BuildContext context) {
     final mode = ref.watch(scannerModeProvider);
     final strategy = ref.read(scannerModeProvider.notifier).currentStrategy;
+    final cameraState = ref.watch(cameraControllerProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -68,14 +76,14 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
         children: [
           // 1. Base Layer: Live Camera
           CameraScannerView(
-            onCameraControllerCreated: (controller) {
-              _cameraController = controller;
-            },
+            controller: cameraState.controller,
+            isInitialized: cameraState.isInitialized,
           ),
           
           // 2. Middle Layer: Mode-specific Overlay
           strategy.buildOverlay(context),
 
+          // 3. Top Gradient overlay for icons
           // 3. Top Gradient overlay for icons
           Positioned(
             top: 0,
@@ -158,32 +166,36 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
                     ),
                   ),
 
-                // Shutter Button
-                GestureDetector(
-                  onTap: () => _takePicture(strategy),
-                  child: Container(
-                    width: 76,
-                    height: 76,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      color: Colors.white.withValues(alpha: 0.2),
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
+                  // Shutter Button
+                  GestureDetector(
+                    onTap: () {
+                      if (cameraState.isInitialized && cameraState.controller != null) {
+                        _takePicture(strategy, cameraState.controller!);
+                      }
+                    },
+                    child: Container(
+                      width: 76,
+                      height: 76,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 4),
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                          child: _isProcessing 
+                              ? const CircularProgressIndicator(color: Colors.black)
+                              : null,
                         ),
-                        child: _isProcessing 
-                            ? const CircularProgressIndicator(color: Colors.black)
-                            : null,
                       ),
                     ),
                   ),
-                ),
                 
                 const SizedBox(height: 24),
                 
@@ -222,19 +234,15 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     // Using "收據" for receipt
     modes[0]['label'] = '收據';
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: modes.map((m) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: modes.map((m) {
               final isSelected = mode == m['mode'];
               return GestureDetector(
                 onTap: () {
@@ -260,8 +268,6 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
                 ),
               );
             }).toList(),
-          ),
-        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/product_analysis_agent/product_analysis_agent.dart';
+import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 
 enum ProductLensStatus { idle, loading, success, error }
 
@@ -35,6 +36,15 @@ class ProductLensController extends Notifier<ProductLensState> {
   }
 
   Future<void> analyzeImage(Uint8List imageBytes) async {
+    final aiState = ref.read(aiConfigControllerProvider);
+    if (!aiState.isAIAgentEnabled) {
+      state = state.copyWith(
+        status: ProductLensStatus.error,
+        errorMessage: 'AI 輔助未啟用，請至設定開啟。',
+      );
+      return;
+    }
+
     state = state.copyWith(status: ProductLensStatus.loading);
     try {
       final agent = ref.read(productAnalysisAgentProvider);

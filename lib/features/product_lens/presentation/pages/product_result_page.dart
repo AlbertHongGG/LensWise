@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lens_wise/core/errors/app_error_mapper.dart';
+import 'package:lens_wise/core/theme/app_colors.dart';
+import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/core/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 
@@ -17,21 +20,10 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
     final state = ref.watch(productLensControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: BackButton(
-          onPressed: () {
-            ref.read(productLensControllerProvider.notifier).reset();
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/');
-            }
-          },
-        ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: _buildBody(context, ref, state),
       ),
-      body: _buildBody(context, ref, state),
     );
   }
 
@@ -61,40 +53,18 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
         );
 
       case ProductLensStatus.error:
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.redAccent.withValues(alpha: 0.8)),
-                const SizedBox(height: 16),
-                Text('解析失敗', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                Text(
-                  state.errorMessage ?? '發生未知的系統錯誤，請稍後再試。',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.grey, fontSize: 16),
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    ref.read(productLensControllerProvider.notifier).reset();
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/');
-                    }
-                  },
-                  icon: const Icon(Icons.arrow_back),
-                  label: const Text('返回相機'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        return PremiumErrorView(
+          title: '解析失敗',
+          message: AppErrorMapper.map(state.errorMessage),
+          isDark: isDark,
+          onActionPressed: () {
+            ref.read(productLensControllerProvider.notifier).reset();
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         );
 
       case ProductLensStatus.success:
@@ -150,22 +120,8 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
         final notRecommendedFor = (data['notRecommendedFor'] as List?)?.map((e) => e.toString()).toList();
 
         return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
           slivers: [
-            SliverAppBar(
-              title: const Text('分析結果'),
-              floating: true,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  ref.read(productLensControllerProvider.notifier).reset();
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/');
-                  }
-                },
-              ),
-            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(top: 16, bottom: 100, left: 16, right: 16),
