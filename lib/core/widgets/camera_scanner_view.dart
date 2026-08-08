@@ -1,32 +1,34 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 
 class CameraScannerView extends StatelessWidget {
-  final Widget? overlay;
-  final CameraController? controller;
-  final bool isInitialized;
+  final Widget Function(CameraState state)? customOverlayBuilder;
 
   const CameraScannerView({
     super.key,
-    this.overlay,
-    this.controller,
-    this.isInitialized = false,
+    this.customOverlayBuilder,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (!isInitialized || controller == null) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
-      );
-    }
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        CameraPreview(controller!),
-        if (overlay != null) overlay!,
-      ],
+    return CameraAwesomeBuilder.custom(
+      saveConfig: SaveConfig.photo(),
+      sensorConfig: SensorConfig.single(
+        sensor: Sensor.position(SensorPosition.back),
+        flashMode: FlashMode.none,
+        aspectRatio: CameraAspectRatios.ratio_16_9,
+        zoom: 0.0,
+      ),
+      // Root Cause Fix: camerawesome natively uses PlatformView, entirely bypassing Flutter Texture
+      previewFit: CameraPreviewFit.cover,
+      builder: (cameraState, preview) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            if (customOverlayBuilder != null) customOverlayBuilder!(cameraState),
+          ],
+        );
+      },
     );
   }
 }

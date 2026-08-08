@@ -1,4 +1,3 @@
-import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/receipt_scanner/infrastructure/engine/stitching_engine.dart';
 
@@ -57,7 +56,7 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     // Here we would normally trigger the agent submission
   }
 
-  void processCameraImage(CameraImage image) {
+  void processCameraImage(dynamic image) {
     if (!state.isScanning) return;
 
     // Throttle to roughly 15 FPS to save CPU
