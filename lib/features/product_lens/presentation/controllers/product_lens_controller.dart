@@ -54,7 +54,7 @@ class ProductLensController extends Notifier<ProductLensState> {
     } catch (e) {
       state = state.copyWith(
         status: ProductLensStatus.error,
-        errorMessage: '網路或系統錯誤，請重試。',
+        errorMessage: e.toString(),
       );
     }
   }

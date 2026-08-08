@@ -17,7 +17,20 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
     final state = ref.watch(productLensControllerProvider);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: BackButton(
+          onPressed: () {
+            ref.read(productLensControllerProvider.notifier).reset();
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
+        ),
+      ),
       body: _buildBody(context, ref, state),
     );
   }
@@ -76,8 +89,6 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
                   icon: const Icon(Icons.arrow_back),
                   label: const Text('返回相機'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white10,
-                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                 ),
@@ -141,8 +152,7 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
         return CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: Colors.black,
-              title: const Text('解析結果'),
+              title: const Text('分析結果'),
               floating: true,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),

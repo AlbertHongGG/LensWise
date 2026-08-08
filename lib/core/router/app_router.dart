@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lens_wise/features/home/presentation/pages/camera_dashboard_page.dart';
 import 'package:lens_wise/features/settings/presentation/pages/settings_page.dart';
+import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.dart';
 
 // History Pages
 import 'package:lens_wise/features/history/presentation/pages/receipt_history_page.dart';
@@ -34,6 +35,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => const CupertinoPage(
           child: SettingsPage(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/ai',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => const CupertinoPage(
+          child: AiSettingsScreen(),
         ),
       ),
 

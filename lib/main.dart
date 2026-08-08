@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lens_wise/core/di/app_provider_observer.dart';
+import 'package:lens_wise/core/providers/shared_prefs_provider.dart';
 import 'package:lens_wise/core/router/app_router.dart';
 import 'package:lens_wise/core/theme/app_theme.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
@@ -18,10 +20,14 @@ void main() async {
   Hive.registerAdapter(ComparisonRecordAdapter());
   
   await Hive.openBox('settings');
+  final prefs = await SharedPreferences.getInstance();
 
   runApp(
     ProviderScope(
       observers: [AppProviderObserver()],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
       child: const MyApp(),
     ),
   );

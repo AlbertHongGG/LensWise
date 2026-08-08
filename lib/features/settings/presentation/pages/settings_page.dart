@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'package:lens_wise/features/settings/presentation/widgets/settings_section.dart';
@@ -61,6 +62,19 @@ class SettingsPage extends ConsumerWidget {
                   if (selectedIndex != null) {
                     notifier.updateTargetLanguage(languages[selectedIndex]);
                   }
+                },
+              ),
+            ],
+          ),
+          SettingsSection(
+            title: 'AI 引擎與進階設定',
+            children: [
+              SettingsTile(
+                icon: Icons.smart_toy_rounded,
+                iconColor: Colors.purpleAccent,
+                title: 'AI 引擎與 API 設定 (Engine Configuration)',
+                onTap: () {
+                  context.push('/settings/ai');
                 },
               ),
             ],
