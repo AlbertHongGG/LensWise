@@ -9,6 +9,7 @@ class ProductHistoryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(productHistoryProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -20,8 +21,8 @@ class ProductHistoryPage extends ConsumerWidget {
       body: historyAsync.when(
         data: (records) {
           if (records.isEmpty) {
-            return const Center(
-              child: Text('目前沒有紀錄，點擊下方「➕」開始掃描。', style: TextStyle(color: Colors.white54)),
+            return Center(
+              child: Text('目前沒有紀錄，點擊下方「➕」開始掃描。', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
             );
           }
           return ListView.builder(
@@ -35,9 +36,9 @@ class ProductHistoryPage extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   opacity: 0.1,
                   child: ListTile(
-                    title: Text(record.productName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    subtitle: Text(record.brand, style: const TextStyle(color: Colors.white70)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+                    title: Text(record.productName, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold)),
+                    subtitle: Text(record.brand, style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                    trailing: Icon(Icons.chevron_right, color: isDark ? Colors.white54 : Colors.black54),
                   ),
                 ),
               );

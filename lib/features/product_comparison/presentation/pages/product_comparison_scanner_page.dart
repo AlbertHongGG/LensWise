@@ -64,8 +64,11 @@ class _ProductComparisonScannerPageState extends ConsumerState<ProductComparison
   Widget build(BuildContext context) {
     final state = ref.watch(productComparisonScannerControllerProvider);
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           CameraScannerView(
@@ -77,7 +80,7 @@ class _ProductComparisonScannerPageState extends ConsumerState<ProductComparison
             top: 50,
             left: 20,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              icon: Icon(Icons.close, color: isDark ? Colors.white : Colors.black87, size: 30),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
@@ -86,14 +89,14 @@ class _ProductComparisonScannerPageState extends ConsumerState<ProductComparison
             top: 60,
             left: 0,
             right: 0,
-            child: const Center(
+            child: Center(
               child: Text(
                 '拍攝商品進行比對',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: isDark ? Colors.white : Colors.black87,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                  shadows: [Shadow(color: isDark ? Colors.black : Colors.white70, blurRadius: 4)],
                 ),
               ),
             ),
@@ -122,16 +125,16 @@ class _ProductComparisonScannerPageState extends ConsumerState<ProductComparison
           // Loading Overlay
           if (state.isAnalyzing)
             Container(
-              color: Colors.black.withValues(alpha: 0.8),
-              child: const Center(
+              color: isDark ? Colors.black.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.8),
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ThinkingOrb(size: 80, isDark: true),
-                    SizedBox(height: 24),
+                    ThinkingOrb(size: 80, isDark: isDark),
+                    const SizedBox(height: 24),
                     Text(
                       'AI 正在深度比對中...',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -163,7 +166,7 @@ class _ProductComparisonScannerPageState extends ConsumerState<ProductComparison
                                 height: 80,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.white, width: 2),
+                                  border: Border.all(color: isDark ? Colors.white : Colors.black54, width: 2),
                                   image: DecorationImage(
                                     image: MemoryImage(state.capturedImages[index]),
                                     fit: BoxFit.cover,
@@ -197,15 +200,15 @@ class _ProductComparisonScannerPageState extends ConsumerState<ProductComparison
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.transparent,
-                        border: Border.all(color: Colors.white, width: 4),
+                        border: Border.all(color: isDark ? Colors.white : Colors.black54, width: 4),
                       ),
                       child: Center(
                         child: Container(
                           width: 65,
                           height: 65,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white,
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
                         ),
                       ),

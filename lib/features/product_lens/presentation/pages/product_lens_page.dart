@@ -23,8 +23,11 @@ class _ProductLensPageState extends ConsumerState<ProductLensPage> {
     final isLoading = state.status == ProductLensStatus.loading;
     final hasResult = state.status == ProductLensStatus.success || state.status == ProductLensStatus.error;
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -39,16 +42,16 @@ class _ProductLensPageState extends ConsumerState<ProductLensPage> {
           // 2. Loading Overlay
           if (isLoading)
             Container(
-              color: Colors.black.withValues(alpha: 0.8),
-              child: const Center(
+              color: isDark ? Colors.black.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.8),
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ThinkingOrb(size: 80, isDark: true),
-                    SizedBox(height: 24),
+                    ThinkingOrb(size: 80, isDark: isDark),
+                    const SizedBox(height: 24),
                     Text(
                       'AI 智慧解析中...',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -69,16 +72,16 @@ class _ProductLensPageState extends ConsumerState<ProductLensPage> {
                     height: 72,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      color: Colors.white.withOpacity(0.3),
+                      border: Border.all(color: isDark ? Colors.white : Colors.black54, width: 4),
+                      color: isDark ? Colors.white.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.1),
                     ),
                     child: Center(
                       child: Container(
                         width: 54,
                         height: 54,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white,
+                          color: isDark ? Colors.white : Colors.black87,
                         ),
                       ),
                     ),
@@ -108,17 +111,18 @@ class _ProductLensPageState extends ConsumerState<ProductLensPage> {
   Widget _buildGuidanceOverlay() {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         final boxSize = constraints.maxWidth * 0.75;
         return Stack(
           children: [
             ColorFiltered(
               colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.5),
+                isDark ? Colors.black.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.5),
                 BlendMode.srcOut,
               ),
               child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.black,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.black : Colors.white,
                   backgroundBlendMode: BlendMode.dstOut,
                 ),
                 child: Center(
@@ -138,12 +142,12 @@ class _ProductLensPageState extends ConsumerState<ProductLensPage> {
                 width: boxSize,
                 height: boxSize * 1.2,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
+                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.8) : Colors.black.withValues(alpha: 0.3), width: 2),
                   borderRadius: BorderRadius.circular(24),
                 ),
               ),
             ),
-            const Positioned(
+            Positioned(
               top: 100,
               left: 0,
               right: 0,
@@ -151,11 +155,11 @@ class _ProductLensPageState extends ConsumerState<ProductLensPage> {
                 'Align the product within the frame',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: isDark ? Colors.white : Colors.black87,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   shadows: [
-                    Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(0, 2))
+                    Shadow(color: isDark ? Colors.black54 : Colors.white54, blurRadius: 4, offset: const Offset(0, 2))
                   ],
                 ),
               ),

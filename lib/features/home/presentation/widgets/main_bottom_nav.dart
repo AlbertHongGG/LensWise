@@ -88,8 +88,8 @@ class CustomBottomNavBar extends StatelessWidget {
               )
             : null,
         child: icon is IconData
-            ? Icon(icon, color: isSelected ? Theme.of(context).primaryColor : Colors.white70, size: 20)
-            : FaIcon(icon, color: isSelected ? Theme.of(context).primaryColor : Colors.white70, size: 20),
+            ? Icon(icon, color: isSelected ? Theme.of(context).primaryColor : (Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54), size: 20)
+            : FaIcon(icon, color: isSelected ? Theme.of(context).primaryColor : (Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54), size: 20),
       ),
     );
   }

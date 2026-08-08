@@ -13,6 +13,10 @@ class ComparisonDecisionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -20,15 +24,15 @@ class ComparisonDecisionCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.05),
                 blurRadius: 20,
                 spreadRadius: -5,
               ),
@@ -39,14 +43,14 @@ class ComparisonDecisionCard extends StatelessWidget {
             children: [
               // Value Analysis Section
               if (valueAnalysis != null && valueAnalysis!.isNotEmpty) ...[
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.monetization_on, color: Colors.amberAccent),
-                    SizedBox(width: 8),
+                    const Icon(Icons.monetization_on, color: Colors.amberAccent),
+                    const SizedBox(width: 8),
                     Text(
                       'CP 值與性價比分析',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -56,26 +60,26 @@ class ComparisonDecisionCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   valueAnalysis!,
-                  style: const TextStyle(
-                    color: Colors.white70,
+                  style: TextStyle(
+                    color: subtitleColor,
                     fontSize: 14,
                     height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 24),
-                Divider(color: Colors.white.withValues(alpha: 0.2)),
+                Divider(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1)),
                 const SizedBox(height: 24),
               ],
 
               // Decision Tree Section
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.psychology, color: Colors.greenAccent),
-                  SizedBox(width: 8),
+                  const Icon(Icons.psychology, color: Colors.greenAccent),
+                  const SizedBox(width: 8),
                   Text(
                     'AI 專屬選購建議',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: textColor,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -106,8 +110,8 @@ class ComparisonDecisionCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               condition,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: textColor,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
                               ),
@@ -138,8 +142,8 @@ class ComparisonDecisionCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               reason,
-                              style: const TextStyle(
-                                color: Colors.white70,
+                              style: TextStyle(
+                                color: subtitleColor,
                                 fontSize: 13,
                                 height: 1.4,
                               ),

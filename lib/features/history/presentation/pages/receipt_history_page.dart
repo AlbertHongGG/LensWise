@@ -9,6 +9,7 @@ class ReceiptHistoryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(receiptHistoryProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -20,8 +21,8 @@ class ReceiptHistoryPage extends ConsumerWidget {
       body: historyAsync.when(
         data: (records) {
           if (records.isEmpty) {
-            return const Center(
-              child: Text('目前沒有紀錄，點擊下方「➕」開始掃描。', style: TextStyle(color: Colors.white54)),
+            return Center(
+              child: Text('目前沒有紀錄，點擊下方「➕」開始掃描。', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
             );
           }
           return ListView.builder(
@@ -35,9 +36,9 @@ class ReceiptHistoryPage extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   opacity: 0.1,
                   child: ListTile(
-                    title: Text(record.storeName ?? '未命名店家', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    subtitle: Text(record.timestamp.toString().substring(0, 16), style: const TextStyle(color: Colors.white70)),
-                    trailing: Text(record.totalAmount ?? '', style: const TextStyle(color: Colors.greenAccent, fontSize: 16)),
+                    title: Text(record.storeName ?? '未命名店家', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold)),
+                    subtitle: Text(record.timestamp.toString().substring(0, 16), style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                    trailing: Text(record.totalAmount ?? '', style: TextStyle(color: isDark ? Colors.greenAccent : Colors.green[700], fontSize: 16)),
                   ),
                 ),
               );

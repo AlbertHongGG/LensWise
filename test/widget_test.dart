@@ -4,7 +4,7 @@ import 'package:lens_wise/main.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: LensWiseApp()));
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
     expect(find.text('LensWise App Initialized'), findsOneWidget);
   });
 }

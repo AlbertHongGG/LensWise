@@ -12,19 +12,22 @@ class ProductComparisonResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     final List<dynamic> products = resultData['products'] ?? [];
     final Map<String, dynamic> differences = resultData['differences'] ?? {};
     final String? valueAnalysis = resultData['valueAnalysis']?.toString();
     final List<dynamic> decisionTree = resultData['decisionTree'] ?? [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Deep dark background
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('AI 商品比對報告', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('AI 商品比對報告', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: isDark ? Colors.white : Colors.black87),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -82,7 +85,7 @@ class ProductComparisonResultPage extends StatelessWidget {
                           return Container(
                             width: 280, // Fixed width for horizontal scrolling
                             margin: const EdgeInsets.only(right: 16),
-                            child: _buildProductCard(p),
+                            child: _buildProductCard(p, isDark),
                           );
                         }).toList(),
                       ),
@@ -92,13 +95,13 @@ class ProductComparisonResultPage extends StatelessWidget {
 
                   // Differences Section
                   if (differences.isNotEmpty) ...[
-                    _buildSectionTitle(Icons.difference, '關鍵差異分析'),
+                    _buildSectionTitle(Icons.difference, '關鍵差異分析', isDark),
                     const SizedBox(height: 16),
                     if (differences['featureDiff'] != null)
-                      _buildDiffBox('特色差異', differences['featureDiff'].toString()),
+                      _buildDiffBox('特色差異', differences['featureDiff'].toString(), isDark),
                     const SizedBox(height: 12),
                     if (differences['specDiff'] != null)
-                      _buildDiffBox('成分與規格差異', differences['specDiff'].toString()),
+                      _buildDiffBox('成分與規格差異', differences['specDiff'].toString(), isDark),
                     const SizedBox(height: 32),
                   ],
 
@@ -119,7 +122,7 @@ class ProductComparisonResultPage extends StatelessWidget {
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> product) {
+  Widget _buildProductCard(Map<String, dynamic> product, bool isDark) {
     final String id = product['id']?.toString() ?? '?';
     final String originalName = product['originalName']?.toString() ?? '未知名稱';
     final String translatedName = product['translatedName']?.toString() ?? '';
@@ -130,9 +133,9 @@ class ProductComparisonResultPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,8 +164,8 @@ class ProductComparisonResultPage extends StatelessWidget {
                   children: [
                     Text(
                       translatedName.isNotEmpty ? translatedName : originalName,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -172,8 +175,8 @@ class ProductComparisonResultPage extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       brand,
-                      style: const TextStyle(
-                        color: Colors.white54,
+                      style: TextStyle(
+                        color: isDark ? Colors.white54 : Colors.black54,
                         fontSize: 12,
                       ),
                     ),
@@ -184,7 +187,7 @@ class ProductComparisonResultPage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           if (features.isNotEmpty) ...[
-            const Text('主打特色', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text('主打特色', style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ...features.map((f) => Padding(
               padding: const EdgeInsets.only(bottom: 6),
@@ -192,18 +195,18 @@ class ProductComparisonResultPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('• ', style: TextStyle(color: Colors.blueAccent)),
-                  Expanded(child: Text(f.toString(), style: const TextStyle(color: Colors.white, fontSize: 13))),
+                  Expanded(child: Text(f.toString(), style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 13))),
                 ],
               ),
             )),
             const SizedBox(height: 12),
           ],
           if (ingredients.isNotEmpty) ...[
-            const Text('關鍵成分', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text('關鍵成分', style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(
               ingredients.join(', '),
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
             ),
           ]
         ],
@@ -211,15 +214,15 @@ class ProductComparisonResultPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(IconData icon, String title) {
+  Widget _buildSectionTitle(IconData icon, String title, bool isDark) {
     return Row(
       children: [
         Icon(icon, color: Colors.purpleAccent),
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -228,7 +231,7 @@ class ProductComparisonResultPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDiffBox(String label, String content) {
+  Widget _buildDiffBox(String label, String content, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -250,8 +253,8 @@ class ProductComparisonResultPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             content,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
               fontSize: 14,
               height: 1.5,
             ),

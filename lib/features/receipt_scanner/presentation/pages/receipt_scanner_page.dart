@@ -66,8 +66,11 @@ class _ReceiptScannerPageState extends ConsumerState<ReceiptScannerPage> {
       statusText = "對準收據頂部，按下開始";
     }
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           CameraScannerView(
@@ -97,13 +100,13 @@ class _ReceiptScannerPageState extends ConsumerState<ReceiptScannerPage> {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: state.isScanning ? Colors.red : Colors.white,
-                      border: Border.all(color: Colors.white54, width: 4),
+                      color: state.isScanning ? theme.colorScheme.error : (isDark ? Colors.white : Colors.black12),
+                      border: Border.all(color: isDark ? Colors.white54 : Colors.black26, width: 4),
                     ),
                     child: Center(
                       child: Icon(
                         state.isScanning ? Icons.stop : Icons.camera_alt,
-                        color: state.isScanning ? Colors.white : Colors.black,
+                        color: state.isScanning ? theme.colorScheme.onError : (isDark ? Colors.black : Colors.black87),
                         size: 32,
                       ),
                     ),
@@ -118,7 +121,7 @@ class _ReceiptScannerPageState extends ConsumerState<ReceiptScannerPage> {
             top: 50,
             left: 20,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              icon: Icon(Icons.close, color: isDark ? Colors.white : Colors.black87, size: 30),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
@@ -145,13 +148,13 @@ class _ReceiptScannerPageState extends ConsumerState<ReceiptScannerPage> {
               color: color,
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
+              shadows: [Shadow(color: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white70, blurRadius: 4)],
             ),
           ),
           if (height > 0)
-            const Padding(
-              padding: EdgeInsets.only(top: 20),
-              child: Icon(Icons.arrow_downward, color: Colors.white, size: 32),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Icon(Icons.arrow_downward, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87, size: 32),
             )
         ],
       ),
