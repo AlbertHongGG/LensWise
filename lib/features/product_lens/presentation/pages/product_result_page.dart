@@ -107,17 +107,21 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
           );
         }
 
-        final data = res.data ?? {};
-        final productName = data['productName'] as String?;
-        final originalName = data['originalName'] as String?;
-        final brand = data['brand'] as String?;
-        final origin = data['origin'] as String?;
-        final summary = data['summary'] as String?;
-        final ingredients = (data['ingredients'] as List?)?.map((e) => e.toString()).toList();
-        final allergens = (data['allergens'] as List?)?.map((e) => e.toString()).toList();
-        final dietaryFlags = (data['dietaryFlags'] as List?)?.map((e) => e.toString()).toList();
-        final recommendedFor = (data['recommendedFor'] as List?)?.map((e) => e.toString()).toList();
-        final notRecommendedFor = (data['notRecommendedFor'] as List?)?.map((e) => e.toString()).toList();
+        final data = res.data;
+        if (data == null) {
+          return const Center(child: Text('解析成功但無資料回傳'));
+        }
+
+        final productName = data.productName.isNotEmpty ? data.productName : '未知商品';
+        final originalName = data.originalName.isNotEmpty ? data.originalName : null;
+        final brand = data.brand;
+        final origin = data.origin;
+        final summary = data.summary;
+        final ingredients = data.ingredients;
+        final allergens = data.allergens;
+        final dietaryFlags = data.dietaryFlags;
+        final recommendedFor = data.recommendedFor;
+        final notRecommendedFor = data.notRecommendedFor;
 
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -130,7 +134,7 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
                   children: [
                     // 1. Header (Name & Brand)
                     Text(
-                      productName ?? '未知商品',
+                      productName,
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -152,7 +156,7 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
                         Icon(Icons.storefront, size: 18, color: Theme.of(context).primaryColor),
                         const SizedBox(width: 8),
                         Text(
-                          '${brand ?? "未知品牌"} ${origin != null ? "· $origin" : ""}',
+                          '${brand.isEmpty ? "未知品牌" : brand} ${origin.isNotEmpty ? "· $origin" : ""}',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -161,35 +165,45 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    
-                    // 2. Summary
-                    if (summary != null)
+                    if (summary.isNotEmpty) ...[
+                      const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
+                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                         ),
-                        child: Row(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.lightbulb_outline, color: Theme.of(context).primaryColor),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                summary,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  height: 1.5,
-                                  color: isDark ? Colors.white : Colors.black87,
+                            Row(
+                              children: [
+                                const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'AI 摘要',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: isDark ? Colors.white : Colors.black87,
+                                  ),
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              summary,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: isDark ? Colors.white70 : Colors.black87,
+                                height: 1.5,
                               ),
                             ),
                           ],
                         ),
                       ),
+                    ],
                     const SizedBox(height: 24),
 
                     // 3. Ingredients & Allergens
@@ -199,11 +213,11 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        ...?allergens?.map((a) => _buildBadge(a, isDark, isAlert: true)),
-                        ...?dietaryFlags?.map((d) => _buildBadge(d, isDark, isAlert: false)),
+                        ...allergens.map((a) => _buildBadge(a, isDark, isAlert: true)),
+                        ...dietaryFlags.map((d) => _buildBadge(d, isDark, isAlert: false)),
                       ],
                     ),
-                    if (ingredients != null && ingredients.isNotEmpty) ...[
+                    if (ingredients.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Text(
                         '主要成分: ${ingredients.join(', ')}',
@@ -222,7 +236,7 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
                             title: '推薦情境',
                             icon: Icons.check_circle_outline,
                             color: Colors.green,
-                            items: recommendedFor ?? [],
+                            items: recommendedFor,
                             isDark: isDark,
                           ),
                         ),
@@ -233,7 +247,7 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
                             title: '不推薦情境',
                             icon: Icons.cancel_outlined,
                             color: Colors.redAccent,
-                            items: notRecommendedFor ?? [],
+                            items: notRecommendedFor,
                             isDark: isDark,
                           ),
                         ),

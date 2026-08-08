@@ -44,7 +44,7 @@ class ProductResultCard extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withOpacity(0.2),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -88,12 +88,14 @@ class ProductResultCard extends StatelessWidget {
   }
 
   Widget _buildSuccessState(BuildContext context, ThemeData theme) {
-    final data = result.data ?? {};
-    final productName = data['productName'] as String? ?? 'Unknown Product';
-    final brand = data['brand'] as String? ?? '';
-    final summary = data['summary'] as String? ?? '';
-    final ingredients = (data['ingredients'] as List?)?.cast<String>() ?? [];
-    final allergens = (data['allergens'] as List?)?.cast<String>() ?? [];
+    final data = result.data;
+    if (data == null) return const SizedBox.shrink();
+
+    final productName = data.productName.isNotEmpty ? data.productName : 'Unknown Product';
+    final brand = data.brand;
+    final summary = data.summary;
+    final ingredients = data.ingredients;
+    final allergens = data.allergens;
 
     return Flexible(
       child: ListView(
@@ -129,7 +131,7 @@ class ProductResultCard extends StatelessWidget {
                 icon: const Icon(Icons.close_rounded),
                 onPressed: onClose,
                 style: IconButton.styleFrom(
-                  backgroundColor: theme.colorScheme.onSurface.withOpacity(0.1),
+                  backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                 ),
               ),
             ],

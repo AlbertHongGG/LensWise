@@ -5,12 +5,13 @@ import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
+import 'product_analysis_data.dart';
 import 'prompts.dart';
 
 class ProductAnalysisResult {
   final String status;
   final String? message;
-  final Map<String, dynamic>? data;
+  final ProductAnalysisData? data;
 
   ProductAnalysisResult({required this.status, this.message, this.data});
 
@@ -18,7 +19,7 @@ class ProductAnalysisResult {
     return ProductAnalysisResult(
       status: json['status'] as String? ?? 'error',
       message: json['message'] as String?,
-      data: json['data'] as Map<String, dynamic>?,
+      data: json['data'] != null ? ProductAnalysisData.fromJson(json['data'] as Map<String, dynamic>) : null,
     );
   }
 }
