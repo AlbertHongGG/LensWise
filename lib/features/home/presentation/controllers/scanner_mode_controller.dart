@@ -7,8 +7,15 @@ import 'package:lens_wise/features/home/presentation/strategies/comparison_scann
 enum ScannerMode { receipt, product, comparison }
 
 class ScannerModeController extends Notifier<ScannerMode> {
+  late final Map<ScannerMode, ScannerModeStrategy> _strategies;
+
   @override
   ScannerMode build() {
+    _strategies = {
+      ScannerMode.receipt: ReceiptScannerStrategy(),
+      ScannerMode.product: ProductScannerStrategy(),
+      ScannerMode.comparison: ComparisonScannerStrategy(),
+    };
     return ScannerMode.product; // Default mode
   }
 
@@ -16,16 +23,7 @@ class ScannerModeController extends Notifier<ScannerMode> {
     state = mode;
   }
 
-  ScannerModeStrategy get currentStrategy {
-    switch (state) {
-      case ScannerMode.receipt:
-        return ReceiptScannerStrategy();
-      case ScannerMode.product:
-        return ProductScannerStrategy();
-      case ScannerMode.comparison:
-        return ComparisonScannerStrategy();
-    }
-  }
+  ScannerModeStrategy get currentStrategy => _strategies[state]!;
 }
 
 final scannerModeProvider = NotifierProvider<ScannerModeController, ScannerMode>(() {

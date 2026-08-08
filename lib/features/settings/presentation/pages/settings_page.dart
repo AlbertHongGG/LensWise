@@ -33,7 +33,7 @@ class SettingsPage extends ConsumerWidget {
               SettingsTile(
                 icon: Icons.dark_mode_rounded,
                 iconColor: Colors.deepPurpleAccent,
-                title: '深色模式 (Dark Mode)',
+                title: '深色模式',
                 trailing: AppSwitch(
                   value: settingsState.themeMode == ThemeMode.dark,
                   onChanged: (val) {
@@ -72,7 +72,7 @@ class SettingsPage extends ConsumerWidget {
               SettingsTile(
                 icon: Icons.smart_toy_rounded,
                 iconColor: Colors.purpleAccent,
-                title: 'AI 引擎與 API 設定 (Engine Configuration)',
+                title: 'API 與引擎設定',
                 onTap: () {
                   context.push('/settings/ai');
                 },
