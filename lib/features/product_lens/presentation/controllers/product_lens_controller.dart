@@ -9,22 +9,26 @@ class ProductLensState {
   final ProductLensStatus status;
   final ProductAnalysisResult? result;
   final String? errorMessage;
+  final Uint8List? imageBytes;
 
   ProductLensState({
     this.status = ProductLensStatus.idle,
     this.result,
     this.errorMessage,
+    this.imageBytes,
   });
 
   ProductLensState copyWith({
     ProductLensStatus? status,
     ProductAnalysisResult? result,
     String? errorMessage,
+    Uint8List? imageBytes,
   }) {
     return ProductLensState(
       status: status ?? this.status,
       result: result ?? this.result,
       errorMessage: errorMessage ?? this.errorMessage,
+      imageBytes: imageBytes ?? this.imageBytes,
     );
   }
 }
@@ -45,7 +49,7 @@ class ProductLensController extends Notifier<ProductLensState> {
       return;
     }
 
-    state = state.copyWith(status: ProductLensStatus.loading);
+    state = state.copyWith(status: ProductLensStatus.loading, imageBytes: imageBytes);
     try {
       final agent = ref.read(productAnalysisAgentProvider);
       final result = await agent.execute(imageBytes);

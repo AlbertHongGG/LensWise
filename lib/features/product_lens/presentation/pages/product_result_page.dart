@@ -6,6 +6,10 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/core/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
+import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/immersive_background.dart';
+import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/hero_title_overlay.dart';
+import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/verdict_floating_card.dart';
+import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/interactive_detail_panel.dart';
 
 class ProductResultPage extends ConsumerStatefulWidget {
   const ProductResultPage({super.key});
@@ -112,168 +116,53 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
           return const Center(child: Text('解析成功但無資料回傳'));
         }
 
-        final productName = data.productName.isNotEmpty ? data.productName : '未知商品';
-        final originalName = data.originalName.isNotEmpty ? data.originalName : null;
-        final brand = data.brand;
-        final origin = data.origin;
-        final summary = data.summary;
-        final ingredients = data.ingredients;
-        final allergens = data.allergens;
-        final dietaryFlags = data.dietaryFlags;
-        final recommendedFor = data.recommendedFor;
-        final notRecommendedFor = data.notRecommendedFor;
+        return Scaffold(
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Layer 0 & 1: Image and Gradient Background
+              ImmersiveBackground(imageBytes: state.imageBytes),
+              
+              // Layer 2: Top Floating Close Button
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 16,
+                right: 16,
+                child: IconButton(
+                  onPressed: () {
+                    ref.read(productLensControllerProvider.notifier).reset();
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/');
+                    }
+                  },
+                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withValues(alpha: 0.3),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                ),
+              ),
 
-        return CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 16, bottom: 100, left: 16, right: 16),
+              // Layer 3: Foreground Content positioned at the bottom
+              SafeArea(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // 1. Header (Name & Brand)
-                    Text(
-                      productName,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
-                        height: 1.2,
-                      ),
+                    const Spacer(),
+                    HeroTitleOverlay(
+                      productName: data.productName.isNotEmpty ? data.productName : '未知商品',
+                      originalName: data.originalName,
+                      brand: data.brand,
+                      origin: data.origin,
                     ),
-                    if (originalName != null && originalName != productName)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          originalName,
-                          style: const TextStyle(fontSize: 16, color: Colors.grey, fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Icon(Icons.storefront, size: 18, color: Theme.of(context).primaryColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${brand.isEmpty ? "未知品牌" : brand} ${origin.isNotEmpty ? "· $origin" : ""}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white70 : Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (summary.isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'AI 摘要',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: isDark ? Colors.white : Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              summary,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: isDark ? Colors.white70 : Colors.black87,
-                                height: 1.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 24),
-
-                    // 3. Ingredients & Allergens
-                    _buildSectionTitle(context, '成分與過敏原提醒', Icons.science),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ...allergens.map((a) => _buildBadge(a, isDark, isAlert: true)),
-                        ...dietaryFlags.map((d) => _buildBadge(d, isDark, isAlert: false)),
-                      ],
-                    ),
-                    if (ingredients.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        '主要成分: ${ingredients.join(', ')}',
-                        style: TextStyle(fontSize: 13, color: isDark ? Colors.white54 : Colors.black54, height: 1.5),
-                      ),
-                    ],
-                    const SizedBox(height: 32),
-
-                    // 4. Pros & Cons (Recommended For)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _buildProsConsCard(
-                            context,
-                            title: '推薦情境',
-                            icon: Icons.check_circle_outline,
-                            color: Colors.green,
-                            items: recommendedFor,
-                            isDark: isDark,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildProsConsCard(
-                            context,
-                            title: '不推薦情境',
-                            icon: Icons.cancel_outlined,
-                            color: Colors.redAccent,
-                            items: notRecommendedFor,
-                            isDark: isDark,
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 40),
-                    Center(
-                      child: TextButton.icon(
-                        onPressed: () {
-                          ref.read(productLensControllerProvider.notifier).reset();
-                          if (context.canPop()) {
-                            context.pop();
-                          } else {
-                            context.go('/');
-                          }
-                        },
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('掃描其他商品'),
-                      ),
-                    ),
+                    VerdictFloatingCard(summary: data.summary),
+                    InteractiveDetailPanel(data: data),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
 
       case ProductLensStatus.idle:
@@ -295,89 +184,4 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
     }
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title, IconData icon) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: isDark ? Colors.white70 : Colors.black54),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : Colors.black87,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBadge(String text, bool isDark, {required bool isAlert}) {
-    final color = isAlert ? Colors.redAccent : Colors.blueAccent;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: isAlert ? (isDark ? Colors.redAccent[200] : Colors.red[700]) : (isDark ? Colors.blueAccent[200] : Colors.blue[700]),
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProsConsCard(BuildContext context, {required String title, required IconData icon, required Color color, required List<String> items, required bool isDark}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (items.isEmpty)
-            Text('無特別說明', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 13))
-          else
-            ...items.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('• ', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-                  Expanded(
-                    child: Text(
-                      item,
-                      style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 13, height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
-            )),
-        ],
-      ),
-    );
-  }
 }
