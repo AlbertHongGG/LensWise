@@ -4,8 +4,9 @@ import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 import 'package:lens_wise/features/ai/domain/exceptions/ai_connection_error.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/ai_provider.dart';
+import 'package:lens_wise/features/ai/infrastructure/providers/image_encoder.dart';
 
-class OllamaProvider implements AIProvider {
+class OllamaProvider with AIImageEncoderMixin implements AIProvider {
   @override
   final String name = 'ollama';
   
@@ -33,8 +34,9 @@ class OllamaProvider implements AIProvider {
         body['system'] = request.systemPrompt;
       }
 
-      if (request.images != null && request.images!.isNotEmpty) {
-        body['images'] = request.images!.map((bytes) => base64Encode(bytes)).toList();
+      final base64Images = encodeImagesToBase64(request);
+      if (base64Images != null) {
+        body['images'] = base64Images;
       }
 
       final response = await http.post(
@@ -74,8 +76,9 @@ class OllamaProvider implements AIProvider {
         body['system'] = request.systemPrompt;
       }
 
-      if (request.images != null && request.images!.isNotEmpty) {
-        body['images'] = request.images!.map((bytes) => base64Encode(bytes)).toList();
+      final base64Images = encodeImagesToBase64(request);
+      if (base64Images != null) {
+        body['images'] = base64Images;
       }
 
       httpRequest.body = jsonEncode(body);

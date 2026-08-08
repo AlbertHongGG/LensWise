@@ -4,8 +4,9 @@ import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 import 'package:lens_wise/features/ai/domain/exceptions/ai_connection_error.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/ai_provider.dart';
+import 'package:lens_wise/features/ai/infrastructure/providers/image_encoder.dart';
 
-class VertexAIProvider implements AIProvider {
+class VertexAIProvider with AIImageEncoderMixin implements AIProvider {
   @override
   final String name = 'vertexai';
   
@@ -103,12 +104,13 @@ class VertexAIProvider implements AIProvider {
       {'text': request.prompt}
     ];
 
-    if (request.images != null) {
-      for (final imageBytes in request.images!) {
+    final base64Images = encodeImagesToBase64(request);
+    if (base64Images != null) {
+      for (final base64String in base64Images) {
         parts.add({
           'inlineData': {
             'mimeType': 'image/jpeg',
-            'data': base64Encode(imageBytes)
+            'data': base64String
           }
         });
       }

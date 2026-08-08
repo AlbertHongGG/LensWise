@@ -3,7 +3,9 @@ import 'package:lens_wise/features/ai/infrastructure/providers/geminiflow/sdk/cl
 import 'package:lens_wise/features/ai/domain/exceptions/ai_connection_error.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
-class GeminiFlowProvider implements AIProvider {
+import 'package:lens_wise/features/ai/infrastructure/providers/image_encoder.dart';
+
+class GeminiFlowProvider with AIImageEncoderMixin implements AIProvider {
   @override
   final String name = 'geminiflow';
   
@@ -25,6 +27,7 @@ class GeminiFlowProvider implements AIProvider {
         model: _model,
         language: 'zh-TW',
         saveImages: false,
+        images: encodeImagesToBase64(request),
       );
 
       return GenerateResponse(
@@ -44,6 +47,7 @@ class GeminiFlowProvider implements AIProvider {
         model: _model,
         language: 'zh-TW',
         saveImages: false,
+        images: encodeImagesToBase64(request),
       );
 
       await for (final chunk in stream) {
