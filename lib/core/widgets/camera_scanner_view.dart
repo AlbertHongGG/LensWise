@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class CameraScannerView extends StatefulWidget {
   final Widget? overlay;
   final Function(CameraController) onCameraControllerCreated;
+  final ImageFormatGroup imageFormatGroup;
 
   const CameraScannerView({
     super.key,
     this.overlay,
     required this.onCameraControllerCreated,
+    this.imageFormatGroup = ImageFormatGroup.jpeg,
   });
 
   @override
@@ -34,7 +36,7 @@ class _CameraScannerViewState extends State<CameraScannerView> {
           _cameras![0],
           ResolutionPreset.high,
           enableAudio: false,
-          imageFormatGroup: ImageFormatGroup.jpeg,
+          imageFormatGroup: widget.imageFormatGroup,
         );
 
         await _controller!.initialize();
