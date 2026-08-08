@@ -7,6 +7,7 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_controller.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
+import 'package:lens_wise/features/ai/presentation/screens/ai_log_viewer_screen.dart';
 
 class CameraDashboardPage extends ConsumerStatefulWidget {
   const CameraDashboardPage({super.key});
@@ -80,16 +81,30 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
               Positioned(
                 top: MediaQuery.of(context).padding.top + 16,
                 right: 20,
-                child: _buildTopIconButton(
-                  icon: Icons.history,
-                  onTap: () {
-                    final mode = ref.read(scannerModeProvider);
-                    switch (mode) {
-                      case ScannerMode.receipt: context.push('/history/receipts'); break;
-                      case ScannerMode.product: context.push('/history/products'); break;
-                      case ScannerMode.comparison: context.push('/history/comparisons'); break;
-                    }
-                  },
+                child: Row(
+                  children: [
+                    _buildTopIconButton(
+                      icon: Icons.code_rounded,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AiLogViewerScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                    _buildTopIconButton(
+                      icon: Icons.history,
+                      onTap: () {
+                        final mode = ref.read(scannerModeProvider);
+                        switch (mode) {
+                          case ScannerMode.receipt: context.push('/history/receipts'); break;
+                          case ScannerMode.product: context.push('/history/products'); break;
+                          case ScannerMode.comparison: context.push('/history/comparisons'); break;
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
 

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
-import 'package:lens_wise/features/ai/infrastructure/logger/console_ai_logger.dart';
+import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
@@ -55,7 +55,7 @@ final productComparisonAgentProvider = Provider.autoDispose<ProductComparisonAge
   return ProductComparisonAgent(
     'ProductComparison',
     ref.watch(aiProviderProvider),
-    ref.watch(aiLoggerProvider),
+    AIAgentLogger('ProductComparison'),
     targetLanguage: language,
   );
 });

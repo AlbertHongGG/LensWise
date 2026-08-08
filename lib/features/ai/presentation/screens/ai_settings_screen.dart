@@ -369,9 +369,15 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                   _buildSectionHeader('AI Engine', isDark),
                   Container(
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+                      color: isDark ? AppColors.surfaceDark : Colors.white,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       children: [
@@ -381,7 +387,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'AI Agent Enabled',
+                                'AI Agent',
                                 style: TextStyle(
                                   fontFamily: 'Outfit',
                                   fontSize: 16,

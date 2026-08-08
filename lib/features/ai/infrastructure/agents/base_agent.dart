@@ -1,32 +1,34 @@
 import 'dart:convert';
 import 'package:lens_wise/features/ai/infrastructure/providers/ai_provider.dart';
-import 'package:lens_wise/features/ai/infrastructure/logger/ai_logger.dart';
+import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 
 abstract class BaseAgent<T_IN, T_OUT> {
   final String agentName;
   final AIProvider provider;
-  final AILogger logger;
+  final AIAgentLogger logger;
 
   BaseAgent(this.agentName, this.provider, this.logger);
 
   Future<T_OUT> execute(T_IN input);
 
   Future<String> executePrompt(GenerateRequest request) async {
-    final stopwatch = Stopwatch()..start();
-    logger.logRequest(
-      agentName,
-      request.prompt,
-      hasImage: request.images != null && request.images!.isNotEmpty,
-    );
+    final startTime = DateTime.now().millisecondsSinceEpoch;
+    
+    // Convert request to a loggable Map (excluding raw images for size reasons)
+    final requestLog = {
+      'systemPrompt': request.systemPrompt,
+      'prompt': request.prompt,
+      'hasImages': request.images != null && request.images!.isNotEmpty,
+      'imageCount': request.images?.length ?? 0,
+    };
 
     try {
       final response = await provider.generate(request);
-      stopwatch.stop();
-      logger.logResponse(agentName, response.text, stopwatch.elapsed);
+      logger.logInteraction(requestLog, response.text, startTime);
       return response.text;
     } catch (e, stackTrace) {
-      logger.logError(agentName, e, stackTrace);
+      logger.logInteraction(requestLog, {'error': e.toString(), 'stackTrace': stackTrace.toString()}, startTime);
       rethrow;
     }
   }
