@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_decision_card.dart';
 
 class ProductComparisonResultPage extends StatelessWidget {
@@ -59,7 +60,7 @@ class ProductComparisonResultPage extends StatelessWidget {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.purpleAccent.withValues(alpha: 0.15),
+                color: AppColors.primary.withValues(alpha: 0.15),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
@@ -217,7 +218,7 @@ class ProductComparisonResultPage extends StatelessWidget {
   Widget _buildSectionTitle(IconData icon, String title, bool isDark) {
     return Row(
       children: [
-        Icon(icon, color: Colors.purpleAccent),
+        Icon(icon, color: AppColors.primary),
         const SizedBox(width: 8),
         Text(
           title,
@@ -235,9 +236,9 @@ class ProductComparisonResultPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.purpleAccent.withValues(alpha: 0.05),
+        color: AppColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,7 +246,7 @@ class ProductComparisonResultPage extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              color: Colors.purpleAccent,
+              color: AppColors.primary,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),

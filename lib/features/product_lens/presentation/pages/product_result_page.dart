@@ -40,7 +40,7 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
               const SizedBox(height: 32),
               const Text(
                 'AI 深度萃取中...',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.purpleAccent),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
               const SizedBox(height: 16),
               Text(

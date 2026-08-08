@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_controller.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
@@ -145,7 +146,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
         icon: const Icon(Icons.auto_awesome),
         label: Text('開始比對 (${strategy.capturedImages.length} 項)'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.purpleAccent,
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

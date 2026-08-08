@@ -5,6 +5,7 @@ import 'package:lens_wise/features/settings/presentation/providers/settings_prov
 import 'package:lens_wise/features/settings/presentation/widgets/settings_section.dart';
 import 'package:lens_wise/features/settings/presentation/widgets/settings_tile.dart';
 import 'package:lens_wise/core/widgets/pickers/string_wheel_picker.dart';
+import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/immersive_scaffold.dart';
 import 'package:lens_wise/core/widgets/premium_config_header.dart';
 import 'package:lens_wise/core/widgets/app_switch.dart';
@@ -32,7 +33,7 @@ class SettingsPage extends ConsumerWidget {
             children: [
               SettingsTile(
                 icon: Icons.dark_mode_rounded,
-                iconColor: Colors.deepPurpleAccent,
+                iconColor: AppColors.primary,
                 title: '深色模式',
                 trailing: AppSwitch(
                   value: settingsState.themeMode == ThemeMode.dark,
@@ -44,11 +45,11 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           SettingsSection(
-            title: 'AI 跨境解析',
+            title: 'AI 解析與引擎設定',
             children: [
               SettingsTile(
                 icon: Icons.language_rounded,
-                iconColor: Colors.blueAccent,
+                iconColor: AppColors.primary,
                 title: '目標翻譯語言',
                 subtitle: settingsState.targetLanguage,
                 onTap: () async {
@@ -64,14 +65,9 @@ class SettingsPage extends ConsumerWidget {
                   }
                 },
               ),
-            ],
-          ),
-          SettingsSection(
-            title: 'AI 引擎與進階設定',
-            children: [
               SettingsTile(
                 icon: Icons.smart_toy_rounded,
-                iconColor: Colors.purpleAccent,
+                iconColor: AppColors.primary,
                 title: 'API 與引擎設定',
                 onTap: () {
                   context.push('/settings/ai');
