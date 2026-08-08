@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
-import 'package:lens_wise/features/ai/infrastructure/agents/product_analysis_agent/product_analysis_data.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
 
 class InteractiveDetailPanel extends StatelessWidget {
-  final ProductAnalysisData data;
+  final ProductRecord record;
 
-  const InteractiveDetailPanel({super.key, required this.data});
+  const InteractiveDetailPanel({super.key, required this.record});
 
   void _showIngredientsSheet(BuildContext context) {
     showModalBottomSheet(
@@ -19,25 +19,24 @@ class InteractiveDetailPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (data.allergens.isNotEmpty || data.dietaryFlags.isNotEmpty) ...[
+            if (record.allergenAlerts.isNotEmpty) ...[
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  ...data.allergens.map((a) => _buildBadge(ctx, a, isAlert: true)),
-                  ...data.dietaryFlags.map((d) => _buildBadge(ctx, d, isAlert: false)),
+                  ...record.allergenAlerts.map((a) => _buildBadge(ctx, a, isAlert: true)),
                 ],
               ),
               const SizedBox(height: 24),
             ],
-            if (data.ingredients.isNotEmpty) ...[
+            if (record.ingredients.isNotEmpty) ...[
               const Text(
                 '主要成分',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 8),
               Text(
-                data.ingredients.join(', '),
+                record.ingredients.join(', '),
                 style: const TextStyle(fontSize: 15, height: 1.6),
               ),
             ] else
@@ -60,9 +59,9 @@ class InteractiveDetailPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildProsConsBlock(ctx, '推薦情境', Icons.check_circle_outline, Colors.green, data.recommendedFor),
+            _buildProsConsBlock(ctx, '推薦情境', Icons.check_circle_outline, Colors.green, record.whenRecommended),
             const SizedBox(height: 24),
-            _buildProsConsBlock(ctx, '不推薦情境', Icons.cancel_outlined, Colors.redAccent, data.notRecommendedFor),
+            _buildProsConsBlock(ctx, '不推薦情境', Icons.cancel_outlined, Colors.redAccent, record.whenNotRecommended),
           ],
         ),
       ),
@@ -125,8 +124,8 @@ class InteractiveDetailPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasIngredients = data.ingredients.isNotEmpty || data.allergens.isNotEmpty || data.dietaryFlags.isNotEmpty;
-    final hasProsCons = data.recommendedFor.isNotEmpty || data.notRecommendedFor.isNotEmpty;
+    final hasIngredients = record.ingredients.isNotEmpty || record.allergenAlerts.isNotEmpty;
+    final hasProsCons = record.whenRecommended.isNotEmpty || record.whenNotRecommended.isNotEmpty;
 
     if (!hasIngredients && !hasProsCons) return const SizedBox.shrink();
 

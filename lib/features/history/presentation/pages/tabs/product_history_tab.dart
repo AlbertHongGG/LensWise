@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
@@ -42,11 +43,14 @@ class ProductHistoryTab extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 12.0),
       child: GlassContainer(
         borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
         opacity: isDark ? 0.05 : 0.8,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            // TODO: Route to ProductResultPage with this data
+            context.push('/product/detail', extra: {
+              'record': record,
+            });
           },
           child: Padding(
             padding: const EdgeInsets.all(16.0),

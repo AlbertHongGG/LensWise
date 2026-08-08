@@ -8,6 +8,7 @@ class ComparisonRecord {
   final Map<String, dynamic> differences;
   final String? valueAnalysis;
   final List<Map<String, dynamic>> decisionTree;
+  final String? imagePath;
 
   ComparisonRecord({
     required this.id,
@@ -16,9 +17,10 @@ class ComparisonRecord {
     required this.differences,
     this.valueAnalysis,
     required this.decisionTree,
+    this.imagePath,
   });
 
-  factory ComparisonRecord.fromAnalysisData(Map<String, dynamic> data) {
+  factory ComparisonRecord.fromAnalysisData(Map<String, dynamic> data, {String? imagePath}) {
     List<Map<String, dynamic>> parseList(String key) {
       final list = <Map<String, dynamic>>[];
       if (data[key] is List) {
@@ -38,6 +40,7 @@ class ComparisonRecord {
       differences: data['differences'] is Map ? Map<String, dynamic>.from(data['differences'] as Map) : {},
       valueAnalysis: data['value_analysis']?.toString(),
       decisionTree: parseList('decision_tree'),
+      imagePath: imagePath,
     );
   }
 }
@@ -92,6 +95,7 @@ class ComparisonRecordAdapter extends TypeAdapter<ComparisonRecord> {
       differences: differences,
       valueAnalysis: valueAnalysis.isEmpty ? null : valueAnalysis,
       decisionTree: decisionTree,
+      imagePath: reader.readString(),
     );
   }
 

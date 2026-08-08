@@ -21,7 +21,7 @@ class ProductScannerStrategy extends ScannerModeStrategy {
     // 1. Trigger analysis
     ref.read(productLensControllerProvider.notifier).analyzeImage(capturedImages.first);
     
-    // 2. Navigate to result page immediately
-    context.push('/result/product');
+    // 2. Navigate to processing page immediately
+    context.push('/product/processing');
   }
 }

@@ -7,6 +7,7 @@ class ReceiptRecord {
   final String? storeName;
   final String? totalAmount;
   final List<Map<String, dynamic>> items;
+  final String? imagePath;
 
   ReceiptRecord({
     required this.id,
@@ -14,9 +15,10 @@ class ReceiptRecord {
     this.storeName,
     this.totalAmount,
     required this.items,
+    this.imagePath,
   });
 
-  factory ReceiptRecord.fromAnalysisData(Map<String, dynamic> data) {
+  factory ReceiptRecord.fromAnalysisData(Map<String, dynamic> data, {String? imagePath}) {
     // Process items if they exist in the map
     final List<Map<String, dynamic>> processedItems = [];
     if (data['items'] is List) {
@@ -33,6 +35,7 @@ class ReceiptRecord {
       storeName: data['store_name']?.toString() ?? '未知商店',
       totalAmount: data['total_amount']?.toString() ?? '0',
       items: processedItems,
+      imagePath: imagePath,
     );
   }
 }
@@ -67,6 +70,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
       storeName: storeName.isEmpty ? null : storeName,
       totalAmount: totalAmount.isEmpty ? null : totalAmount,
       items: items,
+      imagePath: reader.readString(),
     );
   }
 
@@ -85,5 +89,6 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
         writer.write(value);
       });
     }
+    writer.writeString(obj.imagePath ?? '');
   }
 }

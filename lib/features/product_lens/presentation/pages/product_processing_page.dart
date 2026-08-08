@@ -10,15 +10,16 @@ import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/i
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/hero_title_overlay.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/verdict_floating_card.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/interactive_detail_panel.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
 
-class ProductResultPage extends ConsumerStatefulWidget {
-  const ProductResultPage({super.key});
+class ProductProcessingPage extends ConsumerStatefulWidget {
+  const ProductProcessingPage({super.key});
 
   @override
-  ConsumerState<ProductResultPage> createState() => _ProductResultPageState();
+  ConsumerState<ProductProcessingPage> createState() => _ProductProcessingPageState();
 }
 
-class _ProductResultPageState extends ConsumerState<ProductResultPage> {
+class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(productLensControllerProvider);
@@ -116,50 +117,26 @@ class _ProductResultPageState extends ConsumerState<ProductResultPage> {
           return const Center(child: Text('解析成功但無資料回傳'));
         }
 
-        return Scaffold(
-          body: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Layer 0 & 1: Image and Gradient Background
-              ImmersiveBackground(imageBytes: state.imageBytes),
-              
-              // Layer 2: Top Floating Close Button
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 16,
-                right: 16,
-                child: IconButton(
-                  onPressed: () {
-                    ref.read(productLensControllerProvider.notifier).reset();
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/');
-                    }
-                  },
-                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black.withValues(alpha: 0.3),
-                    padding: const EdgeInsets.all(8),
-                  ),
-                ),
-              ),
+        // 當 AI 處理成功，且資料確認沒問題時，立刻帶著原始圖片跳轉到無狀態的 DetailPage
+        // 注意：這裡應該使用 pushReplacement 以避免在導航棧留下中繼頁面
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final record = ProductRecord.fromAnalysisData(data);
+          context.pushReplacement('/product/detail', extra: {
+            'record': record,
+            'imageBytes': state.imageBytes,
+          });
+        });
 
-              // Layer 3: Foreground Content positioned at the bottom
-              SafeArea(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const Spacer(),
-                    HeroTitleOverlay(
-                      productName: data.productName.isNotEmpty ? data.productName : '未知商品',
-                      originalName: data.originalName,
-                      brand: data.brand,
-                      origin: data.origin,
-                    ),
-                    VerdictFloatingCard(summary: data.summary),
-                    InteractiveDetailPanel(data: data),
-                  ],
-                ),
+        // 在跳轉前維持著載入畫面
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ThinkingOrb(size: 100, isDark: isDark),
+              const SizedBox(height: 32),
+              const Text(
+                '解析完成，正在為您整理...',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
             ],
           ),

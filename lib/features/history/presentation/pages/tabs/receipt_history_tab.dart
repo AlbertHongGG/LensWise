@@ -42,6 +42,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 12.0),
       child: GlassContainer(
         borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
         opacity: isDark ? 0.05 : 0.8,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),

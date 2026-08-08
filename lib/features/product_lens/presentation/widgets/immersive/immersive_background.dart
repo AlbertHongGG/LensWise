@@ -1,10 +1,12 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 class ImmersiveBackground extends StatelessWidget {
   final Uint8List? imageBytes;
+  final String? imagePath;
 
-  const ImmersiveBackground({super.key, required this.imageBytes});
+  const ImmersiveBackground({super.key, this.imageBytes, this.imagePath});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +20,11 @@ class ImmersiveBackground extends StatelessWidget {
           if (imageBytes != null)
             Image.memory(
               imageBytes!,
+              fit: BoxFit.cover,
+            )
+          else if (imagePath != null && imagePath!.isNotEmpty)
+            Image.file(
+              File(imagePath!),
               fit: BoxFit.cover,
             )
           else
