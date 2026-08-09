@@ -47,7 +47,7 @@ class VerdictFloatingCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'AI 判斷結論',
+                  '商品簡介',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 16,

@@ -28,7 +28,7 @@ class ProductDetailPage extends StatelessWidget {
         slivers: [
           // Header Image (Parallax)
           SliverAppBar(
-            expandedHeight: 380.0,
+            expandedHeight: 240.0,
             pinned: true,
             stretch: true,
             backgroundColor: bgColor,
@@ -52,39 +52,43 @@ class ProductDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              stretchModes: const [
-                StretchMode.zoomBackground,
-                StretchMode.blurBackground,
-              ],
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ImmersiveBackground(
+            flexibleSpace: Stack(
+              fit: StackFit.expand,
+              children: [
+                FlexibleSpaceBar(
+                  stretchModes: const [
+                    StretchMode.zoomBackground,
+                    StretchMode.blurBackground,
+                  ],
+                  background: ImmersiveBackground(
                     imageBytes: imageBytes,
                     imagePath: record.imagePath,
                   ),
-                  // Bottom gradient to blend smoothly into the content
-                  Positioned(
-                    bottom: -1,
-                    left: 0,
-                    right: 0,
-                    height: 80,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            bgColor.withValues(alpha: 0.0),
-                            bgColor,
-                          ],
-                        ),
+                ),
+                // Persistent bottom gradient to blend smoothly into the content,
+                // placed OUTSIDE FlexibleSpaceBar's background so it stays anchored 
+                // to the bottom even during parallax scrolling.
+                Positioned(
+                  bottom: -2,
+                  left: 0,
+                  right: 0,
+                  height: 120,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          bgColor.withValues(alpha: 0.0),
+                          bgColor.withValues(alpha: 0.6),
+                          bgColor,
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           
