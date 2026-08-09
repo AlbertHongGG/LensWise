@@ -55,17 +55,11 @@ class HeroTitleOverlay extends StatelessWidget {
           Text(
             productName,
             style: TextStyle(
-              fontSize: 36,
+              fontSize: 32,
               fontWeight: FontWeight.w900,
-              color: isDark ? Colors.white : Colors.black87,
-              height: 1.1,
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+              height: 1.2,
               letterSpacing: -0.5,
-              shadows: [
-                Shadow(
-                  color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.5),
-                  blurRadius: 20,
-                ),
-              ],
             ),
           ),
           
@@ -76,10 +70,10 @@ class HeroTitleOverlay extends StatelessWidget {
               child: Text(
                 originalName,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
                   fontStyle: FontStyle.italic,
-                  color: isDark ? Colors.white70 : Colors.black54,
+                  color: isDark ? Colors.grey[400] : Colors.grey[700],
                   letterSpacing: 0.5,
                 ),
               ),

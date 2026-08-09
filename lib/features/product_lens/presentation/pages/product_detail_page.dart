@@ -19,51 +19,95 @@ class ProductDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA);
+
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Layer 0 & 1: Image and Gradient Background
-          ImmersiveBackground(
-            imageBytes: imageBytes,
-            imagePath: record.imagePath,
-          ),
-          
-          // Layer 2: Top Floating Close Button
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
-            right: 16,
-            child: IconButton(
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/');
-                }
-              },
-              icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.black.withValues(alpha: 0.3),
-                padding: const EdgeInsets.all(8),
+      backgroundColor: bgColor,
+      body: CustomScrollView(
+        slivers: [
+          // Header Image (Parallax)
+          SliverAppBar(
+            expandedHeight: 380.0,
+            pinned: true,
+            stretch: true,
+            backgroundColor: bgColor,
+            leading: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/');
+                    }
+                  },
+                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 22),
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [
+                StretchMode.zoomBackground,
+                StretchMode.blurBackground,
+              ],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ImmersiveBackground(
+                    imageBytes: imageBytes,
+                    imagePath: record.imagePath,
+                  ),
+                  // Bottom gradient to blend smoothly into the content
+                  Positioned(
+                    bottom: -1,
+                    left: 0,
+                    right: 0,
+                    height: 80,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            bgColor.withValues(alpha: 0.0),
+                            bgColor,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-
-          // Layer 3: Foreground Content positioned at the bottom
-          SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const Spacer(),
-                HeroTitleOverlay(
-                  productName: record.productName,
-                  originalName: record.originalName,
-                  brand: record.brand,
-                  origin: record.origin,
-                ),
-                VerdictFloatingCard(summary: record.summary),
-                InteractiveDetailPanel(record: record),
-              ],
+          
+          // Content Area
+          SliverToBoxAdapter(
+            child: Container(
+              color: bgColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  HeroTitleOverlay(
+                    productName: record.productName,
+                    originalName: record.originalName,
+                    brand: record.brand,
+                    origin: record.origin,
+                  ),
+                  const SizedBox(height: 16),
+                  VerdictFloatingCard(summary: record.summary),
+                  InteractiveDetailPanel(record: record),
+                  const SizedBox(height: 48), // Padding at the very bottom
+                ],
+              ),
             ),
           ),
         ],

@@ -29,24 +29,6 @@ class ImmersiveBackground extends StatelessWidget {
             )
           else
             Container(color: isDark ? Colors.grey[900] : Colors.grey[300]),
-            
-          // Massive smooth gradient overlay to perfectly blend the image into the background color
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  backgroundColor.withValues(alpha: 0.1), // Very light at top
-                  backgroundColor.withValues(alpha: 0.3),
-                  backgroundColor.withValues(alpha: 0.8),
-                  backgroundColor,
-                  backgroundColor, // Solid at bottom to hide the image edge
-                ],
-                stops: const [0.0, 0.4, 0.7, 0.9, 1.0],
-              ),
-            ),
-          ),
         ],
       ),
     );
