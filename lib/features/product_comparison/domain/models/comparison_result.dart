@@ -1,27 +1,23 @@
 class ComparisonPoint {
   final String aspect;
-  final String leftValue;
-  final String rightValue;
+  final List<String> values;
 
   ComparisonPoint({
     required this.aspect,
-    required this.leftValue,
-    required this.rightValue,
+    required this.values,
   });
 
   factory ComparisonPoint.fromJson(Map<String, dynamic> json) {
     return ComparisonPoint(
       aspect: json['aspect'] as String? ?? '',
-      leftValue: json['left_value'] as String? ?? '',
-      rightValue: json['right_value'] as String? ?? '',
+      values: (json['values'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'aspect': aspect,
-      'left_value': leftValue,
-      'right_value': rightValue,
+      'values': values,
     };
   }
 }

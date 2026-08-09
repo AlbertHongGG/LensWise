@@ -31,7 +31,7 @@ class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductCompariso
   @override
   Future<ProductComparisonResult> execute(List<Uint8List> input) async {
     final request = GenerateRequest(
-      systemPrompt: buildProductComparisonSystemPrompt(targetLanguage),
+      systemPrompt: buildProductComparisonSystemPrompt(targetLanguage, input.length),
       prompt: buildProductComparisonUserPrompt(),
       images: input,
     );

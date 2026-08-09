@@ -7,7 +7,7 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 
-class ComparisonResultPage extends ConsumerStatefulWidget {
+class ComparisonResultPage extends StatefulWidget {
   final ComparisonResultArgs args;
   
   const ComparisonResultPage({
@@ -16,10 +16,90 @@ class ComparisonResultPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ComparisonResultPage> createState() => _ComparisonResultPageState();
+  State<ComparisonResultPage> createState() => _ComparisonResultPageState();
 }
 
-class _ComparisonResultPageState extends ConsumerState<ComparisonResultPage> {
+class _ComparisonResultPageState extends State<ComparisonResultPage> {
+  int _leftIndex = 0;
+  int _rightIndex = 1;
+
+  int get _imageCount {
+    if (widget.args.rawImages != null) return widget.args.rawImages!.length;
+    if (widget.args.imagePath != null) return widget.args.imagePath!.split(',').length;
+    return 0;
+  }
+
+  ImageProvider _getImageProvider(int index) {
+    if (widget.args.rawImages != null) {
+      return MemoryImage(widget.args.rawImages![index]);
+    }
+    final paths = widget.args.imagePath!.split(',');
+    return FileImage(File(paths[index]));
+  }
+
+  void _onAvatarTapped(int index) {
+    if (index == _leftIndex || index == _rightIndex) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('請選擇要替換的位置', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildReplaceButton('替換左側', Icons.keyboard_double_arrow_left, () {
+                    setState(() => _leftIndex = index);
+                    Navigator.pop(context);
+                  }),
+                  _buildReplaceButton('替換右側', Icons.keyboard_double_arrow_right, () {
+                    setState(() => _rightIndex = index);
+                    Navigator.pop(context);
+                  }),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReplaceButton(String label, IconData icon, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 32, color: AppColors.primary),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -30,6 +110,8 @@ class _ComparisonResultPageState extends ConsumerState<ComparisonResultPage> {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
+            SliverToBoxAdapter(child: _buildRosterSection(isDark)),
+            SliverToBoxAdapter(child: const SizedBox(height: 16)),
             SliverToBoxAdapter(child: _buildHeroSection()),
             SliverToBoxAdapter(child: const SizedBox(height: 24)),
             SliverToBoxAdapter(child: _buildSummaryCard(result, isDark)),
@@ -48,26 +130,55 @@ class _ComparisonResultPageState extends ConsumerState<ComparisonResultPage> {
     );
   }
 
-  Widget _buildHeroSection() {
-    Widget leftWidget = const SizedBox();
-    Widget rightWidget = const SizedBox();
+  Widget _buildRosterSection(bool isDark) {
+    if (_imageCount <= 2) return const SizedBox.shrink(); // No need for roster if only 2 items
 
-    if (widget.args.rawImages != null && widget.args.rawImages!.length >= 2) {
-      leftWidget = Image.memory(widget.args.rawImages![0], fit: BoxFit.cover, height: 220);
-      rightWidget = Image.memory(widget.args.rawImages![1], fit: BoxFit.cover, height: 220);
-    } else if (widget.args.imagePath != null) {
-      final paths = widget.args.imagePath!.split(',');
-      if (paths.length >= 2) {
-        leftWidget = Image.file(File(paths[0]), fit: BoxFit.cover, height: 220);
-        rightWidget = Image.file(File(paths[1]), fit: BoxFit.cover, height: 220);
-      } else {
-        // Fallback if only 1 image saved
-        leftWidget = Image.file(File(paths[0]), fit: BoxFit.cover, height: 220);
-        rightWidget = Image.file(File(paths[0]), fit: BoxFit.cover, height: 220);
-      }
-    } else {
-      return const SizedBox.shrink();
-    }
+    return Container(
+      height: 70,
+      margin: const EdgeInsets.only(top: 16),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _imageCount,
+        itemBuilder: (context, index) {
+          final isSelected = index == _leftIndex || index == _rightIndex;
+          return GestureDetector(
+            onTap: () => _onAvatarTapped(index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.only(right: 12),
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : (isDark ? Colors.white24 : Colors.black12),
+                  width: isSelected ? 3 : 1,
+                ),
+                boxShadow: isSelected
+                    ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)]
+                    : [],
+                image: DecorationImage(
+                  image: _getImageProvider(index),
+                  fit: BoxFit.cover,
+                  colorFilter: isSelected ? null : ColorFilter.mode(Colors.black.withValues(alpha: 0.4), BlendMode.darken),
+                ),
+              ),
+              child: isSelected
+                  ? Center(child: Icon(index == _leftIndex ? Icons.keyboard_arrow_left : Icons.keyboard_arrow_right, color: Colors.white, size: 28, shadows: const [Shadow(color: Colors.black, blurRadius: 4)]))
+                  : null,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeroSection() {
+    if (_imageCount < 2) return const SizedBox.shrink();
+
+    Widget leftWidget = Image(image: _getImageProvider(_leftIndex), fit: BoxFit.cover, height: 220);
+    Widget rightWidget = Image(image: _getImageProvider(_rightIndex), fit: BoxFit.cover, height: 220);
 
     return Container(
       height: 220,
@@ -165,6 +276,12 @@ class _ComparisonResultPageState extends ConsumerState<ComparisonResultPage> {
   }
 
   Widget _buildComparisonRow(ComparisonPoint point, bool isDark) {
+    String leftVal = 'N/A';
+    String rightVal = 'N/A';
+
+    if (_leftIndex < point.values.length) leftVal = point.values[_leftIndex];
+    if (_rightIndex < point.values.length) rightVal = point.values[_rightIndex];
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -193,7 +310,7 @@ class _ComparisonResultPageState extends ConsumerState<ComparisonResultPage> {
             children: [
               Expanded(
                 child: Text(
-                  point.leftValue,
+                  leftVal,
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     fontSize: 15,
@@ -206,7 +323,7 @@ class _ComparisonResultPageState extends ConsumerState<ComparisonResultPage> {
               const SizedBox(width: 32), // Pivot gap
               Expanded(
                 child: Text(
-                  point.rightValue,
+                  rightVal,
                   textAlign: TextAlign.left,
                   style: TextStyle(
                     fontSize: 15,
