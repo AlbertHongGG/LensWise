@@ -179,7 +179,7 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
     capturedImages.value = croppedImages;
 
     if (context.mounted) {
-      context.push('/result/comparison');
+      context.push('/process/comparison', extra: croppedImages);
     }
   }
 }

@@ -7,11 +7,6 @@ class ProductComparisonScannerState {
   final List<Uint8List> capturedImages;
   final bool isAnalyzing;
   final String? errorMessage;
-
-  ProductComparisonScannerState({
-    this.capturedImages = const [],
-  final bool isAnalyzing;
-  final String? errorMessage;
   final ProductComparisonResult? parsingResult;
 
   ProductComparisonScannerState({
@@ -22,10 +17,6 @@ class ProductComparisonScannerState {
   });
 
   ProductComparisonScannerState copyWith({
-    List<Uint8List>? capturedImages,
-    bool? isAnalyzing,
-    String? errorMessage,
-  }) {
     List<Uint8List>? capturedImages,
     bool? isAnalyzing,
     String? errorMessage,
@@ -71,13 +62,13 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
     state = ProductComparisonScannerState();
   }
 
-  Future<void> analyzeComparison() async {
-    if (state.capturedImages.isEmpty) return;
+  Future<void> analyzeComparison(List<Uint8List> images) async {
+    if (images.isEmpty) return;
     
-    state = state.copyWith(isAnalyzing: true, errorMessage: null);
+    state = state.copyWith(capturedImages: images, isAnalyzing: true, errorMessage: null);
     try {
       final service = ref.read(comparisonAnalysisServiceProvider);
-      final result = await service.analyzeAndSave(state.capturedImages);
+      final result = await service.analyzeAndSave(images);
       state = state.copyWith(parsingResult: result, isAnalyzing: false);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false);

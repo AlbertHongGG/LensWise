@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,9 @@ import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.da
 
 // History Pages
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
+import 'package:lens_wise/features/home/presentation/pages/captured_image_gallery_screen.dart';
+import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_processing_page.dart';
+import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_lens/presentation/pages/product_processing_page.dart';
 import 'package:lens_wise/features/product_lens/presentation/pages/product_detail_page.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
@@ -77,11 +82,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/process/comparison',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final images = state.extra as List<Uint8List>? ?? [];
+          return CupertinoPage(
+            child: ComparisonProcessingPage(images: images),
+          );
+        },
+      ),
+      GoRoute(
         path: '/result/comparison',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => const CupertinoPage(
-          child: ComparisonResultPage(),
-        ),
+        pageBuilder: (context, state) {
+          final args = state.extra as ComparisonResultArgs;
+          return CupertinoPage(
+            child: ComparisonResultPage(args: args),
+          );
+        },
       ),
 
       // History Pages

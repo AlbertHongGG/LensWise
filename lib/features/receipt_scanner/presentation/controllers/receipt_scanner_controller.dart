@@ -18,11 +18,6 @@ class ReceiptScannerState {
     this.isScanning = false,
     this.parsingResult,
   });
-    this.engineState = EngineState.tracking,
-    this.stitchedHeight = 0,
-    this.errorMessage,
-    this.isScanning = false,
-  });
 
   ReceiptScannerState copyWith({
     EngineState? engineState,

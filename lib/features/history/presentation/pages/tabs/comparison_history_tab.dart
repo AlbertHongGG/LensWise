@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_record.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 
 class ComparisonHistoryTab extends ConsumerWidget {
   const ComparisonHistoryTab({super.key});
@@ -47,7 +50,17 @@ class ComparisonHistoryTab extends ConsumerWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            // TODO: Route to Comparison details
+            final result = ComparisonResult(
+              summary: record.summary,
+              comparisonPoints: record.comparisonPoints
+                  .map((e) => ComparisonPoint.fromJson(e))
+                  .toList(),
+            );
+            final args = ComparisonResultArgs(
+              result: result,
+              imagePath: record.imagePath,
+            );
+            context.push('/result/comparison', extra: args);
           },
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -68,9 +81,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        record.products.isNotEmpty 
-                            ? record.products.map((p) => p['name'] ?? '未知商品').join(' vs ') 
-                            : '未命名商品比對',
+                        record.summary.isNotEmpty ? record.summary : '無總結資訊',
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
@@ -81,7 +92,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        record.valueAnalysis ?? '尚未產生價值分析',
+                        record.comparisonPoints.isNotEmpty ? '${record.comparisonPoints.length} 項差異特徵' : '無差異特徵',
                         style: TextStyle(
                           color: isDark ? Colors.white70 : Colors.black54,
                           fontSize: 13,

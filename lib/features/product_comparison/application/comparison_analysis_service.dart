@@ -19,7 +19,11 @@ class ComparisonAnalysisService {
 
     if (result.status == 'success' && result.data != null) {
       try {
-        final imagePath = await _mediaService.saveImage(imageBytes.first);
+        final paths = <String>[];
+        for (final img in imageBytes) {
+          paths.add(await _mediaService.saveImage(img));
+        }
+        final imagePath = paths.join(',');
         final record = ComparisonRecord.fromAnalysisData(result.data!, imagePath: imagePath);
         await _repository.save(record.id, record);
       } catch (e) {
