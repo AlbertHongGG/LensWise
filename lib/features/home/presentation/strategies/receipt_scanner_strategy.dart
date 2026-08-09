@@ -37,7 +37,7 @@ class ReceiptScannerStrategy extends ScannerModeStrategy {
 
   @override
   Future<void> processImage(BuildContext context, WidgetRef ref) async {
-    if (capturedImages.isEmpty) return;
+    if (capturedImages.value.isEmpty) return;
     context.push('/result/receipt');
   }
 }

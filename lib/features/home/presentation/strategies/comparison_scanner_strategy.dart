@@ -19,9 +19,10 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
 
   @override
   Widget buildOverlay(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final count = capturedImages.length;
+    return ValueListenableBuilder<List<Uint8List>>(
+      valueListenable: capturedImages,
+      builder: (context, images, child) {
+        final count = images.length;
         
         return Stack(
           children: [
@@ -32,17 +33,6 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
               right: 0,
               child: Column(
                 children: [
-                  Text(
-                    '商品比對',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(0, 2))],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
@@ -71,7 +61,7 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
 
   @override
   Future<void> processImage(BuildContext context, WidgetRef ref) async {
-    if (capturedImages.length < minShotsRequired) return;
+    if (capturedImages.value.length < minShotsRequired) return;
     context.push('/result/comparison');
   }
 }

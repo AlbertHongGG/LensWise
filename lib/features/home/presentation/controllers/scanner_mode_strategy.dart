@@ -17,21 +17,29 @@ abstract class ScannerModeStrategy {
   bool get isAutoProcess => true;
 
   /// The images captured so far in the current session.
-  final List<Uint8List> capturedImages = [];
+  final ValueNotifier<List<Uint8List>> capturedImages = ValueNotifier([]);
 
   /// Called when a new image is captured.
   void onImageCaptured(Uint8List image) {
-    if (maxShotsAllowed == null || capturedImages.length < maxShotsAllowed!) {
-      capturedImages.add(image);
+    if (maxShotsAllowed == null || capturedImages.value.length < maxShotsAllowed!) {
+      capturedImages.value = [...capturedImages.value, image];
+    }
+  }
+
+  /// Called to remove a specific image by index.
+  void removeImage(int index) {
+    if (index >= 0 && index < capturedImages.value.length) {
+      final updatedList = List<Uint8List>.from(capturedImages.value)..removeAt(index);
+      capturedImages.value = updatedList;
     }
   }
 
   /// Checks if enough images have been captured to proceed manually or automatically.
-  bool get hasReachedMinShots => capturedImages.length >= minShotsRequired;
+  bool get hasReachedMinShots => capturedImages.value.length >= minShotsRequired;
 
   /// Resets the current session.
   void reset() {
-    capturedImages.clear();
+    capturedImages.value = [];
   }
 
   /// Builds the overlay widget (e.g., targeting brackets) for the camera.

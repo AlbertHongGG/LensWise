@@ -2,12 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:camera/camera.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_controller.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_log_viewer_screen.dart';
+import 'package:lens_wise/features/home/presentation/pages/captured_image_gallery_screen.dart';
 
 class CameraDashboardPage extends ConsumerStatefulWidget {
   const CameraDashboardPage({super.key});
@@ -19,25 +20,33 @@ class CameraDashboardPage extends ConsumerStatefulWidget {
 class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
   bool _isProcessing = false;
 
-  Future<void> _takePicture(ScannerModeStrategy strategy, CameraController controller) async {
-    if (_isProcessing) return;
+  Future<void> _takePicture(ScannerModeStrategy strategy, CameraState? cameraState) async {
+    if (_isProcessing || cameraState == null) return;
     
     setState(() { _isProcessing = true; });
 
     try {
-      final xFile = await controller.takePicture();
-      if (mounted) {
-        final bytes = await File(xFile.path).readAsBytes();
-        
-        strategy.onImageCaptured(bytes);
-        
-        if (strategy.isAutoProcess && strategy.hasReachedMinShots) {
-          await strategy.processImage(context, ref);
-          strategy.reset();
-        } else {
-          setState(() {});
+      // Capture photo using camerawesome
+      cameraState.when(
+        onPhotoMode: (photoState) async {
+          final request = await photoState.takePhoto();
+          final path = request.when(
+            single: (single) => single.file?.path,
+            multiple: (multiple) => multiple.fileBySensor.values.first?.path,
+          );
+          
+          if (path != null && mounted) {
+            final bytes = await File(path).readAsBytes();
+            
+            strategy.onImageCaptured(bytes);
+            
+            if (strategy.isAutoProcess && strategy.hasReachedMinShots) {
+              await strategy.processImage(context, ref);
+              strategy.reset();
+            }
+          }
         }
-      }
+      );
     } catch (e) {
       debugPrint('[ERROR] Failed to take picture: $e');
     } finally {
@@ -52,7 +61,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: CameraScannerView(
-        customOverlayBuilder: (controller) {
+        customOverlayBuilder: (cameraState) {
           return Stack(
             fit: StackFit.expand,
             children: [
@@ -106,8 +115,23 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildDoneButton(ref.read(scannerModeProvider.notifier).currentStrategy),
-                    _buildShutterButton(ref.read(scannerModeProvider.notifier).currentStrategy, controller),
+                    ValueListenableBuilder(
+                      valueListenable: ref.read(scannerModeProvider.notifier).currentStrategy.capturedImages,
+                      builder: (context, images, _) {
+                        return _buildDoneButton(ref.read(scannerModeProvider.notifier).currentStrategy);
+                      }
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildGalleryButton(ref.read(scannerModeProvider.notifier).currentStrategy),
+                          _buildShutterButton(ref.read(scannerModeProvider.notifier).currentStrategy, cameraState),
+                          const SizedBox(width: 60), // For symmetry
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     _buildModeSwitcher(),
                   ],
@@ -149,7 +173,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
           }
         },
         icon: const Icon(Icons.auto_awesome),
-        label: Text('開始比對 (${strategy.capturedImages.length} 項)'),
+        label: Text('開始比對 (${strategy.capturedImages.value.length} 項)'),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
@@ -161,9 +185,73 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     );
   }
 
-  Widget _buildShutterButton(ScannerModeStrategy strategy, CameraController controller) {
+  Widget _buildGalleryButton(ScannerModeStrategy strategy) {
+    return ValueListenableBuilder(
+      valueListenable: strategy.capturedImages,
+      builder: (context, images, child) {
+        if (images.isEmpty) {
+          return const SizedBox(width: 60, height: 60);
+        }
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CapturedImageGalleryScreen(strategy: strategy),
+                fullscreenDialog: true,
+              ),
+            );
+          },
+          child: SizedBox(
+            width: 60,
+            height: 60,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: ClipOval(
+                      child: Image.memory(
+                        images.last,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.redAccent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${images.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShutterButton(ScannerModeStrategy strategy, CameraState? cameraState) {
     return GestureDetector(
-      onTap: () => _takePicture(strategy, controller),
+      onTap: () => _takePicture(strategy, cameraState),
       child: Container(
         width: 76,
         height: 76,

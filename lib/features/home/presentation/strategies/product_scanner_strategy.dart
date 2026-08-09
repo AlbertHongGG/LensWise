@@ -16,10 +16,10 @@ class ProductScannerStrategy extends ScannerModeStrategy {
 
   @override
   Future<void> processImage(BuildContext context, WidgetRef ref) async {
-    if (capturedImages.isEmpty) return;
+    if (capturedImages.value.isEmpty) return;
     
     // 1. Trigger analysis
-    ref.read(productLensControllerProvider.notifier).analyzeImage(capturedImages.first);
+    ref.read(productLensControllerProvider.notifier).analyzeImage(capturedImages.value.first);
     
     // 2. Navigate to processing page immediately
     context.push('/product/processing');
