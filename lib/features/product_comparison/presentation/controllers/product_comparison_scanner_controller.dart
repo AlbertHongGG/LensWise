@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/product_comparison/application/comparison_analysis_service.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/product_comparison_agent/product_comparison_agent.dart';
+import 'package:lens_wise/core/storage/history_providers.dart';
 
 class ProductComparisonScannerState {
   final List<Uint8List> capturedImages;
@@ -69,6 +70,7 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
     try {
       final service = ref.read(comparisonAnalysisServiceProvider);
       final result = await service.analyzeAndSave(images);
+      ref.invalidate(comparisonHistoryProvider);
       state = state.copyWith(parsingResult: result, isAnalyzing: false);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false);

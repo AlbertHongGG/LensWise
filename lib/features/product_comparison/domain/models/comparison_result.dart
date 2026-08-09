@@ -8,9 +8,25 @@ class ComparisonPoint {
   });
 
   factory ComparisonPoint.fromJson(Map<String, dynamic> json) {
+    List<String> parsedValues = [];
+    
+    // Support new array format
+    if (json.containsKey('values') && json['values'] is List) {
+      parsedValues = (json['values'] as List).map((e) => e.toString()).toList();
+    } 
+    // Fallback for legacy database records (Phase 42 schema)
+    else {
+      if (json.containsKey('left_value')) {
+        parsedValues.add(json['left_value'].toString());
+      }
+      if (json.containsKey('right_value')) {
+        parsedValues.add(json['right_value'].toString());
+      }
+    }
+
     return ComparisonPoint(
       aspect: json['aspect'] as String? ?? '',
-      values: (json['values'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      values: parsedValues,
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/receipt_scanner/infrastructure/engine/stitching_engine.dart';
 import 'package:lens_wise/features/receipt_scanner/application/receipt_scanner_service.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/receipt_parsing_agent/receipt_parsing_agent.dart';
+import 'package:lens_wise/core/storage/history_providers.dart';
 
 class ReceiptScannerState {
   final EngineState engineState;
@@ -63,13 +64,14 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
   }
 
   Future<void> analyzeReceipt(Uint8List imageBytes) async {
-    state = state.copyWith(errorMessage: null);
+    state = state.copyWith(errorMessage: null, isAnalyzing: true);
     try {
       final service = ref.read(receiptScannerServiceProvider);
       final result = await service.analyzeAndSave(imageBytes);
-      state = state.copyWith(parsingResult: result);
+      ref.invalidate(receiptHistoryProvider);
+      state = state.copyWith(parsingResult: result, isAnalyzing: false);
     } catch (e) {
-      state = state.copyWith(errorMessage: e.toString());
+      state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false);
     }
   }
 

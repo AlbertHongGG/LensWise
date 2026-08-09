@@ -31,9 +31,11 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
 
   ImageProvider _getImageProvider(int index) {
     if (widget.args.rawImages != null) {
+      if (index >= widget.args.rawImages!.length) return MemoryImage(widget.args.rawImages!.last);
       return MemoryImage(widget.args.rawImages![index]);
     }
     final paths = widget.args.imagePath!.split(',');
+    if (index >= paths.length) return FileImage(File(paths.last)); // Fallback for old records with only 1 image
     return FileImage(File(paths[index]));
   }
 
@@ -175,7 +177,7 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
   }
 
   Widget _buildHeroSection() {
-    if (_imageCount < 2) return const SizedBox.shrink();
+    if (_imageCount == 0) return const SizedBox.shrink();
 
     Widget leftWidget = Image(image: _getImageProvider(_leftIndex), fit: BoxFit.cover, height: 220);
     Widget rightWidget = Image(image: _getImageProvider(_rightIndex), fit: BoxFit.cover, height: 220);

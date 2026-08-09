@@ -50,12 +50,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            final result = ComparisonResult(
-              summary: record.summary,
-              comparisonPoints: record.comparisonPoints
-                  .map((e) => ComparisonPoint.fromJson(e))
-                  .toList(),
-            );
+            final result = record.result;
             final args = ComparisonResultArgs(
               result: result,
               imagePath: record.imagePath,
@@ -81,7 +76,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        record.summary.isNotEmpty ? record.summary : '無總結資訊',
+                        record.result.summary.isNotEmpty ? record.result.summary : '無總結資訊',
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
@@ -92,7 +87,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        record.comparisonPoints.isNotEmpty ? '${record.comparisonPoints.length} 項差異特徵' : '無差異特徵',
+                        record.result.comparisonPoints.isNotEmpty ? '${record.result.comparisonPoints.length} 項差異特徵' : '無差異特徵',
                         style: TextStyle(
                           color: isDark ? Colors.white70 : Colors.black54,
                           fontSize: 13,

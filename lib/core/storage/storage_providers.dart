@@ -19,5 +19,5 @@ final productRepositoryProvider = Provider<ILocalStorageRepository<ProductRecord
 });
 
 final comparisonRepositoryProvider = Provider<ILocalStorageRepository<ComparisonRecord>>((ref) {
-  return HiveRepository<ComparisonRecord>('comparison_records');
+  return HiveRepository<ComparisonRecord>('comparison_records_v2');
 });
