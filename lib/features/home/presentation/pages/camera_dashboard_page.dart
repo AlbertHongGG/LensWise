@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
+import 'package:lens_wise/core/utils/image_processing_pipeline.dart';
 import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_controller.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
@@ -25,19 +26,28 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     setState(() { _isProcessing = true; });
 
     try {
-      // Capture photo using camerawesome
-      cameraState.when(
-        onPhotoMode: (photoState) async {
-          final request = await photoState.takePhoto();
-          final path = request.when(
-            single: (single) => single.file?.path,
-            multiple: (multiple) => multiple.fileBySensor.values.first?.path,
+      if (cameraState is PhotoCameraState) {
+        final request = await cameraState.takePhoto();
+        final path = request.when(
+          single: (single) => single.file?.path,
+          multiple: (multiple) => multiple.fileBySensor.values.first?.path,
+        );
+        
+        if (path != null && mounted) {
+          final bytes = await File(path).readAsBytes();
+          
+          // Phase 40: 所見即所得 (WYSIWYG) 影像裁切管線
+          // 取得當下螢幕比例，將 4:3 的原圖精準裁切成螢幕上看到的樣子
+          final screenSize = MediaQuery.of(context).size;
+          final screenRatio = screenSize.width / screenSize.height;
+          
+          final croppedBytes = await ImageProcessingPipeline.cropToScreenRatio(
+            bytes, 
+            screenRatio,
           );
           
-          if (path != null && mounted) {
-            final bytes = await File(path).readAsBytes();
-            
-            strategy.onImageCaptured(bytes);
+          if (mounted) {
+            strategy.onImageCaptured(croppedBytes);
             
             if (strategy.isAutoProcess && strategy.hasReachedMinShots) {
               await strategy.processImage(context, ref);
@@ -45,7 +55,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
             }
           }
         }
-      );
+      }
     } catch (e) {
       debugPrint('[ERROR] Failed to take picture: $e');
     } finally {

@@ -48,6 +48,7 @@ dependencies:
   path_provider: ^2.1.6
   intl: ^0.20.3
   camerawesome: ^2.5.0
+  image: ^4.9.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
