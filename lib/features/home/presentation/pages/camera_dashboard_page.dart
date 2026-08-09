@@ -36,18 +36,8 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
         if (path != null && mounted) {
           final bytes = await File(path).readAsBytes();
           
-          // Phase 40: 所見即所得 (WYSIWYG) 影像裁切管線
-          // 取得當下螢幕比例，將 4:3 的原圖精準裁切成螢幕上看到的樣子
-          final screenSize = MediaQuery.of(context).size;
-          final screenRatio = screenSize.width / screenSize.height;
-          
-          final croppedBytes = await ImageProcessingPipeline.cropToScreenRatio(
-            bytes, 
-            screenRatio,
-          );
-          
           if (mounted) {
-            strategy.onImageCaptured(croppedBytes);
+            strategy.onImageCaptured(bytes);
             
             if (strategy.isAutoProcess && strategy.hasReachedMinShots) {
               await strategy.processImage(context, ref);

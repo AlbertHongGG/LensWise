@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lens_wise/core/utils/image_processing_pipeline.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
 import 'package:lens_wise/features/home/presentation/pages/captured_image_gallery_screen.dart';
 
@@ -162,6 +163,23 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
   @override
   Future<void> processImage(BuildContext context, WidgetRef ref) async {
     if (capturedImages.value.length < minShotsRequired) return;
-    context.push('/result/comparison');
+    
+    // Phase 41: 延遲物理裁切 (Deferred Physical Crop)
+    // 將耗時的裁切運算移至此處，使用者在等待 AI 時進行背景批次裁切
+    final screenSize = MediaQuery.of(context).size;
+    final screenRatio = screenSize.width / screenSize.height;
+
+    final croppedImages = <Uint8List>[];
+    for (final bytes in capturedImages.value) {
+      final cropped = await ImageProcessingPipeline.cropToScreenRatio(bytes, screenRatio);
+      croppedImages.add(cropped);
+    }
+    
+    // 替換為真實 WYSIWYG 裁切後的圖片
+    capturedImages.value = croppedImages;
+
+    if (context.mounted) {
+      context.push('/result/comparison');
+    }
   }
 }

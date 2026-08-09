@@ -102,13 +102,21 @@ class _CapturedImageGalleryScreenState extends State<CapturedImageGalleryScreen>
                       _currentIndex.value = index;
                     },
                     itemBuilder: (context, index) {
+                      final screenSize = MediaQuery.of(context).size;
+                      final screenRatio = screenSize.width / screenSize.height;
+                      
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.memory(
-                            images[index],
-                            fit: BoxFit.contain,
+                        child: Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: AspectRatio(
+                              aspectRatio: screenRatio,
+                              child: Image.memory(
+                                images[index],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
                         ),
                       );

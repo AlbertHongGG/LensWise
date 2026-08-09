@@ -1,7 +1,7 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lens_wise/core/utils/image_processing_pipeline.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 
@@ -18,10 +18,16 @@ class ProductScannerStrategy extends ScannerModeStrategy {
   Future<void> processImage(BuildContext context, WidgetRef ref) async {
     if (capturedImages.value.isEmpty) return;
     
-    // 1. Trigger analysis
-    ref.read(productLensControllerProvider.notifier).analyzeImage(capturedImages.value.first);
+    final screenSize = MediaQuery.of(context).size;
+    final screenRatio = screenSize.width / screenSize.height;
+    final cropped = await ImageProcessingPipeline.cropToScreenRatio(capturedImages.value.first, screenRatio);
+
+    // 1. Trigger analysis with strictly WYSIWYG image
+    ref.read(productLensControllerProvider.notifier).analyzeImage(cropped);
     
     // 2. Navigate to processing page immediately
-    context.push('/product/processing');
+    if (context.mounted) {
+      context.push('/product/processing');
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lens_wise/core/utils/image_processing_pipeline.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
 
 class ReceiptScannerStrategy extends ScannerModeStrategy {
@@ -38,6 +39,14 @@ class ReceiptScannerStrategy extends ScannerModeStrategy {
   @override
   Future<void> processImage(BuildContext context, WidgetRef ref) async {
     if (capturedImages.value.isEmpty) return;
-    context.push('/result/receipt');
+    
+    final screenSize = MediaQuery.of(context).size;
+    final screenRatio = screenSize.width / screenSize.height;
+    final cropped = await ImageProcessingPipeline.cropToScreenRatio(capturedImages.value.first, screenRatio);
+    capturedImages.value = [cropped];
+
+    if (context.mounted) {
+      context.push('/result/receipt');
+    }
   }
 }
