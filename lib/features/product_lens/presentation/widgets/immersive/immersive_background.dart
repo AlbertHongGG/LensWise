@@ -21,11 +21,13 @@ class ImmersiveBackground extends StatelessWidget {
             Image.memory(
               imageBytes!,
               fit: BoxFit.cover,
+              alignment: Alignment.center,
             )
           else if (imagePath != null && imagePath!.isNotEmpty)
             Image.file(
               File(imagePath!),
               fit: BoxFit.cover,
+              alignment: Alignment.center,
             )
           else
             Container(color: isDark ? Colors.grey[900] : Colors.grey[300]),

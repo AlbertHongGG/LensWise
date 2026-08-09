@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camera/camera.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_controller.dart';
@@ -19,35 +19,25 @@ class CameraDashboardPage extends ConsumerStatefulWidget {
 class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
   bool _isProcessing = false;
 
-  Future<void> _takePicture(ScannerModeStrategy strategy, CameraState cameraState) async {
+  Future<void> _takePicture(ScannerModeStrategy strategy, CameraController controller) async {
     if (_isProcessing) return;
     
     setState(() { _isProcessing = true; });
 
     try {
-      // Capture photo using camerawesome
-      cameraState.when(
-        onPhotoMode: (photoState) async {
-          final request = await photoState.takePhoto();
-          final path = request.when(
-            single: (single) => single.file?.path,
-            multiple: (multiple) => multiple.fileBySensor.values.first?.path,
-          );
-          
-          if (path != null && mounted) {
-            final bytes = await File(path).readAsBytes();
-            
-            strategy.onImageCaptured(bytes);
-            
-            if (strategy.isAutoProcess && strategy.hasReachedMinShots) {
-              await strategy.processImage(context, ref);
-              strategy.reset();
-            } else {
-              setState(() {});
-            }
-          }
+      final xFile = await controller.takePicture();
+      if (mounted) {
+        final bytes = await File(xFile.path).readAsBytes();
+        
+        strategy.onImageCaptured(bytes);
+        
+        if (strategy.isAutoProcess && strategy.hasReachedMinShots) {
+          await strategy.processImage(context, ref);
+          strategy.reset();
+        } else {
+          setState(() {});
         }
-      );
+      }
     } catch (e) {
       debugPrint('[ERROR] Failed to take picture: $e');
     } finally {
@@ -62,7 +52,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: CameraScannerView(
-        customOverlayBuilder: (cameraState) {
+        customOverlayBuilder: (controller) {
           return Stack(
             fit: StackFit.expand,
             children: [
@@ -117,7 +107,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildDoneButton(ref.read(scannerModeProvider.notifier).currentStrategy),
-                    _buildShutterButton(ref.read(scannerModeProvider.notifier).currentStrategy, cameraState),
+                    _buildShutterButton(ref.read(scannerModeProvider.notifier).currentStrategy, controller),
                     const SizedBox(height: 24),
                     _buildModeSwitcher(),
                   ],
@@ -171,9 +161,9 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     );
   }
 
-  Widget _buildShutterButton(ScannerModeStrategy strategy, CameraState cameraState) {
+  Widget _buildShutterButton(ScannerModeStrategy strategy, CameraController controller) {
     return GestureDetector(
-      onTap: () => _takePicture(strategy, cameraState),
+      onTap: () => _takePicture(strategy, controller),
       child: Container(
         width: 76,
         height: 76,
