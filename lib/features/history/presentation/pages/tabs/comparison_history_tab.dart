@@ -65,10 +65,10 @@ class ComparisonHistoryTab extends ConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.balance_outlined, color: Colors.blue),
+                  child: Icon(Icons.compare_arrows_outlined, color: Theme.of(context).primaryColor),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -87,22 +87,13 @@ class ComparisonHistoryTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        record.result.summary.isNotEmpty ? record.result.summary : '無總結資訊',
+                        record.result.comparisonPoints.isNotEmpty ? '${record.result.comparisonPoints.length} 項差異特徵' : '無差異特徵',
                         style: TextStyle(
                           color: isDark ? Colors.white70 : Colors.black54,
                           fontSize: 13,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        record.result.comparisonPoints.isNotEmpty ? '${record.result.comparisonPoints.length} 項差異特徵' : '無差異特徵',
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
                       ),
                     ],
                   ),

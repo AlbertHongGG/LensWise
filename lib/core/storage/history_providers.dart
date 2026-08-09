@@ -6,15 +6,21 @@ import 'package:lens_wise/features/product_comparison/domain/models/comparison_r
 
 final receiptHistoryProvider = FutureProvider<List<ReceiptRecord>>((ref) async {
   final repo = ref.watch(receiptRepositoryProvider);
-  return repo.getAll();
+  final records = await repo.getAll();
+  records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+  return records;
 });
 
 final productHistoryProvider = FutureProvider<List<ProductRecord>>((ref) async {
   final repo = ref.watch(productRepositoryProvider);
-  return repo.getAll();
+  final records = await repo.getAll();
+  records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+  return records;
 });
 
 final comparisonHistoryProvider = FutureProvider<List<ComparisonRecord>>((ref) async {
   final repo = ref.watch(comparisonRepositoryProvider);
-  return repo.getAll();
+  final records = await repo.getAll();
+  records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+  return records;
 });
