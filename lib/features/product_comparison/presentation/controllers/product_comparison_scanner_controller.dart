@@ -4,11 +4,14 @@ import 'package:lens_wise/features/product_comparison/application/comparison_ana
 import 'package:lens_wise/features/ai/infrastructure/agents/product_comparison_agent/product_comparison_agent.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 
+import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
+import 'package:lens_wise/core/router/navigation_service.dart';
+
 class ProductComparisonScannerState {
   final List<Uint8List> capturedImages;
   final bool isAnalyzing;
   final String? errorMessage;
-  final ProductComparisonResult? parsingResult;
+  final ComparisonResult? parsingResult;
 
   ProductComparisonScannerState({
     this.capturedImages = const [],
@@ -21,7 +24,7 @@ class ProductComparisonScannerState {
     List<Uint8List>? capturedImages,
     bool? isAnalyzing,
     String? errorMessage,
-    ProductComparisonResult? parsingResult,
+    ComparisonResult? parsingResult,
   }) {
     return ProductComparisonScannerState(
       capturedImages: capturedImages ?? this.capturedImages,
@@ -69,9 +72,15 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
     state = state.copyWith(capturedImages: images, isAnalyzing: true, errorMessage: null);
     try {
       final service = ref.read(comparisonAnalysisServiceProvider);
+      final navService = ref.read(navigationServiceProvider);
+      
       final result = await service.analyzeAndSave(images);
       ref.invalidate(comparisonHistoryProvider);
+      
       state = state.copyWith(parsingResult: result, isAnalyzing: false);
+      
+      // Decoupled Navigation: Controller dictates routing upon success
+      navService.navigateToComparisonResult(result, images);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false);
     }

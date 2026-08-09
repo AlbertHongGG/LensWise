@@ -30,4 +30,22 @@ class LocalMediaService {
     }
     return null;
   }
+
+  /// 刪除本地圖片
+  Future<void> deleteImage(String? imagePath) async {
+    if (imagePath == null || imagePath.isEmpty) return;
+    
+    final paths = imagePath.split(',');
+    for (final path in paths) {
+      if (path.trim().isEmpty) continue;
+      try {
+        final file = File(path.trim());
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (e) {
+        print('Failed to delete image at $path: $e');
+      }
+    }
+  }
 }

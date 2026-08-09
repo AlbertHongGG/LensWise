@@ -6,8 +6,7 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/core/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
-import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
 
 class ComparisonProcessingPage extends ConsumerStatefulWidget {
   final List<Uint8List> images;
@@ -35,18 +34,8 @@ class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingP
     final state = ref.watch(productComparisonScannerControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Trigger navigation on success
-    ref.listen<ProductComparisonScannerState>(productComparisonScannerControllerProvider, (previous, next) {
-      if (!_hasNavigated && !next.isAnalyzing && next.parsingResult != null && next.parsingResult!.status == 'success') {
-        _hasNavigated = true;
-        
-        final result = ComparisonResult.fromJson(next.parsingResult!.data!);
-        final args = ComparisonResultArgs(result: result, rawImages: widget.images);
-
-        // Replace the processing route with the result route
-        context.pushReplacement('/result/comparison', extra: args);
-      }
-    });
+    // Navigation is now completely handled by the Controller and NavigationService.
+    // UI strictly acts as a dumb renderer for the loading/error state.
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

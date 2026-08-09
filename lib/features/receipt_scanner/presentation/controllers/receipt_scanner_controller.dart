@@ -11,6 +11,7 @@ class ReceiptScannerState {
   final String? errorMessage;
   final bool isScanning;
   final ReceiptParsingResult? parsingResult;
+  final bool isAnalyzing;
 
   ReceiptScannerState({
     this.engineState = EngineState.tracking,
@@ -18,6 +19,7 @@ class ReceiptScannerState {
     this.errorMessage,
     this.isScanning = false,
     this.parsingResult,
+    this.isAnalyzing = false,
   });
 
   ReceiptScannerState copyWith({
@@ -26,6 +28,7 @@ class ReceiptScannerState {
     String? errorMessage,
     bool? isScanning,
     ReceiptParsingResult? parsingResult,
+    bool? isAnalyzing,
   }) {
     return ReceiptScannerState(
       engineState: engineState ?? this.engineState,
@@ -33,6 +36,7 @@ class ReceiptScannerState {
       errorMessage: errorMessage ?? this.errorMessage,
       isScanning: isScanning ?? this.isScanning,
       parsingResult: parsingResult ?? this.parsingResult,
+      isAnalyzing: isAnalyzing ?? this.isAnalyzing,
     );
   }
 }

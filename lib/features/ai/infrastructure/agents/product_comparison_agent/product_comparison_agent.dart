@@ -7,23 +7,10 @@ import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
-class ProductComparisonResult {
-  final String status;
-  final String? message;
-  final Map<String, dynamic>? data;
+import 'package:lens_wise/features/ai/domain/models/product_comparison_result.dart';
+import 'package:lens_wise/features/ai/domain/interfaces/i_comparison_agent.dart';
 
-  ProductComparisonResult({required this.status, this.message, this.data});
-
-  factory ProductComparisonResult.fromJson(Map<String, dynamic> json) {
-    return ProductComparisonResult(
-      status: json['status'] as String? ?? 'error',
-      message: json['message'] as String?,
-      data: json['data'] as Map<String, dynamic>?,
-    );
-  }
-}
-
-class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductComparisonResult> {
+class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductComparisonResult> implements IComparisonAgent {
   final String targetLanguage;
 
   ProductComparisonAgent(super.agentName, super.provider, super.logger, {required this.targetLanguage});
@@ -50,7 +37,7 @@ class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductCompariso
   }
 }
 
-final productComparisonAgentProvider = Provider.autoDispose<ProductComparisonAgent>((ref) {
+final productComparisonAgentProvider = Provider.autoDispose<IComparisonAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return ProductComparisonAgent(
     'ProductComparison',
