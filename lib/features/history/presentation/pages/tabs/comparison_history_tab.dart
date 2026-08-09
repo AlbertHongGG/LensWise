@@ -76,7 +76,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        record.result.summary.isNotEmpty ? record.result.summary : '無總結資訊',
+                        record.result.title.isNotEmpty ? record.result.title : '規格比對紀錄',
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
@@ -87,13 +87,22 @@ class ComparisonHistoryTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        record.result.comparisonPoints.isNotEmpty ? '${record.result.comparisonPoints.length} 項差異特徵' : '無差異特徵',
+                        record.result.summary.isNotEmpty ? record.result.summary : '無總結資訊',
                         style: TextStyle(
                           color: isDark ? Colors.white70 : Colors.black54,
                           fontSize: 13,
                         ),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        record.result.comparisonPoints.isNotEmpty ? '${record.result.comparisonPoints.length} 項差異特徵' : '無差異特徵',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),

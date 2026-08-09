@@ -18,7 +18,7 @@ class ComparisonProcessingPage extends ConsumerStatefulWidget {
 }
 
 class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingPage> {
-  bool _hasNavigated = false;
+  // Navigation is decoupled to controller
 
   @override
   void initState() {

@@ -39,16 +39,19 @@ class ComparisonPoint {
 }
 
 class ComparisonResult {
+  final String title;
   final String summary;
   final List<ComparisonPoint> comparisonPoints;
 
   ComparisonResult({
+    required this.title,
     required this.summary,
     required this.comparisonPoints,
   });
 
   factory ComparisonResult.fromJson(Map<String, dynamic> json) {
     return ComparisonResult(
+      title: json['title'] as String? ?? '規格比對紀錄',
       summary: json['summary'] as String? ?? '',
       comparisonPoints: (json['comparison_points'] as List<dynamic>?)
               ?.map((e) => ComparisonPoint.fromJson(e as Map<String, dynamic>))
@@ -59,6 +62,7 @@ class ComparisonResult {
 
   Map<String, dynamic> toJson() {
     return {
+      'title': title,
       'summary': summary,
       'comparison_points': comparisonPoints.map((e) => e.toJson()).toList(),
     };
