@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
+import 'package:lens_wise/features/home/presentation/pages/captured_image_gallery_screen.dart';
 
 class ComparisonScannerStrategy extends ScannerModeStrategy {
   @override
@@ -19,41 +20,140 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
 
   @override
   Widget buildOverlay(BuildContext context) {
+    // 徹底清除文字雜訊，還給使用者全螢幕的取景空間
+    return const SizedBox.shrink();
+  }
+
+  @override
+  Widget buildFloatingAction(BuildContext context, WidgetRef ref) {
     return ValueListenableBuilder<List<Uint8List>>(
       valueListenable: capturedImages,
       builder: (context, images, child) {
-        final count = images.length;
-        
-        return Stack(
-          children: [
-            // No bounding box, just full screen
-            Positioned(
-              top: 100,
-              left: 0,
-              right: 0,
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        if (images.length < minShotsRequired) return const SizedBox.shrink();
+
+        return ValueListenableBuilder<bool>(
+          valueListenable: isProcessing,
+          builder: (context, loading, child) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: GestureDetector(
+                onTap: loading
+                    ? null
+                    : () async {
+                        isProcessing.value = true;
+                        try {
+                          await processImage(context, ref);
+                          reset();
+                        } finally {
+                          isProcessing.value = false;
+                        }
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(30), // 圓潤膠囊形狀 StadiumBorder
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blueAccent.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (loading)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      else
+                        const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        '開始比對',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget buildRightBottomAction(BuildContext context, WidgetRef ref) {
+    return ValueListenableBuilder<List<Uint8List>>(
+      valueListenable: capturedImages,
+      builder: (context, images, child) {
+        if (images.isEmpty) {
+          return const SizedBox(width: 60, height: 60);
+        }
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CapturedImageGalleryScreen(strategy: this),
+                fullscreenDialog: true,
+              ),
+            );
+          },
+          child: SizedBox(
+            width: 60,
+            height: 60,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(20),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
-                    child: Text(
-                      count < 1 
-                          ? '請拍攝「第一樣」商品'
-                          : '已拍攝 $count 樣商品，\n請繼續拍攝或點擊「開始比對」',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                    child: ClipOval(
+                      child: Image.memory(
+                        images.last,
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.redAccent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${images.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

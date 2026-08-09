@@ -8,7 +8,6 @@ import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_controller.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_log_viewer_screen.dart';
-import 'package:lens_wise/features/home/presentation/pages/captured_image_gallery_screen.dart';
 
 class CameraDashboardPage extends ConsumerStatefulWidget {
   const CameraDashboardPage({super.key});
@@ -115,20 +114,23 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ValueListenableBuilder(
-                      valueListenable: ref.read(scannerModeProvider.notifier).currentStrategy.capturedImages,
-                      builder: (context, images, _) {
-                        return _buildDoneButton(ref.read(scannerModeProvider.notifier).currentStrategy);
-                      }
-                    ),
+                    // Dynamic Floating Action Slot (e.g. Start Comparison)
+                    ref.read(scannerModeProvider.notifier).currentStrategy.buildFloatingAction(context, ref),
+                    
+                    // Shutter Row Slot
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildGalleryButton(ref.read(scannerModeProvider.notifier).currentStrategy),
+                          // Left Action (e.g. Captured Gallery)
+                          ref.read(scannerModeProvider.notifier).currentStrategy.buildLeftBottomAction(context, ref),
+                          
+                          // Center Shutter
                           _buildShutterButton(ref.read(scannerModeProvider.notifier).currentStrategy, cameraState),
-                          const SizedBox(width: 60), // For symmetry
+                          
+                          // Right Action (e.g. Future Local Album)
+                          ref.read(scannerModeProvider.notifier).currentStrategy.buildRightBottomAction(context, ref),
                         ],
                       ),
                     ),
@@ -155,97 +157,6 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
         ),
         child: Icon(icon, color: Colors.white, size: 24),
       ),
-    );
-  }
-
-  Widget _buildDoneButton(ScannerModeStrategy strategy) {
-    if (strategy.isAutoProcess || !strategy.hasReachedMinShots) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: ElevatedButton.icon(
-        onPressed: () async {
-          setState(() { _isProcessing = true; });
-          try {
-            await strategy.processImage(context, ref);
-            strategy.reset();
-          } finally {
-            if (mounted) setState(() { _isProcessing = false; });
-          }
-        },
-        icon: const Icon(Icons.auto_awesome),
-        label: Text('開始比對 (${strategy.capturedImages.value.length} 項)'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          elevation: 8,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGalleryButton(ScannerModeStrategy strategy) {
-    return ValueListenableBuilder(
-      valueListenable: strategy.capturedImages,
-      builder: (context, images, child) {
-        if (images.isEmpty) {
-          return const SizedBox(width: 60, height: 60);
-        }
-
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CapturedImageGalleryScreen(strategy: strategy),
-                fullscreenDialog: true,
-              ),
-            );
-          },
-          child: SizedBox(
-            width: 60,
-            height: 60,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: ClipOval(
-                      child: Image.memory(
-                        images.last,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${images.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 

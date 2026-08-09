@@ -19,6 +19,9 @@ abstract class ScannerModeStrategy {
   /// The images captured so far in the current session.
   final ValueNotifier<List<Uint8List>> capturedImages = ValueNotifier([]);
 
+  /// True if the strategy is currently processing an image (e.g., AI request).
+  final ValueNotifier<bool> isProcessing = ValueNotifier(false);
+
   /// Called when a new image is captured.
   void onImageCaptured(Uint8List image) {
     if (maxShotsAllowed == null || capturedImages.value.length < maxShotsAllowed!) {
@@ -44,6 +47,15 @@ abstract class ScannerModeStrategy {
 
   /// Builds the overlay widget (e.g., targeting brackets) for the camera.
   Widget buildOverlay(BuildContext context);
+
+  /// Builds a floating action widget positioned above the shutter (e.g., Done button).
+  Widget buildFloatingAction(BuildContext context, WidgetRef ref) => const SizedBox.shrink();
+
+  /// Builds the action widget on the left side of the shutter (e.g., Gallery).
+  Widget buildLeftBottomAction(BuildContext context, WidgetRef ref) => const SizedBox(width: 60, height: 60);
+
+  /// Builds the action widget on the right side of the shutter (e.g., Local Album picker).
+  Widget buildRightBottomAction(BuildContext context, WidgetRef ref) => const SizedBox(width: 60, height: 60);
 
   /// Processes the captured images. It handles calling the AI agent and navigating to the result page.
   Future<void> processImage(BuildContext context, WidgetRef ref);
