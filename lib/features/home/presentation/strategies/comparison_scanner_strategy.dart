@@ -177,17 +177,12 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => const CustomGalleryBottomSheet(isMultiSelect: true, maxItems: 2),
+                builder: (context) => const CustomGalleryBottomSheet(isMultiSelect: true, maxItems: 99),
               );
 
               if (bytesList != null && bytesList.isNotEmpty && context.mounted) {
-                final currentCount = capturedImages.value.length;
-                final needed = 2 - currentCount;
-                if (needed > 0) {
-                  final toAdd = bytesList.take(needed).toList();
-                  for (final b in toAdd) {
-                    onImageCaptured(b);
-                  }
+                for (final b in bytesList) {
+                  onImageCaptured(b);
                 }
               }
             } finally {
