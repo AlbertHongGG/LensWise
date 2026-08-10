@@ -56,6 +56,7 @@ class ComparisonRosterBar extends StatelessWidget {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
+                  clipBehavior: Clip.none, // Prevent hard edge clipping of avatar shadows
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     // Critical for responsive architecture: force children to expand vertically to the available space
