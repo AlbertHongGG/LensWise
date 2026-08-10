@@ -31,7 +31,8 @@ class ProductDetailPage extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            height: MediaQuery.of(context).size.height * 0.45,
+            // 增加圖片高度確保完全覆蓋卡片頂部的 32px 圓角，避免露出缺角
+            height: MediaQuery.of(context).size.height * 0.48,
             child: ImmersiveBackground(
               imageBytes: imageBytes,
               imagePath: record.imagePath,
