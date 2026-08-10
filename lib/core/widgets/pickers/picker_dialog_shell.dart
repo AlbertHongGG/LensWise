@@ -24,9 +24,7 @@ class PickerBottomSheetShell extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     
     // Glassmorphism colors
-    final backgroundColor = isDark 
-        ? const Color(0xFF1E1E1E).withValues(alpha: 0.8) 
-        : Colors.white.withValues(alpha: 0.85);
+    final backgroundColor = theme.scaffoldBackgroundColor;
     final secondaryTextColor = isDark ? Colors.white54 : Colors.black54;
 
     return ClipRRect(
