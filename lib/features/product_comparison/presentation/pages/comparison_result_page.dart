@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -110,68 +111,106 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: _buildRosterSection(isDark)),
-            SliverToBoxAdapter(child: const SizedBox(height: 16)),
-            SliverToBoxAdapter(child: _buildHeroSection()),
-            SliverToBoxAdapter(child: const SizedBox(height: 24)),
-            SliverToBoxAdapter(child: _buildSummaryCard(result, isDark)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildComparisonRow(result.comparisonPoints[index], isDark),
-                  childCount: result.comparisonPoints.length,
+        child: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: const SizedBox(height: 16)),
+                SliverToBoxAdapter(child: _buildHeroSection()),
+                SliverToBoxAdapter(child: const SizedBox(height: 24)),
+                SliverToBoxAdapter(child: _buildSummaryCard(result, isDark)),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32).copyWith(bottom: 120),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildComparisonRow(result.comparisonPoints[index], isDark),
+                      childCount: result.comparisonPoints.length,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
+            if (_imageCount > 2)
+              Positioned(
+                bottom: 24,
+                left: 0,
+                right: 0,
+                child: _buildFloatingRoster(isDark),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRosterSection(bool isDark) {
-    if (_imageCount <= 2) return const SizedBox.shrink(); // No need for roster if only 2 items
-
-    return Container(
-      height: 70,
-      margin: const EdgeInsets.only(top: 16),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _imageCount,
-        itemBuilder: (context, index) {
-          final isSelected = index == _leftIndex || index == _rightIndex;
-          return GestureDetector(
-            onTap: () => _onAvatarTapped(index),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.only(right: 12),
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? AppColors.primary : (isDark ? Colors.white24 : Colors.black12),
-                  width: isSelected ? 3 : 1,
+  Widget _buildFloatingRoster(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Center(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(38),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                spreadRadius: 2,
+              )
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(38),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                height: 76,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.black.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(38),
+                  border: Border.all(color: isDark ? Colors.white12 : Colors.white, width: 1.5),
                 ),
-                boxShadow: isSelected
-                    ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)]
-                    : [],
-                image: DecorationImage(
-                  image: _getImageProvider(index),
-                  fit: BoxFit.cover,
-                  colorFilter: isSelected ? null : ColorFilter.mode(Colors.black.withValues(alpha: 0.4), BlendMode.darken),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(_imageCount, (index) {
+                      final isSelected = index == _leftIndex || index == _rightIndex;
+                      return GestureDetector(
+                        onTap: () => _onAvatarTapped(index),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: EdgeInsets.only(right: index == _imageCount - 1 ? 0 : 12),
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? AppColors.primary : (isDark ? Colors.white24 : Colors.black12),
+                              width: isSelected ? 3 : 1,
+                            ),
+                            boxShadow: isSelected
+                                ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)]
+                                : [],
+                            image: DecorationImage(
+                              image: _getImageProvider(index),
+                              fit: BoxFit.cover,
+                              colorFilter: isSelected ? null : ColorFilter.mode(Colors.black.withValues(alpha: 0.4), BlendMode.darken),
+                            ),
+                          ),
+                          child: isSelected
+                              ? Center(child: Icon(index == _leftIndex ? Icons.keyboard_arrow_left : Icons.keyboard_arrow_right, color: Colors.white, size: 28, shadows: const [Shadow(color: Colors.black, blurRadius: 4)]))
+                              : null,
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ),
-              child: isSelected
-                  ? Center(child: Icon(index == _leftIndex ? Icons.keyboard_arrow_left : Icons.keyboard_arrow_right, color: Colors.white, size: 28, shadows: const [Shadow(color: Colors.black, blurRadius: 4)]))
-                  : null,
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

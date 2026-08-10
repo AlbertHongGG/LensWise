@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
+import 'package:lens_wise/core/storage/storage_providers.dart';
+import 'package:lens_wise/core/storage/record_manager_service.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_record.dart';
@@ -31,7 +33,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
           itemCount: records.length,
           itemBuilder: (context, index) {
             final record = records[index];
-            return _buildComparisonCard(context, record, isDark);
+            return _buildComparisonCard(context, ref, record, isDark);
           },
         );
       },
@@ -40,13 +42,42 @@ class ComparisonHistoryTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildComparisonCard(BuildContext context, ComparisonRecord record, bool isDark) {
+  Widget _buildComparisonCard(BuildContext context, WidgetRef ref, ComparisonRecord record, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
-      child: GlassContainer(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        opacity: isDark ? 0.05 : 0.8,
+      child: Dismissible(
+        key: Key(record.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          decoration: BoxDecoration(
+            color: Colors.red.shade400,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          child: const Icon(Icons.delete_outline, color: Colors.white),
+        ),
+        onDismissed: (direction) async {
+          await ref.read(recordManagerServiceProvider).deleteRecord(
+            repository: ref.read(comparisonRepositoryProvider),
+            id: record.id,
+            imagePath: record.imagePath,
+          );
+          ref.invalidate(comparisonHistoryProvider);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('已刪除比對紀錄'),
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        },
+        child: GlassContainer(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          opacity: isDark ? 0.05 : 0.8,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
@@ -104,6 +135,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
