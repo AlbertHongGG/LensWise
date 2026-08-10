@@ -135,7 +135,7 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
               ThinkingOrb(size: 100, isDark: isDark),
               const SizedBox(height: 32),
               const Text(
-                '解析完成，正在為您整理...',
+                '解析完成...',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
             ],
