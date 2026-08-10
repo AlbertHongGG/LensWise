@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:lens_wise/features/home/presentation/controllers/gallery_state_controller.dart';
 import 'package:lens_wise/features/home/presentation/widgets/draggable_date_scrollbar.dart';
 
@@ -22,7 +23,7 @@ class CustomGalleryBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSheet> {
-  final List<AssetEntity> _selectedAssets = [];
+  final ValueNotifier<List<AssetEntity>> _selectedAssetsNotifier = ValueNotifier([]);
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -34,6 +35,7 @@ class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSh
   @override
   void dispose() {
     _scrollController.dispose();
+    _selectedAssetsNotifier.dispose();
     super.dispose();
   }
 
@@ -43,27 +45,11 @@ class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSh
     }
   }
 
-  void _toggleSelection(AssetEntity asset) {
-    setState(() {
-      if (!widget.isMultiSelect) {
-        _selectedAssets.clear();
-        _selectedAssets.add(asset);
-      } else {
-        if (_selectedAssets.contains(asset)) {
-          _selectedAssets.remove(asset);
-        } else {
-          if (_selectedAssets.length < widget.maxItems) {
-            _selectedAssets.add(asset);
-          }
-        }
-      }
-    });
-  }
-
   Future<void> _completeSelection() async {
-    if (_selectedAssets.isEmpty) return; // Prevent confirming with no selection
+    final selected = _selectedAssetsNotifier.value;
+    if (selected.isEmpty) return; // Prevent confirming with no selection
     final List<Uint8List> bytesList = [];
-    for (final asset in _selectedAssets) {
+    for (final asset in selected) {
       final bytes = await asset.originBytes;
       if (bytes != null) bytesList.add(bytes);
     }
@@ -118,13 +104,18 @@ class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSh
                             color: isDark ? Colors.white54 : Colors.black54,
                           ),
                         ),
-                        IconButton(
-                          onPressed: _selectedAssets.isEmpty ? null : _completeSelection,
-                          icon: const Icon(Icons.check_circle_rounded),
-                          color: theme.primaryColor,
-                          iconSize: 28,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                        ValueListenableBuilder<List<AssetEntity>>(
+                          valueListenable: _selectedAssetsNotifier,
+                          builder: (context, selected, child) {
+                            return IconButton(
+                              onPressed: selected.isEmpty ? null : _completeSelection,
+                              icon: const Icon(Icons.check_circle_rounded),
+                              color: theme.primaryColor,
+                              iconSize: 28,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -188,27 +179,11 @@ class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSh
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final asset = assets[index];
-                    final isSelected = _selectedAssets.contains(asset);
-                    return GestureDetector(
-                      onTap: () => _toggleSelection(asset),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          AssetThumbnail(asset: asset),
-                          if (isSelected)
-                            Container(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              alignment: Alignment.center,
-                              child: const Icon(Icons.check_circle, color: Colors.white, size: 28),
-                            ),
-                          if (isSelected)
-                            Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: theme.primaryColor, width: 3),
-                              ),
-                            ),
-                        ],
-                      ),
+                    return GalleryItemWidget(
+                      asset: asset,
+                      selectedAssetsNotifier: _selectedAssetsNotifier,
+                      isMultiSelect: widget.isMultiSelect,
+                      maxItems: widget.maxItems,
                     );
                   },
                   childCount: assets.length,
@@ -222,26 +197,80 @@ class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSh
   }
 }
 
-class AssetThumbnail extends StatelessWidget {
+class GalleryItemWidget extends StatelessWidget {
   final AssetEntity asset;
-  const AssetThumbnail({super.key, required this.asset});
+  final ValueNotifier<List<AssetEntity>> selectedAssetsNotifier;
+  final bool isMultiSelect;
+  final int maxItems;
+
+  const GalleryItemWidget({
+    super.key,
+    required this.asset,
+    required this.selectedAssetsNotifier,
+    required this.isMultiSelect,
+    required this.maxItems,
+  });
+
+  void _toggleSelection() {
+    final currentList = List<AssetEntity>.from(selectedAssetsNotifier.value);
+    
+    if (!isMultiSelect) {
+      selectedAssetsNotifier.value = [asset];
+    } else {
+      if (currentList.contains(asset)) {
+        currentList.remove(asset);
+        selectedAssetsNotifier.value = currentList;
+      } else {
+        if (currentList.length < maxItems) {
+          currentList.add(asset);
+          selectedAssetsNotifier.value = currentList;
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return FutureBuilder<Uint8List?>(
-      future: asset.thumbnailDataWithSize(const ThumbnailSize(250, 250)),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-          return Image.memory(
-            snapshot.data!,
-            fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: _toggleSelection,
+      child: ValueListenableBuilder<List<AssetEntity>>(
+        valueListenable: selectedAssetsNotifier,
+        builder: (context, selected, child) {
+          final isSelected = selected.contains(asset);
+          
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              Image(
+                image: AssetEntityImageProvider(
+                  asset,
+                  isOriginal: false,
+                  thumbnailSize: const ThumbnailSize.square(250),
+                ),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+                ),
+              ),
+              if (isSelected)
+                Container(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.check_circle, color: Colors.white, size: 28),
+                ),
+              if (isSelected)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: theme.primaryColor, width: 3),
+                  ),
+                ),
+            ],
           );
-        }
-        return Container(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05));
-      },
+        },
+      ),
     );
   }
 }
