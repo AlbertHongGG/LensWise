@@ -11,6 +11,8 @@ import 'package:lens_wise/features/product_comparison/domain/models/comparison_r
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 
+import 'package:lens_wise/features/history/presentation/widgets/animated_history_list.dart';
+
 class ComparisonHistoryTab extends ConsumerWidget {
   const ComparisonHistoryTab({super.key});
 
@@ -28,12 +30,10 @@ class ComparisonHistoryTab extends ConsumerWidget {
             description: '所有雙物件的規格比對與推薦，\n都會儲存為獨立的情報檔案。',
           );
         }
-        return ListView.builder(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16).copyWith(bottom: 100),
-          itemCount: records.length,
-          itemBuilder: (context, index) {
-            final record = records[index];
+        return AnimatedHistoryList<ComparisonRecord>(
+          records: records,
+          areItemsTheSame: (a, b) => a.id == b.id,
+          itemBuilder: (context, record) {
             return _buildComparisonCard(context, ref, record, isDark);
           },
         );

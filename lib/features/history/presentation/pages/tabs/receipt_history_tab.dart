@@ -6,6 +6,8 @@ import 'package:lens_wise/features/history/presentation/pages/unified_history_pa
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
 
+import 'package:lens_wise/features/history/presentation/widgets/animated_history_list.dart';
+
 class ReceiptHistoryTab extends ConsumerWidget {
   const ReceiptHistoryTab({super.key});
 
@@ -23,12 +25,10 @@ class ReceiptHistoryTab extends ConsumerWidget {
             description: '所有透過相機掃描的發票資訊，\n都會有條理地整理在此。',
           );
         }
-        return ListView.builder(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16).copyWith(bottom: 100),
-          itemCount: records.length,
-          itemBuilder: (context, index) {
-            final record = records[index];
+        return AnimatedHistoryList<ReceiptRecord>(
+          records: records,
+          areItemsTheSame: (a, b) => a.id == b.id,
+          itemBuilder: (context, record) {
             return _buildReceiptCard(context, record, isDark);
           },
         );

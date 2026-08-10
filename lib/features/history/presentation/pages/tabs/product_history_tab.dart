@@ -6,6 +6,7 @@ import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
+import 'package:lens_wise/features/history/presentation/widgets/animated_history_list.dart';
 
 class ProductHistoryTab extends ConsumerWidget {
   const ProductHistoryTab({super.key});
@@ -21,15 +22,13 @@ class ProductHistoryTab extends ConsumerWidget {
           return const PremiumEmptyState(
             icon: Icons.qr_code_scanner_outlined,
             title: '尚無商品解析紀錄',
-            description: '所有透過相機解析的商品情報，\n都會安全地保存在這裡。',
+            description: '所有透過相機掃描的商品特徵與解析，\n都會有條理地整理在此。',
           );
         }
-        return ListView.builder(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16).copyWith(bottom: 100),
-          itemCount: records.length,
-          itemBuilder: (context, index) {
-            final record = records[index];
+        return AnimatedHistoryList<ProductRecord>(
+          records: records,
+          areItemsTheSame: (a, b) => a.id == b.id,
+          itemBuilder: (context, record) {
             return _buildProductCard(context, record, isDark);
           },
         );
