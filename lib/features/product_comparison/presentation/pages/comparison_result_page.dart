@@ -57,16 +57,51 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('請選擇要替換的位置', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 24),
+              // Drag Handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Target Image Avatar
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primary, width: 2),
+                  image: DecorationImage(
+                    image: _getImageProvider(index),
+                    fit: BoxFit.cover,
+                  ),
+                  boxShadow: [
+                    BoxShadow(color: AppColors.primary.withValues(alpha: 0.2), blurRadius: 12, spreadRadius: 2)
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '請選擇要替換的對手',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildReplaceButton('替換左側', Icons.keyboard_double_arrow_left, () {
+                  _buildReplaceButton('替換左側', Icons.keyboard_double_arrow_left, _leftIndex, () {
                     setState(() => _leftIndex = index);
                     Navigator.pop(context);
                   }),
-                  _buildReplaceButton('替換右側', Icons.keyboard_double_arrow_right, () {
+                  const SizedBox(width: 16),
+                  _buildReplaceButton('替換右側', Icons.keyboard_double_arrow_right, _rightIndex, () {
                     setState(() => _rightIndex = index);
                     Navigator.pop(context);
                   }),
@@ -80,24 +115,37 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
     );
   }
 
-  Widget _buildReplaceButton(String label, IconData icon, VoidCallback onTap) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: AppColors.primary),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
+  Widget _buildReplaceButton(String label, IconData icon, int targetIndex, VoidCallback onTap) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: 120,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.5),
+            image: DecorationImage(
+              image: _getImageProvider(targetIndex),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.6), BlendMode.darken),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 32, color: Colors.white),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -66,7 +66,7 @@ class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingP
           ThinkingOrb(size: 100, isDark: isDark),
           const SizedBox(height: 32),
           const Text(
-            'AI 正在天平上權衡差異...',
+            'AI 正在上權衡差異...',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
