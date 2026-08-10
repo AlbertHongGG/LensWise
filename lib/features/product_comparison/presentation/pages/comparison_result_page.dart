@@ -9,6 +9,7 @@ import 'package:lens_wise/features/product_comparison/domain/models/comparison_r
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_hero_section.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_point_card.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_roster_bar.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_summary_card.dart';
 
 class ComparisonResultPage extends StatefulWidget {
@@ -203,85 +204,19 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                 bottom: 24,
                 left: 0,
                 right: 0,
-                child: _buildFloatingRoster(isDark),
+                child: ComparisonRosterBar(
+                  imageCount: _imageCount,
+                  leftIndex: _leftIndex,
+                  rightIndex: _rightIndex,
+                  isDark: isDark,
+                  imageProviderFactory: _getImageProvider,
+                  onAvatarTapped: _onAvatarTapped,
+                ),
               ),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildFloatingRoster(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Center(
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(38),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                spreadRadius: 2,
-              )
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(38),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                height: 76,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.black.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(38),
-                  border: Border.all(color: isDark ? Colors.white12 : Colors.white, width: 1.5),
-                ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(_imageCount, (index) {
-                      final isSelected = index == _leftIndex || index == _rightIndex;
-                      return GestureDetector(
-                        onTap: () => _onAvatarTapped(index),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: EdgeInsets.only(right: index == _imageCount - 1 ? 0 : 12),
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected ? AppColors.primary : (isDark ? Colors.white24 : Colors.black12),
-                              width: isSelected ? 3 : 1,
-                            ),
-                            boxShadow: isSelected
-                                ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)]
-                                : [],
-                            image: DecorationImage(
-                              image: _getImageProvider(index),
-                              fit: BoxFit.cover,
-                              colorFilter: isSelected ? null : ColorFilter.mode(Colors.black.withValues(alpha: 0.4), BlendMode.darken),
-                            ),
-                          ),
-                          child: isSelected
-                              ? Center(child: Icon(index == _leftIndex ? Icons.keyboard_arrow_left : Icons.keyboard_arrow_right, color: Colors.white, size: 28, shadows: const [Shadow(color: Colors.black, blurRadius: 4)]))
-                              : null,
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
 
 }
