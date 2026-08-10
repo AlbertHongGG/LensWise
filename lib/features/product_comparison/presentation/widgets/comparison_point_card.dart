@@ -24,74 +24,63 @@ class ComparisonPointCard extends StatelessWidget {
     if (rightIndex < point.values.length) rightVal = point.values[rightIndex];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
-      ),
+      margin: const EdgeInsets.only(bottom: 32),
       child: Column(
         children: [
-          // Aspect Title (Balance Pivot)
+          // Elegant floating pill for Aspect Title
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              border: Border(bottom: BorderSide(color: isDark ? Colors.white12 : Colors.black12)),
+              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
               point.aspect,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white70 : Colors.black87,
                 letterSpacing: 0.5,
               ),
             ),
           ),
-          // Left vs Right detailed values
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      leftVal,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.6,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
+          const SizedBox(height: 20),
+          // Left vs Right detailed values (No rigid borders, just clean spacing)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  leftVal,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.6,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black87,
                   ),
                 ),
-                VerticalDivider(
-                  color: isDark ? Colors.white12 : Colors.black12,
-                  width: 1,
-                  thickness: 1,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      rightVal,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.6,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
+              ),
+              const SizedBox(width: 32), // Elegant spacing instead of a rigid line
+              Expanded(
+                child: Text(
+                  rightVal,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.6,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black87,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Divider(
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+            height: 1,
           ),
         ],
       ),
