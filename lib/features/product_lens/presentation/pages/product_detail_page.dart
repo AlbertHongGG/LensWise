@@ -71,7 +71,7 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                 ]
               ),
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
+              padding: const EdgeInsets.only(top: 32), // Only top padding for the whole card
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -87,7 +87,8 @@ class ProductDetailPage extends StatelessWidget {
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 40), // Padding at bottom of scroll
+                      clipBehavior: Clip.none, // Prevent clipping of shadows during bounce
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 40), // Padding inside scroll view for shadows
                       child: VerdictFloatingCard(summary: record.summary),
                     ),
                   ),
