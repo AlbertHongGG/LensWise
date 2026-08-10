@@ -23,6 +23,9 @@ class PhotoManagerService {
     final albums = await PhotoManager.getAssetPathList(
       onlyAll: true,
       type: RequestType.image,
+      filterOption: FilterOptionGroup(
+        orders: [const OrderOption(type: OrderOptionType.createDate, asc: false)],
+      ),
     );
     if (albums.isNotEmpty) {
       return albums.first;
