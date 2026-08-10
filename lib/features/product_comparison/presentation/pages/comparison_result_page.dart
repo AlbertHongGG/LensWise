@@ -9,6 +9,7 @@ import 'package:lens_wise/features/product_comparison/domain/models/comparison_r
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_hero_section.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_point_card.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_product_carousel.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_roster_bar.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_summary_card.dart';
 
@@ -168,6 +169,15 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
             CustomScrollView(
               slivers: [
                 const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                // 1. Top Level: Product Carousel (Overview)
+                SliverToBoxAdapter(
+                  child: ComparisonProductCarousel(
+                    products: result.products,
+                    imageProviderFactory: _getImageProvider,
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                // 2. Mid Level: Summary Card (Overall Analysis)
                 SliverToBoxAdapter(
                   child: ComparisonSummaryCard(
                     result: result,
@@ -175,6 +185,7 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                   ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                // 3. Detail Level: Hero VS Section (1v1 Comparison)
                 SliverToBoxAdapter(
                   child: ComparisonHeroSection(
                     result: result,
