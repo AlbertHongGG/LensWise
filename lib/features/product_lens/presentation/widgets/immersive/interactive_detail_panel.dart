@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
@@ -129,35 +130,49 @@ class InteractiveDetailPanel extends StatelessWidget {
 
     if (!hasIngredients && !hasProsCons) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 40.0, left: 24.0, right: 24.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (hasIngredients)
-            Expanded(
-              child: FilledButton.tonalIcon(
-                onPressed: () => _showIngredientsSheet(context),
-                icon: const Icon(Icons.science_outlined, size: 18),
-                label: const Text('成分細節'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (hasIngredients)
+          _GlassButton(
+            icon: Icons.science_outlined,
+            onPressed: () => _showIngredientsSheet(context),
+          ),
+        if (hasIngredients && hasProsCons) const SizedBox(width: 12),
+        if (hasProsCons)
+          _GlassButton(
+            icon: Icons.people_outline,
+            onPressed: () => _showProsConsSheet(context),
+          ),
+      ],
+    );
+  }
+}
+
+class _GlassButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _GlassButton({required this.icon, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Material(
+          color: isDark ? Colors.black.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.5),
+          child: InkWell(
+            onTap: onPressed,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Icon(icon, size: 20, color: isDark ? Colors.white : Colors.black87),
             ),
-          if (hasIngredients && hasProsCons) const SizedBox(width: 16),
-          if (hasProsCons)
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: () => _showProsConsSheet(context),
-                icon: const Icon(Icons.people_outline, size: 18),
-                label: const Text('適合對象'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-        ],
+          ),
+        ),
       ),
     );
   }
