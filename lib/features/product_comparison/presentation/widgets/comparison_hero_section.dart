@@ -1,5 +1,5 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 
 class ComparisonHeroSection extends StatelessWidget {
@@ -56,29 +56,48 @@ class ComparisonHeroSection extends StatelessWidget {
               ),
             ],
           ),
-          // VS Badge (breathing glow)
+          // VS Badge (Premium Dark Glassmorphism)
           Container(
-            padding: const EdgeInsets.all(14),
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF1A1A1A),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.6), width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 16,
-                  spreadRadius: 4,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: const Text(
-              'VS',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-                fontStyle: FontStyle.italic,
-                letterSpacing: 1.5,
+            child: ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.4),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Padding(
+                    // Visual centering: nudge left to compensate for 'VS' optical weight imbalance and remove italic
+                    padding: EdgeInsets.only(right: 2.0),
+                    child: Text(
+                      'VS',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
