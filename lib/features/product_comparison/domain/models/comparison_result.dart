@@ -38,14 +38,40 @@ class ComparisonPoint {
   }
 }
 
+class ComparisonProduct {
+  final String originalName;
+  final String translatedName;
+
+  ComparisonProduct({
+    required this.originalName,
+    required this.translatedName,
+  });
+
+  factory ComparisonProduct.fromJson(Map<String, dynamic> json) {
+    return ComparisonProduct(
+      originalName: json['original_name'] as String? ?? '未知名稱',
+      translatedName: json['translated_name'] as String? ?? 'Unknown Product',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'original_name': originalName,
+      'translated_name': translatedName,
+    };
+  }
+}
+
 class ComparisonResult {
   final String title;
   final String summary;
+  final List<ComparisonProduct> products;
   final List<ComparisonPoint> comparisonPoints;
 
   ComparisonResult({
     required this.title,
     required this.summary,
+    required this.products,
     required this.comparisonPoints,
   });
 
@@ -53,6 +79,10 @@ class ComparisonResult {
     return ComparisonResult(
       title: json['title'] as String? ?? '規格比對紀錄',
       summary: json['summary'] as String? ?? '',
+      products: (json['products'] as List<dynamic>?)
+              ?.map((e) => ComparisonProduct.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       comparisonPoints: (json['comparison_points'] as List<dynamic>?)
               ?.map((e) => ComparisonPoint.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -64,6 +94,7 @@ class ComparisonResult {
     return {
       'title': title,
       'summary': summary,
+      'products': products.map((e) => e.toJson()).toList(),
       'comparison_points': comparisonPoints.map((e) => e.toJson()).toList(),
     };
   }

@@ -164,7 +164,7 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
             CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(child: const SizedBox(height: 16)),
-                SliverToBoxAdapter(child: _buildHeroSection()),
+                SliverToBoxAdapter(child: _buildHeroSection(result)),
                 SliverToBoxAdapter(child: const SizedBox(height: 24)),
                 SliverToBoxAdapter(child: _buildSummaryCard(result, isDark)),
                 SliverPadding(
@@ -263,7 +263,7 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
     );
   }
 
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection(ComparisonResult result) {
     if (_imageCount == 0) return const SizedBox.shrink();
 
     Widget leftWidget = Image(image: _getImageProvider(_leftIndex), fit: BoxFit.cover, height: 220);
@@ -280,14 +280,26 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
               Expanded(
                 child: ClipRRect(
                   borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
-                  child: leftWidget,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      leftWidget,
+                      _buildProductNameOverlay(result, _leftIndex),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 4),
               Expanded(
                 child: ClipRRect(
                   borderRadius: const BorderRadius.horizontal(right: Radius.circular(24)),
-                  child: rightWidget,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      rightWidget,
+                      _buildProductNameOverlay(result, _rightIndex),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -319,6 +331,56 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildProductNameOverlay(ComparisonResult result, int index) {
+    if (result.products.isEmpty || index >= result.products.length) return const SizedBox.shrink();
+    final product = result.products[index];
+    
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [
+              Colors.black.withValues(alpha: 0.8),
+              Colors.transparent,
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              product.translatedName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (product.originalName.isNotEmpty && product.originalName != product.translatedName)
+              Text(
+                product.originalName,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 11,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -400,7 +462,7 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
               Expanded(
                 child: Text(
                   leftVal,
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.left,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
