@@ -9,6 +9,7 @@ import 'package:lens_wise/features/history/presentation/widgets/premium_empty_st
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_record.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
+import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 
 class ComparisonHistoryTab extends ConsumerWidget {
   const ComparisonHistoryTab({super.key});
@@ -43,99 +44,92 @@ class ComparisonHistoryTab extends ConsumerWidget {
   }
 
   Widget _buildComparisonCard(BuildContext context, WidgetRef ref, ComparisonRecord record, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Dismissible(
-        key: Key(record.id),
-        direction: DismissDirection.endToStart,
-        background: Container(
-          decoration: BoxDecoration(
-            color: Colors.red.shade400,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          child: const Icon(Icons.delete_outline, color: Colors.white),
-        ),
-        onDismissed: (direction) async {
-          await ref.read(recordManagerServiceProvider).deleteRecord(
-            repository: ref.read(comparisonRepositoryProvider),
-            id: record.id,
+    final cardWidget = GlassContainer(
+      borderRadius: BorderRadius.circular(20),
+      color: Colors.white,
+      opacity: isDark ? 0.05 : 0.8,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          final result = record.result;
+          final args = ComparisonResultArgs(
+            result: result,
             imagePath: record.imagePath,
           );
-          ref.invalidate(comparisonHistoryProvider);
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('已刪除比對紀錄'),
-                behavior: SnackBarBehavior.floating,
-                duration: Duration(seconds: 2),
-              ),
-            );
-          }
+          context.push('/result/comparison', extra: args);
         },
-        child: GlassContainer(
-          borderRadius: BorderRadius.circular(20),
-          color: Colors.white,
-          opacity: isDark ? 0.05 : 0.8,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () {
-            final result = record.result;
-            final args = ComparisonResultArgs(
-              result: result,
-              imagePath: record.imagePath,
-            );
-            context.push('/result/comparison', extra: args);
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.compare_arrows_outlined, color: Theme.of(context).primaryColor),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        record.result.title.isNotEmpty ? record.result.title : '規格比對紀錄',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                child: Icon(Icons.compare_arrows_outlined, color: Theme.of(context).primaryColor),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      record.result.title.isNotEmpty ? record.result.title : '規格比對紀錄',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        record.result.comparisonPoints.isNotEmpty ? '${record.result.comparisonPoints.length} 項差異特徵' : '無差異特徵',
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.black54,
-                          fontSize: 13,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      record.result.comparisonPoints.isNotEmpty ? '${record.result.comparisonPoints.length} 項差異特徵' : '無差異特徵',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.black54,
+                        fontSize: 13,
                       ),
-                    ],
-                  ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                Icon(Icons.chevron_right, color: isDark ? Colors.white30 : Colors.black26),
-              ],
-            ),
+              ),
+              Icon(Icons.chevron_right, color: isDark ? Colors.white30 : Colors.black26),
+            ],
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: LongPressDraggable<HistoryDragData>(
+        data: HistoryDragData(id: record.id, imagePath: record.imagePath, type: HistoryType.comparison),
+        delay: const Duration(milliseconds: 200),
+        feedback: Material(
+          type: MaterialType.transparency,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width - 32,
+            child: Opacity(
+              opacity: 0.8,
+              child: Transform.scale(
+                scale: 1.05,
+                child: cardWidget,
+              ),
+            ),
+          ),
+        ),
+        childWhenDragging: Opacity(
+          opacity: 0.2,
+          child: cardWidget,
+        ),
+        child: cardWidget,
+      ),
+    );
+  }
 }

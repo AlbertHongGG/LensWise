@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
+import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
 
@@ -38,62 +39,85 @@ class ReceiptHistoryTab extends ConsumerWidget {
   }
 
   Widget _buildReceiptCard(BuildContext context, ReceiptRecord record, bool isDark) {
+    final cardWidget = GlassContainer(
+      borderRadius: BorderRadius.circular(20),
+      color: Colors.white,
+      opacity: isDark ? 0.05 : 0.8,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          // TODO: Route to Receipt details
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.storefront_outlined, color: Colors.orange),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      record.storeName ?? '未知商店',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '\$ \${record.totalAmount.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: isDark ? Colors.white30 : Colors.black26),
+            ],
+          ),
+        ),
+      ),
+    );
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
-      child: GlassContainer(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
-        opacity: isDark ? 0.05 : 0.8,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () {
-            // TODO: Route to Receipt details
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.storefront_outlined, color: Colors.orange),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        record.storeName ?? '未知商店',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\$ \${record.totalAmount.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right, color: isDark ? Colors.white30 : Colors.black26),
-              ],
+      child: LongPressDraggable<HistoryDragData>(
+        data: HistoryDragData(id: record.id, imagePath: record.imagePath, type: HistoryType.receipt),
+        delay: const Duration(milliseconds: 200),
+        feedback: Material(
+          type: MaterialType.transparency,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width - 32,
+            child: Opacity(
+              opacity: 0.8,
+              child: Transform.scale(
+                scale: 1.05,
+                child: cardWidget,
+              ),
             ),
           ),
         ),
+        childWhenDragging: Opacity(
+          opacity: 0.2,
+          child: cardWidget,
+        ),
+        child: cardWidget,
       ),
     );
   }
