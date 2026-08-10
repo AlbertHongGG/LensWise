@@ -7,6 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_hero_section.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_point_card.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_summary_card.dart';
 
 class ComparisonResultPage extends StatefulWidget {
   final ComparisonResultArgs args;
@@ -163,15 +166,32 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
           children: [
             CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(child: const SizedBox(height: 16)),
-                SliverToBoxAdapter(child: _buildHeroSection(result)),
-                SliverToBoxAdapter(child: const SizedBox(height: 24)),
-                SliverToBoxAdapter(child: _buildSummaryCard(result, isDark)),
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                SliverToBoxAdapter(
+                  child: ComparisonSummaryCard(
+                    result: result,
+                    isDark: isDark,
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                SliverToBoxAdapter(
+                  child: ComparisonHeroSection(
+                    result: result,
+                    leftIndex: _leftIndex,
+                    rightIndex: _rightIndex,
+                    imageProviderFactory: _getImageProvider,
+                  ),
+                ),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32).copyWith(bottom: 120),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => _buildComparisonRow(result.comparisonPoints[index], isDark),
+                      (context, index) => ComparisonPointCard(
+                        point: result.comparisonPoints[index],
+                        leftIndex: _leftIndex,
+                        rightIndex: _rightIndex,
+                        isDark: isDark,
+                      ),
                       childCount: result.comparisonPoints.length,
                     ),
                   ),
@@ -263,233 +283,5 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
     );
   }
 
-  Widget _buildHeroSection(ComparisonResult result) {
-    if (_imageCount == 0) return const SizedBox.shrink();
 
-    Widget leftWidget = Image(image: _getImageProvider(_leftIndex), fit: BoxFit.cover, height: 220);
-    Widget rightWidget = Image(image: _getImageProvider(_rightIndex), fit: BoxFit.cover, height: 220);
-
-    return Container(
-      height: 220,
-      margin: const EdgeInsets.all(16),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      leftWidget,
-                      _buildProductNameOverlay(result, _leftIndex),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(right: Radius.circular(24)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      rightWidget,
-                      _buildProductNameOverlay(result, _rightIndex),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // VS Badge (breathing glow)
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF1A1A1A),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.6), width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 16,
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
-            child: const Text(
-              'VS',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-                fontStyle: FontStyle.italic,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProductNameOverlay(ComparisonResult result, int index) {
-    if (result.products.isEmpty || index >= result.products.length) return const SizedBox.shrink();
-    final product = result.products[index];
-    
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.8),
-              Colors.transparent,
-            ],
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              product.translatedName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (product.originalName.isNotEmpty && product.originalName != product.translatedName)
-              Text(
-                product.originalName,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard(ComparisonResult result, bool isDark) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 24),
-              const SizedBox(width: 10),
-              Text(
-                '關鍵差異',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            result.summary,
-            style: TextStyle(
-              fontSize: 15,
-              height: 1.6,
-              color: isDark ? Colors.white70 : Colors.black87,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildComparisonRow(ComparisonPoint point, bool isDark) {
-    String leftVal = 'N/A';
-    String rightVal = 'N/A';
-
-    if (_leftIndex < point.values.length) leftVal = point.values[_leftIndex];
-    if (_rightIndex < point.values.length) rightVal = point.values[_rightIndex];
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        children: [
-          // Aspect Title (Balance Pivot)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              point.aspect,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white60 : Colors.black54,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Left vs Right values
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  leftVal,
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 32), // Pivot gap
-              Expanded(
-                child: Text(
-                  rightVal,
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
-        ],
-      ),
-    );
-  }
 }
