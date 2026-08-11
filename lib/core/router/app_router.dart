@@ -80,10 +80,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/result/receipt',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
-          final record = state.extra as ReceiptRecord?;
-          // TODO: handle record if needed by ReceiptResultPage
-          return const CupertinoPage(
-            child: ReceiptResultPage(),
+          final extra = state.extra as Map<String, dynamic>?;
+          final record = extra?['record'] as ReceiptRecord?;
+          final memoryImages = extra?['memoryImages'] as List<Uint8List>?;
+
+          if (record == null) {
+            return const CupertinoPage(
+              child: Scaffold(body: Center(child: Text('查無收據資料'))),
+            );
+          }
+          
+          return CupertinoPage(
+            child: ReceiptResultPage(
+              record: record,
+              memoryImages: memoryImages,
+            ),
           );
         },
       ),

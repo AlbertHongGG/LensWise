@@ -48,7 +48,10 @@ class ReceiptHistoryTab extends ConsumerWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          context.push('/result/receipt', extra: record);
+          context.push('/result/receipt', extra: {
+            'record': record,
+            'memoryImages': null,
+          });
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),

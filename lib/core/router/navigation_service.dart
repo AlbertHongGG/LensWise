@@ -17,8 +17,11 @@ class NavigationService {
   }
 
   void navigateToReceiptResult(ReceiptRecord record, List<Uint8List> images) {
-    // Navigate to receipt result page.
-    _router.pushReplacement('/result/receipt', extra: record);
+    // Navigate to receipt result page with record and raw images
+    _router.pushReplacement('/result/receipt', extra: {
+      'record': record,
+      'memoryImages': images,
+    });
   }
 }
 
