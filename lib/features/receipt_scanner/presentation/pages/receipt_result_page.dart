@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/controllers/receipt_scanner_controller.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
 import 'dart:io';
+import 'dart:ui';
 
 class ReceiptResultPage extends ConsumerStatefulWidget {
   const ReceiptResultPage({super.key});
@@ -20,15 +21,6 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5), // Light gray background to make receipt pop
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text('收據解析結果', style: TextStyle(color: Colors.black)),
-      ),
       body: state.isAnalyzing
           ? const Center(
               child: Column(
@@ -43,7 +35,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
           : record == null
               ? Center(child: Text(state.errorMessage ?? '無解析結果', style: const TextStyle(color: Colors.red)))
               : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 40.0), // Standard padding without close button
                   child: Column(
                     children: [
                       if (record.imagePath != null && record.imagePath!.isNotEmpty)
@@ -64,19 +56,6 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                           ),
                         ),
                       _buildPaperReceipt(record),
-                      const SizedBox(height: 32),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                          ),
-                          onPressed: () => context.pop(),
-                          child: const Text('完成', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -204,26 +183,27 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
     return GestureDetector(
       onTap: () {
         final controller = TextEditingController(text: value);
-        showDialog(
+        _showImmersiveBottomSheet(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text('編輯$title'),
-            content: TextField(
+          title: '編輯$title',
+          children: [
+            TextField(
               controller: controller,
               autofocus: true,
-              keyboardType: title.contains('金額') ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-              TextButton(
-                onPressed: () {
-                  onSave(controller.text);
-                  Navigator.pop(context);
-                },
-                child: const Text('儲存'),
+              keyboardType: title.contains('金額') || title.contains('總計') ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                labelText: title,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.black.withValues(alpha: 0.03),
               ),
-            ],
-          ),
+            ),
+          ],
+          onConfirm: () {
+            onSave(controller.text);
+            Navigator.pop(context);
+          },
         );
       },
       child: Row(
@@ -242,35 +222,119 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
     final translatedNameCtrl = TextEditingController(text: item.translatedName);
     final priceCtrl = TextEditingController(text: item.price.toString());
 
-    showDialog(
+    _showImmersiveBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('編輯品項'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: originalNameCtrl, decoration: const InputDecoration(labelText: '原始品名')),
-            TextField(controller: translatedNameCtrl, decoration: const InputDecoration(labelText: '翻譯品名')),
-            TextField(controller: priceCtrl, decoration: const InputDecoration(labelText: '金額'), keyboardType: const TextInputType.numberWithOptions(decimal: true)),
-          ],
+      title: '編輯品項',
+      children: [
+        TextField(
+          controller: originalNameCtrl, 
+          decoration: InputDecoration(labelText: '原始品名', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          TextButton(
-            onPressed: () {
-              final newItems = List<ReceiptItem>.from(record.items);
-              newItems[index] = item.copyWith(
-                originalName: originalNameCtrl.text,
-                translatedName: translatedNameCtrl.text,
-                price: double.tryParse(priceCtrl.text) ?? item.price,
-              );
-              _updateRecord(record.copyWith(items: newItems));
-              Navigator.pop(context);
-            },
-            child: const Text('儲存'),
+        const SizedBox(height: 16),
+        TextField(
+          controller: translatedNameCtrl, 
+          decoration: InputDecoration(labelText: '翻譯品名', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: priceCtrl, 
+          decoration: InputDecoration(labelText: '金額', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        ),
+      ],
+      onConfirm: () {
+        final newItems = List<ReceiptItem>.from(record.items);
+        newItems[index] = item.copyWith(
+          originalName: originalNameCtrl.text,
+          translatedName: translatedNameCtrl.text,
+          price: double.tryParse(priceCtrl.text) ?? item.price,
+        );
+        _updateRecord(record.copyWith(items: newItems));
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  void _showImmersiveBottomSheet({
+    required BuildContext context,
+    required String title,
+    required List<Widget> children,
+    required VoidCallback onConfirm,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final isDark = theme.brightness == Brightness.dark;
+        final secondaryTextColor = isDark ? Colors.white54 : Colors.black54;
+
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  border: Border(top: BorderSide(color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05))),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Drag Handle
+                        Container(
+                          width: 48,
+                          height: 5,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white24 : Colors.black12,
+                            borderRadius: BorderRadius.circular(2.5),
+                          ),
+                        ),
+                        // Header with Title and Done Icon
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const SizedBox(width: 48), // Spacer for centering
+                            Text(
+                              title.toUpperCase(),
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 2.0,
+                                color: secondaryTextColor,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: onConfirm,
+                              icon: const Icon(Icons.check_circle_rounded),
+                              color: theme.primaryColor,
+                              iconSize: 28,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        // Content
+                        ...children,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
