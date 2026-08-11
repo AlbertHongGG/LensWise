@@ -14,7 +14,7 @@ class ReceiptScannerService {
   ReceiptScannerService(this._agent, this._repository, this._mediaService);
 
   /// 執行發票解析並自動將成功的結果存入歷史紀錄 (Application Layer Orchestration)
-  Future<ReceiptParsingResult> analyzeAndSave(Uint8List imageBytes) async {
+  Future<ReceiptRecord?> analyzeAndSave(Uint8List imageBytes) async {
     final result = await _agent.execute(imageBytes);
 
     if (result.status == 'success' && result.data != null) {
@@ -22,12 +22,17 @@ class ReceiptScannerService {
         final imagePath = await _mediaService.saveImage(imageBytes);
         final record = ReceiptRecord.fromAnalysisData(result.data!, imagePath: imagePath);
         await _repository.save(record.id, record);
+        return record;
       } catch (e) {
         print('Error saving receipt to history: $e');
       }
     }
 
-    return result;
+    if (result.status != 'success') {
+      throw Exception(result.message ?? '解析失敗');
+    }
+    
+    return null;
   }
 }
 

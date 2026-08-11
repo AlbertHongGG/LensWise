@@ -2,9 +2,15 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:camerawesome/camerawesome_plugin.dart';
+
 abstract class ScannerModeStrategy {
   /// The title for the current mode, displayed at the top or in the mode switcher.
   String get modeTitle;
+
+  /// Optional: Configuration for continuous image analysis (e.g. for scanning/stitching).
+  /// If null, image analysis is disabled at the native level.
+  AnalysisConfig? get analysisConfig => null;
 
   /// Minimum number of shots required before processing is allowed.
   int get minShotsRequired => 1;
@@ -57,6 +63,42 @@ abstract class ScannerModeStrategy {
   /// Builds the action widget on the right side of the shutter (e.g., Local Album picker).
   Widget buildRightBottomAction(BuildContext context, WidgetRef ref) => const SizedBox(width: 60, height: 60);
 
+  /// Builds the center shutter button.
+  /// A default implementation is provided which calls [defaultTakePicture].
+  Widget buildShutterButton(BuildContext context, WidgetRef ref, dynamic cameraState, Future<void> Function() defaultTakePicture) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isProcessing,
+      builder: (context, processing, child) {
+        return GestureDetector(
+          onTap: processing ? null : defaultTakePicture,
+          child: Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 4),
+              color: Colors.white.withValues(alpha: 0.2),
+            ),
+            child: Center(
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: processing ? const CircularProgressIndicator(color: Colors.black) : null,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// Processes the captured images. It handles calling the AI agent and navigating to the result page.
   Future<void> processImage(BuildContext context, WidgetRef ref);
+
+  /// Called continuously with camera frames if the strategy supports real-time analysis.
+  void onImageForAnalysis(dynamic image, WidgetRef ref) {}
 }

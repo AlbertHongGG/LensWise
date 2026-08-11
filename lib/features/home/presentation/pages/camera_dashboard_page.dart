@@ -57,15 +57,24 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 監聽模式變化，確保模式切換時整個 Dashboard 重新建置，更新 CameraScannerView 的 config
+    final mode = ref.watch(scannerModeProvider);
+    final strategy = ref.read(scannerModeProvider.notifier).currentStrategy;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: CameraScannerView(
+        analysisConfig: strategy.analysisConfig,
+        // 無條件傳入 callback，交由底層強制啟動硬體資料流，策略層自己決定要不要處理
+        onImageForAnalysis: (image) {
+          ref.read(scannerModeProvider.notifier).currentStrategy.onImageForAnalysis(image, ref);
+        },
         customOverlayBuilder: (cameraState) {
           return Stack(
             fit: StackFit.expand,
             children: [
               // 1. Mode-specific Overlay
-              ref.read(scannerModeProvider.notifier).currentStrategy.buildOverlay(context),
+              strategy.buildOverlay(context),
 
               // 2. Top UI: Settings and History
               Positioned(
@@ -115,7 +124,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Dynamic Floating Action Slot (e.g. Start Comparison)
-                    ref.read(scannerModeProvider.notifier).currentStrategy.buildFloatingAction(context, ref),
+                    strategy.buildFloatingAction(context, ref),
                     
                     // Shutter Row Slot
                     Padding(
@@ -124,13 +133,18 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           // Left Action (e.g. Captured Gallery)
-                          ref.read(scannerModeProvider.notifier).currentStrategy.buildLeftBottomAction(context, ref),
+                          strategy.buildLeftBottomAction(context, ref),
                           
                           // Center Shutter
-                          _buildShutterButton(ref.read(scannerModeProvider.notifier).currentStrategy, cameraState),
+                          strategy.buildShutterButton(
+                            context,
+                            ref,
+                            cameraState,
+                            () => _takePicture(strategy, cameraState),
+                          ),
                           
                           // Right Action (e.g. Future Local Album)
-                          ref.read(scannerModeProvider.notifier).currentStrategy.buildRightBottomAction(context, ref),
+                          strategy.buildRightBottomAction(context, ref),
                         ],
                       ),
                     ),
@@ -156,32 +170,6 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
           color: Colors.black.withValues(alpha: 0.3),
         ),
         child: Icon(icon, color: Colors.white, size: 24),
-      ),
-    );
-  }
-
-  Widget _buildShutterButton(ScannerModeStrategy strategy, CameraState? cameraState) {
-    return GestureDetector(
-      onTap: () => _takePicture(strategy, cameraState),
-      child: Container(
-        width: 76,
-        height: 76,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 4),
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
-        child: Center(
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-            child: _isProcessing ? const CircularProgressIndicator(color: Colors.black) : null,
-          ),
-        ),
       ),
     );
   }
