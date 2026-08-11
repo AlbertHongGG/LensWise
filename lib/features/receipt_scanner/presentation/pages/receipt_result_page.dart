@@ -130,9 +130,9 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(item.originalName, style: const TextStyle(fontSize: 14, color: Colors.black87)),
                             if (item.translatedName.isNotEmpty)
                               Text(item.translatedName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                            Text(item.originalName, style: const TextStyle(fontSize: 14, color: Colors.black87)),
                           ],
                         ),
                       ),
@@ -180,11 +180,13 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
           const Divider(height: 32, thickness: 2, color: Colors.black),
           _buildEditableField(
             title: '總計',
-            value: record.totalAmount.toStringAsFixed(2),
+            value: '${record.currency ?? ''} ${record.totalAmount.toStringAsFixed(2)}',
             textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black),
             onSave: (val) {
-              if (double.tryParse(val) != null) {
-                _updateRecord(record.copyWith(totalAmount: double.parse(val)));
+              // Extract numeric part gracefully
+              final numericStr = val.replaceAll(RegExp(r'[^0-9.]'), '');
+              if (double.tryParse(numericStr) != null) {
+                _updateRecord(record.copyWith(totalAmount: double.parse(numericStr)));
               }
             },
           ),

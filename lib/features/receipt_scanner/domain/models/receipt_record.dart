@@ -55,6 +55,7 @@ class ReceiptRecord {
   final DateTime timestamp;
   final String? receiptDate;
   final String? storeName;
+  final String? currency;
   final double subtotal;
   final List<ReceiptItem> items;
   final List<ReceiptFeeItem> discounts;
@@ -67,6 +68,7 @@ class ReceiptRecord {
     required this.timestamp,
     this.receiptDate,
     this.storeName,
+    this.currency,
     required this.subtotal,
     required this.items,
     this.discounts = const [],
@@ -78,6 +80,7 @@ class ReceiptRecord {
   ReceiptRecord copyWith({
     String? storeName,
     String? receiptDate,
+    String? currency,
     double? subtotal,
     List<ReceiptItem>? items,
     List<ReceiptFeeItem>? discounts,
@@ -89,6 +92,7 @@ class ReceiptRecord {
       timestamp: this.timestamp,
       receiptDate: receiptDate ?? this.receiptDate,
       storeName: storeName ?? this.storeName,
+      currency: currency ?? this.currency,
       subtotal: subtotal ?? this.subtotal,
       items: items ?? this.items,
       discounts: discounts ?? this.discounts,
@@ -146,11 +150,18 @@ class ReceiptRecord {
       parsedReceiptDate = null;
     }
 
+    // Determine currency
+    String? parsedCurrency = data['currency']?.toString();
+    if (parsedCurrency != null && parsedCurrency.isEmpty) {
+      parsedCurrency = null;
+    }
+
     return ReceiptRecord(
       id: const Uuid().v4(),
       timestamp: DateTime.now(),
       receiptDate: parsedReceiptDate,
       storeName: data['storeName']?.toString() ?? '',
+      currency: parsedCurrency,
       subtotal: calculatedSubtotal,
       items: processedItems,
       discounts: processedDiscounts,
@@ -164,7 +175,7 @@ class ReceiptRecord {
 class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
   // Breaking Change! Increased typeId to 2 to isolate from old version.
   @override
-  final int typeId = 7; // Changed from 6 to 7 to handle the new receiptDate field gracefully
+  final int typeId = 8;
 
   @override
   ReceiptRecord read(BinaryReader reader) {
@@ -174,6 +185,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
     final subtotal = reader.readDouble();
     final totalAmount = reader.readDouble();
     final receiptDate = reader.readString();
+    final currency = reader.readString();
     
     // Read items
     final itemsLength = reader.readInt();
@@ -214,6 +226,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
       timestamp: timestamp,
       receiptDate: receiptDate.isEmpty ? null : receiptDate,
       storeName: storeName.isEmpty ? null : storeName,
+      currency: currency.isEmpty ? null : currency,
       subtotal: subtotal,
       totalAmount: totalAmount,
       items: items,
@@ -231,6 +244,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
     writer.writeDouble(obj.subtotal);
     writer.writeDouble(obj.totalAmount);
     writer.writeString(obj.receiptDate ?? '');
+    writer.writeString(obj.currency ?? '');
     
     writer.writeInt(obj.items.length);
     for (final item in obj.items) {

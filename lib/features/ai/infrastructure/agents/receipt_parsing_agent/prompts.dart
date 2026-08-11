@@ -27,6 +27,7 @@ String buildReceiptParsingSystemPrompt(String targetLanguage) {
 - status (字串): 解析狀態。成功為 "success"，失敗或模糊為 "needs_more_info"。
 - message (字串 | null): 若失敗時提供給使用者的提示訊息（以目標語言輸出）。成功時為 null。
 - data (物件 | null): 成功時包含以下欄位：
+  - currency (字串): 根據收據內容(商店所在地、語言等)自動判別並輸出標準的幣別代碼或符號 (例如 JPY, TWD, USD 等)。
   - storeName (字串): 提取並翻譯的商店名稱。若無則留空 ""。
   - receiptDateTime (字串): 收據上印製的日期與時間 (請統一格式化為 "YYYY-MM-DD HH:mm"，若無時間則為 "YYYY-MM-DD")。若找不到則留空 ""。
   - items (物件陣列): 提取出的實體購買品項 (必須去重)。

@@ -79,7 +79,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '\$${record.totalAmount.toStringAsFixed(2)}',
+                      '${record.currency ?? ''} ${record.totalAmount.toStringAsFixed(2)}',
                       style: TextStyle(
                         color: isDark ? Colors.white70 : Colors.black87,
                         fontSize: 14,
