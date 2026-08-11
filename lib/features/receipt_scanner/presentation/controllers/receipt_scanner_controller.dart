@@ -87,14 +87,17 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     state = state.copyWith(capturedImages: images, errorMessage: null, isAnalyzing: true, isProcessing: true);
     try {
       final service = ref.read(receiptScannerServiceProvider);
+      final navService = ref.read(navigationServiceProvider);
       
       final record = await service.analyzeAndSave(images);
       ref.invalidate(receiptHistoryProvider);
       
       state = state.copyWith(receiptRecord: record, isAnalyzing: false, isProcessing: false);
       
-      // Navigate using the NavigationService (similar to ProductComparison)
-      // navService.navigateToReceiptResult(record, images); // Assuming this exists or the caller handles it
+      if (record != null) {
+        // Navigate using the decoupled NavigationService
+        navService.navigateToReceiptResult(record, images);
+      }
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false, isProcessing: false);
     }

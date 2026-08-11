@@ -20,7 +20,9 @@ import 'package:lens_wise/features/product_lens/presentation/pages/product_detai
 import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
 
 // Result Pages
+import 'package:lens_wise/features/receipt_scanner/presentation/pages/receipt_processing_page.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/pages/receipt_result_page.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_page.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -77,9 +79,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/result/receipt',
         parentNavigatorKey: _rootNavigatorKey,
-        pageBuilder: (context, state) => const CupertinoPage(
-          child: ReceiptResultPage(),
-        ),
+        pageBuilder: (context, state) {
+          final record = state.extra as ReceiptRecord?;
+          // TODO: handle record if needed by ReceiptResultPage
+          return const CupertinoPage(
+            child: ReceiptResultPage(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/process/receipt',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final images = state.extra as List<Uint8List>? ?? [];
+          return CupertinoPage(
+            child: ReceiptProcessingPage(images: images),
+          );
+        },
       ),
       GoRoute(
         path: '/process/comparison',
