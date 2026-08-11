@@ -28,6 +28,7 @@ String buildReceiptParsingSystemPrompt(String targetLanguage) {
 - message (字串 | null): 若失敗時提供給使用者的提示訊息（以目標語言輸出）。成功時為 null。
 - data (物件 | null): 成功時包含以下欄位：
   - storeName (字串): 提取並翻譯的商店名稱。若無則留空 ""。
+  - receiptDateTime (字串): 收據上印製的日期與時間 (請統一格式化為 "YYYY-MM-DD HH:mm"，若無時間則為 "YYYY-MM-DD")。若找不到則留空 ""。
   - items (物件陣列): 提取出的實體購買品項 (必須去重)。
     - originalName (字串): 收據上的原始品名 (可包含自動糾錯)。
     - translatedName (字串): 翻譯為目標語言的品名。
@@ -38,7 +39,6 @@ String buildReceiptParsingSystemPrompt(String targetLanguage) {
   - taxes (物件陣列): 所有稅金附加項目。
     - name (字串): 稅金名目 (已翻譯，例如 消費稅 8%)。
     - amount (數字): 稅金金額。
-  - totalAmount (數字): 收據上的最終總結帳金額 (小計 + 稅金 + 折扣 的最終結果)。
 
 【回應要求】
 1. 僅回傳 JSON，**絕對不要**包含 Markdown 格式 (如 ```json) 或任何其他說明文字。

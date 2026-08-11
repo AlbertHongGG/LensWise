@@ -104,7 +104,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
             onSave: (val) => _updateRecord(record.copyWith(storeName: val)),
           ),
           const SizedBox(height: 8),
-          Text(record.timestamp.toString().split('.')[0], style: const TextStyle(color: Colors.grey)),
+          Text(record.receiptDate ?? record.timestamp.toString().split('.')[0], style: const TextStyle(color: Colors.grey)),
           const Divider(height: 32, thickness: 1, color: Colors.black12),
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

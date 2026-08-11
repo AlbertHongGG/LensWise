@@ -53,6 +53,7 @@ class ReceiptFeeItem {
 class ReceiptRecord {
   final String id;
   final DateTime timestamp;
+  final String? receiptDate;
   final String? storeName;
   final double subtotal;
   final List<ReceiptItem> items;
@@ -64,6 +65,7 @@ class ReceiptRecord {
   ReceiptRecord({
     required this.id,
     required this.timestamp,
+    this.receiptDate,
     this.storeName,
     required this.subtotal,
     required this.items,
@@ -75,6 +77,7 @@ class ReceiptRecord {
 
   ReceiptRecord copyWith({
     String? storeName,
+    String? receiptDate,
     double? subtotal,
     List<ReceiptItem>? items,
     List<ReceiptFeeItem>? discounts,
@@ -84,6 +87,7 @@ class ReceiptRecord {
     return ReceiptRecord(
       id: this.id,
       timestamp: this.timestamp,
+      receiptDate: receiptDate ?? this.receiptDate,
       storeName: storeName ?? this.storeName,
       subtotal: subtotal ?? this.subtotal,
       items: items ?? this.items,
@@ -131,15 +135,27 @@ class ReceiptRecord {
     // Programmatically calculate subtotal to avoid LLM math errors
     final calculatedSubtotal = processedItems.fold<double>(0.0, (sum, item) => sum + item.price);
 
+    // Programmatically calculate totalAmount (subtotal + sum(taxes) + sum(discounts))
+    final sumTaxes = processedTaxes.fold<double>(0.0, (sum, item) => sum + item.amount);
+    final sumDiscounts = processedDiscounts.fold<double>(0.0, (sum, item) => sum + item.amount);
+    final calculatedTotal = calculatedSubtotal + sumTaxes + sumDiscounts;
+
+    // Determine the receipt printed date/time
+    String? parsedReceiptDate = data['receiptDateTime']?.toString();
+    if (parsedReceiptDate != null && parsedReceiptDate.isEmpty) {
+      parsedReceiptDate = null;
+    }
+
     return ReceiptRecord(
       id: const Uuid().v4(),
       timestamp: DateTime.now(),
+      receiptDate: parsedReceiptDate,
       storeName: data['storeName']?.toString() ?? '',
       subtotal: calculatedSubtotal,
       items: processedItems,
       discounts: processedDiscounts,
       taxes: processedTaxes,
-      totalAmount: double.tryParse(data['totalAmount']?.toString() ?? '0') ?? 0.0,
+      totalAmount: calculatedTotal,
       imagePath: imagePath,
     );
   }
@@ -148,7 +164,7 @@ class ReceiptRecord {
 class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
   // Breaking Change! Increased typeId to 2 to isolate from old version.
   @override
-  final int typeId = 6;
+  final int typeId = 7; // Changed from 6 to 7 to handle the new receiptDate field gracefully
 
   @override
   ReceiptRecord read(BinaryReader reader) {
@@ -157,6 +173,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
     final storeName = reader.readString();
     final subtotal = reader.readDouble();
     final totalAmount = reader.readDouble();
+    final receiptDate = reader.readString();
     
     // Read items
     final itemsLength = reader.readInt();
@@ -195,6 +212,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
     return ReceiptRecord(
       id: id,
       timestamp: timestamp,
+      receiptDate: receiptDate.isEmpty ? null : receiptDate,
       storeName: storeName.isEmpty ? null : storeName,
       subtotal: subtotal,
       totalAmount: totalAmount,
@@ -212,6 +230,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
     writer.writeString(obj.storeName ?? '');
     writer.writeDouble(obj.subtotal);
     writer.writeDouble(obj.totalAmount);
+    writer.writeString(obj.receiptDate ?? '');
     
     writer.writeInt(obj.items.length);
     for (final item in obj.items) {
