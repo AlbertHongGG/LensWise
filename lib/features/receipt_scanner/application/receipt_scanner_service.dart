@@ -19,8 +19,13 @@ class ReceiptScannerService {
 
     if (result.status == 'success' && result.data != null) {
       try {
-        final imagePath = await _mediaService.saveImage(images.first);
-        final record = ReceiptRecord.fromAnalysisData(result.data!, imagePath: imagePath);
+        final List<String> savedImagePaths = [];
+        for (final imageBytes in images) {
+          final path = await _mediaService.saveImage(imageBytes);
+          savedImagePaths.add(path);
+        }
+        
+        final record = ReceiptRecord.fromAnalysisData(result.data!, imagePaths: savedImagePaths);
         await _repository.save(record.id, record);
         return record;
       } catch (e) {

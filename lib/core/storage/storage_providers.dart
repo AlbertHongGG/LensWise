@@ -11,7 +11,7 @@ final localMediaServiceProvider = Provider<LocalMediaService>((ref) {
 });
 
 final receiptRepositoryProvider = Provider<ILocalStorageRepository<ReceiptRecord>>((ref) {
-  return HiveRepository<ReceiptRecord>('receipt_records_v5');
+  return HiveRepository<ReceiptRecord>('receipt_records_v6');
 });
 
 final productRepositoryProvider = Provider<ILocalStorageRepository<ProductRecord>>((ref) {

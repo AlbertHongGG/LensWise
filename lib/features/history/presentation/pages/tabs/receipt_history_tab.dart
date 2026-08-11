@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
@@ -67,6 +68,18 @@ class ReceiptHistoryTab extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (record.imagePaths.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          File(record.imagePaths.first),
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 4),
                     Text(
                       record.storeName ?? '未知商店',
                       style: TextStyle(
@@ -99,19 +112,18 @@ class ReceiptHistoryTab extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: LongPressDraggable<HistoryDragData>(
-        data: HistoryDragData(id: record.id, imagePath: record.imagePath, type: HistoryType.receipt),
+        data: HistoryDragData(id: record.id, imagePaths: record.imagePaths, type: HistoryType.receipt),
         delay: const Duration(milliseconds: 200),
         feedback: Material(
-          type: MaterialType.transparency,
-          child: SizedBox(
+          color: Colors.transparent,
+          child: Container(
             width: MediaQuery.of(context).size.width - 32,
-            child: Opacity(
-              opacity: 0.8,
-              child: Transform.scale(
-                scale: 1.05,
-                child: cardWidget,
-              ),
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(color: Colors.redAccent.withValues(alpha: 0.5), blurRadius: 20, spreadRadius: 5)
+              ]
             ),
+            child: Opacity(opacity: 0.8, child: _buildReceiptCard(context, record, isDark)),
           ),
         ),
         childWhenDragging: Opacity(

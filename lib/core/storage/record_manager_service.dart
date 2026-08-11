@@ -14,10 +14,18 @@ class RecordManagerService {
     required ILocalStorageRepository<T> repository,
     required String id,
     String? imagePath,
+    List<String>? imagePaths,
   }) async {
     // 1. Delete associated media files from disk
     if (imagePath != null && imagePath.isNotEmpty) {
       await _mediaService.deleteImage(imagePath);
+    }
+    if (imagePaths != null && imagePaths.isNotEmpty) {
+      for (final path in imagePaths) {
+        if (path.isNotEmpty) {
+          await _mediaService.deleteImage(path);
+        }
+      }
     }
     
     // 2. Delete database record from Hive

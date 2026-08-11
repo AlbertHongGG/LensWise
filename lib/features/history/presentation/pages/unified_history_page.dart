@@ -15,8 +15,9 @@ enum HistoryType { receipt, product, comparison }
 class HistoryDragData {
   final String id;
   final String? imagePath;
+  final List<String>? imagePaths;
   final HistoryType type;
-  const HistoryDragData({required this.id, this.imagePath, required this.type});
+  const HistoryDragData({required this.id, this.imagePath, this.imagePaths, required this.type});
 }
 
 class UnifiedHistoryPage extends ConsumerStatefulWidget {
@@ -61,7 +62,7 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
         final manager = ref.read(recordManagerServiceProvider);
         final records = await repo.getAll();
         for (final r in records) {
-          await manager.deleteRecord(repository: repo, id: r.id, imagePath: r.imagePath);
+          await manager.deleteRecord(repository: repo, id: r.id, imagePaths: r.imagePaths);
         }
         ref.invalidate(receiptHistoryProvider);
       };

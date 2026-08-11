@@ -77,7 +77,7 @@ class ReceiptRecord {
   final List<ReceiptFeeItem> discounts;
   final List<ReceiptFeeItem> taxes;
   final double totalAmount;
-  final String? imagePath;
+  final List<String> imagePaths;
 
   ReceiptRecord({
     required this.id,
@@ -90,7 +90,7 @@ class ReceiptRecord {
     this.discounts = const [],
     this.taxes = const [],
     required this.totalAmount,
-    this.imagePath,
+    this.imagePaths = const [],
   });
 
   ReceiptRecord copyWith({
@@ -114,11 +114,11 @@ class ReceiptRecord {
       discounts: discounts ?? this.discounts,
       taxes: taxes ?? this.taxes,
       totalAmount: totalAmount ?? this.totalAmount,
-      imagePath: this.imagePath,
+      imagePaths: this.imagePaths,
     );
   }
 
-  factory ReceiptRecord.fromAnalysisData(Map<String, dynamic> data, {String? imagePath}) {
+  factory ReceiptRecord.fromAnalysisData(Map<String, dynamic> data, {List<String> imagePaths = const []}) {
     final List<ReceiptItem> processedItems = [];
     if (data['items'] is List) {
       for (final item in data['items'] as List) {
@@ -183,7 +183,7 @@ class ReceiptRecord {
       discounts: processedDiscounts,
       taxes: processedTaxes,
       totalAmount: calculatedTotal,
-      imagePath: imagePath,
+      imagePaths: imagePaths,
     );
   }
 
@@ -199,12 +199,13 @@ class ReceiptRecord {
       'discounts': discounts.map((e) => e.toMap()).toList(),
       'taxes': taxes.map((e) => e.toMap()).toList(),
       'totalAmount': totalAmount,
+      'imagePaths': imagePaths,
     };
   }
 
   String get rawJsonData => jsonEncode(toMap());
 
-  factory ReceiptRecord.fromJsonBacked(String id, DateTime timestamp, String jsonString, String? imagePath) {
+  factory ReceiptRecord.fromJsonBacked(String id, DateTime timestamp, String jsonString) {
     try {
       final map = jsonDecode(jsonString) as Map<String, dynamic>;
       return ReceiptRecord(
@@ -218,7 +219,7 @@ class ReceiptRecord {
         discounts: (map['discounts'] as List?)?.map((e) => ReceiptFeeItem.fromMap(Map<String, dynamic>.from(e))).toList() ?? [],
         taxes: (map['taxes'] as List?)?.map((e) => ReceiptFeeItem.fromMap(Map<String, dynamic>.from(e))).toList() ?? [],
         totalAmount: (map['totalAmount'] as num?)?.toDouble() ?? 0.0,
-        imagePath: imagePath,
+        imagePaths: (map['imagePaths'] as List?)?.map((e) => e.toString()).toList() ?? [],
       );
     } catch (e) {
       // Fallback in case of parsing error
@@ -228,7 +229,7 @@ class ReceiptRecord {
         subtotal: 0.0,
         items: [],
         totalAmount: 0.0,
-        imagePath: imagePath,
+        imagePaths: [],
       );
     }
   }
@@ -237,20 +238,18 @@ class ReceiptRecord {
 class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
   // Completely Re-architected: JSON-Backed Persistence
   @override
-  final int typeId = 9;
+  final int typeId = 11; // Upgraded to v6 to support imagePaths inside JSON
 
   @override
   ReceiptRecord read(BinaryReader reader) {
     final id = reader.readString();
     final timestamp = DateTime.fromMillisecondsSinceEpoch(reader.readInt());
     final rawJsonData = reader.readString();
-    final imagePath = reader.readString();
 
     return ReceiptRecord.fromJsonBacked(
       id,
       timestamp,
       rawJsonData,
-      imagePath.isEmpty ? null : imagePath,
     );
   }
 
@@ -259,6 +258,5 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
     writer.writeString(obj.id);
     writer.writeInt(obj.timestamp.millisecondsSinceEpoch);
     writer.writeString(obj.rawJsonData);
-    writer.writeString(obj.imagePath ?? '');
   }
 }
