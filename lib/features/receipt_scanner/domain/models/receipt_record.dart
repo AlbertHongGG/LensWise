@@ -33,34 +33,63 @@ class ReceiptItem {
   }
 }
 
+class ReceiptFeeItem {
+  final String name;
+  final double amount;
+
+  ReceiptFeeItem({
+    required this.name,
+    required this.amount,
+  });
+
+  factory ReceiptFeeItem.fromMap(Map<String, dynamic> map) {
+    return ReceiptFeeItem(
+      name: map['name']?.toString() ?? '',
+      amount: double.tryParse(map['amount']?.toString() ?? '0') ?? 0.0,
+    );
+  }
+}
+
 class ReceiptRecord {
   final String id;
   final DateTime timestamp;
   final String? storeName;
-  final double totalAmount;
+  final double subtotal;
   final List<ReceiptItem> items;
+  final List<ReceiptFeeItem> discounts;
+  final List<ReceiptFeeItem> taxes;
+  final double totalAmount;
   final String? imagePath;
 
   ReceiptRecord({
     required this.id,
     required this.timestamp,
     this.storeName,
-    required this.totalAmount,
+    required this.subtotal,
     required this.items,
+    this.discounts = const [],
+    this.taxes = const [],
+    required this.totalAmount,
     this.imagePath,
   });
 
   ReceiptRecord copyWith({
     String? storeName,
-    double? totalAmount,
+    double? subtotal,
     List<ReceiptItem>? items,
+    List<ReceiptFeeItem>? discounts,
+    List<ReceiptFeeItem>? taxes,
+    double? totalAmount,
   }) {
     return ReceiptRecord(
       id: this.id,
       timestamp: this.timestamp,
       storeName: storeName ?? this.storeName,
-      totalAmount: totalAmount ?? this.totalAmount,
+      subtotal: subtotal ?? this.subtotal,
       items: items ?? this.items,
+      discounts: discounts ?? this.discounts,
+      taxes: taxes ?? this.taxes,
+      totalAmount: totalAmount ?? this.totalAmount,
       imagePath: this.imagePath,
     );
   }
@@ -77,28 +106,56 @@ class ReceiptRecord {
       }
     }
 
+    final List<ReceiptFeeItem> processedDiscounts = [];
+    if (data['discounts'] is List) {
+      for (final item in data['discounts'] as List) {
+        if (item is Map<String, dynamic>) {
+          processedDiscounts.add(ReceiptFeeItem.fromMap(item));
+        } else if (item is Map) {
+          processedDiscounts.add(ReceiptFeeItem.fromMap(Map<String, dynamic>.from(item)));
+        }
+      }
+    }
+
+    final List<ReceiptFeeItem> processedTaxes = [];
+    if (data['taxes'] is List) {
+      for (final item in data['taxes'] as List) {
+        if (item is Map<String, dynamic>) {
+          processedTaxes.add(ReceiptFeeItem.fromMap(item));
+        } else if (item is Map) {
+          processedTaxes.add(ReceiptFeeItem.fromMap(Map<String, dynamic>.from(item)));
+        }
+      }
+    }
+
     return ReceiptRecord(
       id: const Uuid().v4(),
       timestamp: DateTime.now(),
       storeName: data['storeName']?.toString() ?? '',
-      totalAmount: double.tryParse(data['totalAmount']?.toString() ?? '0') ?? 0.0,
+      subtotal: double.tryParse(data['subtotal']?.toString() ?? '0') ?? 0.0,
       items: processedItems,
+      discounts: processedDiscounts,
+      taxes: processedTaxes,
+      totalAmount: double.tryParse(data['totalAmount']?.toString() ?? '0') ?? 0.0,
       imagePath: imagePath,
     );
   }
 }
 
 class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
+  // Breaking Change! Increased typeId to 2 to isolate from old version.
   @override
-  final int typeId = 1;
+  final int typeId = 2;
 
   @override
   ReceiptRecord read(BinaryReader reader) {
     final id = reader.readString();
     final timestamp = DateTime.fromMillisecondsSinceEpoch(reader.readInt());
     final storeName = reader.readString();
+    final subtotal = reader.readDouble();
     final totalAmount = reader.readDouble();
     
+    // Read items
     final itemsLength = reader.readInt();
     final items = <ReceiptItem>[];
     for (var i = 0; i < itemsLength; i++) {
@@ -112,13 +169,36 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
       ));
     }
 
+    // Read discounts
+    final discountsLength = reader.readInt();
+    final discounts = <ReceiptFeeItem>[];
+    for (var i = 0; i < discountsLength; i++) {
+      final name = reader.readString();
+      final amount = reader.readDouble();
+      discounts.add(ReceiptFeeItem(name: name, amount: amount));
+    }
+
+    // Read taxes
+    final taxesLength = reader.readInt();
+    final taxes = <ReceiptFeeItem>[];
+    for (var i = 0; i < taxesLength; i++) {
+      final name = reader.readString();
+      final amount = reader.readDouble();
+      taxes.add(ReceiptFeeItem(name: name, amount: amount));
+    }
+
+    final imagePath = reader.readString();
+
     return ReceiptRecord(
       id: id,
       timestamp: timestamp,
       storeName: storeName.isEmpty ? null : storeName,
+      subtotal: subtotal,
       totalAmount: totalAmount,
       items: items,
-      imagePath: reader.readString(),
+      discounts: discounts,
+      taxes: taxes,
+      imagePath: imagePath.isEmpty ? null : imagePath,
     );
   }
 
@@ -127,6 +207,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
     writer.writeString(obj.id);
     writer.writeInt(obj.timestamp.millisecondsSinceEpoch);
     writer.writeString(obj.storeName ?? '');
+    writer.writeDouble(obj.subtotal);
     writer.writeDouble(obj.totalAmount);
     
     writer.writeInt(obj.items.length);
@@ -135,6 +216,19 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
       writer.writeString(item.translatedName);
       writer.writeDouble(item.price);
     }
+
+    writer.writeInt(obj.discounts.length);
+    for (final discount in obj.discounts) {
+      writer.writeString(discount.name);
+      writer.writeDouble(discount.amount);
+    }
+
+    writer.writeInt(obj.taxes.length);
+    for (final tax in obj.taxes) {
+      writer.writeString(tax.name);
+      writer.writeDouble(tax.amount);
+    }
+
     writer.writeString(obj.imagePath ?? '');
   }
 }

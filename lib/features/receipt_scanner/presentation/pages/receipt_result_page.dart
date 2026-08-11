@@ -143,9 +143,43 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
               ),
             );
           }),
+          const Divider(height: 32, thickness: 1, color: Colors.black12),
+          // Subtotal
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('小計', style: TextStyle(fontSize: 16, color: Colors.black87)),
+              Text(record.subtotal.toStringAsFixed(2), style: const TextStyle(fontSize: 16, color: Colors.black87)),
+            ],
+          ),
+          
+          // Discounts
+          if (record.discounts.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ...record.discounts.map((discount) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(discount.name, style: const TextStyle(fontSize: 14, color: Colors.red)),
+                Text(discount.amount.toStringAsFixed(2), style: const TextStyle(fontSize: 14, color: Colors.red)),
+              ],
+            )),
+          ],
+
+          // Taxes
+          if (record.taxes.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ...record.taxes.map((tax) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(tax.name, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+                Text(tax.amount.toStringAsFixed(2), style: const TextStyle(fontSize: 14, color: Colors.black54)),
+              ],
+            )),
+          ],
+
           const Divider(height: 32, thickness: 2, color: Colors.black),
           _buildEditableField(
-            title: '總金額',
+            title: '總計',
             value: record.totalAmount.toStringAsFixed(2),
             textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black),
             onSave: (val) {
