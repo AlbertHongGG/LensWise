@@ -61,28 +61,17 @@ class ReceiptHistoryTab extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.storefront_outlined, color: Colors.orange),
+                child: Icon(Icons.storefront_outlined, color: Theme.of(context).primaryColor),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (record.imagePaths.isNotEmpty)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          File(record.imagePaths.first),
-                          width: 48,
-                          height: 48,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    else
-                      const SizedBox(height: 4),
+
                     Text(
                       record.storeName ?? '未知商店',
                       style: TextStyle(
@@ -126,7 +115,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
                 BoxShadow(color: Colors.redAccent.withValues(alpha: 0.5), blurRadius: 20, spreadRadius: 5)
               ]
             ),
-            child: Opacity(opacity: 0.8, child: _buildReceiptCard(context, record, isDark)),
+            child: Opacity(opacity: 0.8, child: cardWidget),
           ),
         ),
         childWhenDragging: Opacity(

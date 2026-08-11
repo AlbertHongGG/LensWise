@@ -72,7 +72,7 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: _getImageProvider(index),
-                    fit: BoxFit.contain, // Ensure full receipt is visible
+                    fit: BoxFit.cover, // Allow full screen cover to avoid black bars
                     alignment: Alignment.topCenter,
                   ),
                 ),

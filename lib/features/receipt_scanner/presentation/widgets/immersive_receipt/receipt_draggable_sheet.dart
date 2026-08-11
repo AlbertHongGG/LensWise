@@ -17,7 +17,7 @@ class ReceiptDraggableSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
-      minChildSize: 0.15, // Allows pulling down to see most of the image
+      minChildSize: 0.25, // Increased to keep the store name and date always visible at the bottom
       maxChildSize: 0.9,  // Allows pulling up to read full text
       builder: (context, scrollController) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -38,10 +38,12 @@ class ReceiptDraggableSheet extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-              child: CustomScrollView(
-                controller: scrollController,
-                slivers: [
-                  SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  // Drag Handle Area (Attached to scrollController for dragging the sheet)
+                  SingleChildScrollView(
+                    controller: scrollController,
+                    physics: const ClampingScrollPhysics(),
                     child: Padding(
                       padding: const EdgeInsets.only(top: 16, bottom: 24),
                       child: Center(
@@ -56,16 +58,24 @@ class ReceiptDraggableSheet extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: ReceiptPaperCard(
-                        record: record,
-                        onUpdate: onUpdate,
+                  // Independent Scrollable Content Area
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Column(
+                          children: [
+                            ReceiptPaperCard(
+                              record: record,
+                              onUpdate: onUpdate,
+                            ),
+                            const SizedBox(height: 64), // Safe area bottom padding
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  const SliverPadding(padding: EdgeInsets.only(bottom: 64)), // Safe area bottom
                 ],
               ),
             ),
