@@ -4,21 +4,18 @@ import 'package:lens_wise/features/receipt_scanner/application/receipt_scanner_s
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
-import 'package:lens_wise/features/receipt_scanner/infrastructure/engine/panoramic_engine.dart';
-import 'package:lens_wise/features/receipt_scanner/infrastructure/engine/panoramic_stitcher.dart';
+import 'package:lens_wise/core/router/navigation_service.dart';
 
 class ReceiptScannerState {
-  final PanoramicState engineState;
-  final int stitchedHeight;
+  final List<Uint8List> capturedImages;
   final String? errorMessage;
   final bool isScanning;
   final ReceiptRecord? receiptRecord;
   final bool isAnalyzing;
-  final bool isProcessing; // To replace global ValueNotifier
+  final bool isProcessing;
 
   ReceiptScannerState({
-    this.engineState = PanoramicState.tracking,
-    this.stitchedHeight = 0,
+    this.capturedImages = const [],
     this.errorMessage,
     this.isScanning = false,
     this.receiptRecord,
@@ -27,8 +24,7 @@ class ReceiptScannerState {
   });
 
   ReceiptScannerState copyWith({
-    PanoramicState? engineState,
-    int? stitchedHeight,
+    List<Uint8List>? capturedImages,
     String? errorMessage,
     bool? isScanning,
     ReceiptRecord? receiptRecord,
@@ -36,8 +32,7 @@ class ReceiptScannerState {
     bool? isProcessing,
   }) {
     return ReceiptScannerState(
-      engineState: engineState ?? this.engineState,
-      stitchedHeight: stitchedHeight ?? this.stitchedHeight,
+      capturedImages: capturedImages ?? this.capturedImages,
       errorMessage: errorMessage ?? this.errorMessage,
       isScanning: isScanning ?? this.isScanning,
       receiptRecord: receiptRecord ?? this.receiptRecord,
@@ -48,21 +43,15 @@ class ReceiptScannerState {
 }
 
 class ReceiptScannerController extends Notifier<ReceiptScannerState> {
-  late final PanoramicEngine _engine;
-  DateTime _lastProcessTime = DateTime.now();
-
   @override
   ReceiptScannerState build() {
-    _engine = PanoramicEngine();
     return ReceiptScannerState();
   }
 
   void startScanning() {
-    _engine.reset();
     state = state.copyWith(
       isScanning: true,
-      engineState: PanoramicState.tracking,
-      stitchedHeight: 0,
+      capturedImages: [],
       errorMessage: null,
     );
   }
@@ -75,20 +64,43 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     state = state.copyWith(isProcessing: processing);
   }
 
-  Future<void> analyzeReceipt(Uint8List imageBytes) async {
-    state = state.copyWith(errorMessage: null, isAnalyzing: true, isProcessing: true);
+  void addImage(Uint8List imageBytes) {
+    state = state.copyWith(
+      capturedImages: [...state.capturedImages, imageBytes],
+      errorMessage: null,
+    );
+  }
+
+  void removeImage(int index) {
+    final newList = List<Uint8List>.from(state.capturedImages);
+    newList.removeAt(index);
+    state = state.copyWith(capturedImages: newList);
+  }
+
+  void reset() {
+    state = ReceiptScannerState();
+  }
+
+  Future<void> analyzeReceipt(List<Uint8List> images) async {
+    if (images.isEmpty) return;
+    
+    state = state.copyWith(capturedImages: images, errorMessage: null, isAnalyzing: true, isProcessing: true);
     try {
       final service = ref.read(receiptScannerServiceProvider);
-      final record = await service.analyzeAndSave(imageBytes);
+      
+      final record = await service.analyzeAndSave(images);
       ref.invalidate(receiptHistoryProvider);
+      
       state = state.copyWith(receiptRecord: record, isAnalyzing: false, isProcessing: false);
+      
+      // Navigate using the NavigationService (similar to ProductComparison)
+      // navService.navigateToReceiptResult(record, images); // Assuming this exists or the caller handles it
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false, isProcessing: false);
     }
   }
 
   Future<void> updateReceiptRecord(ReceiptRecord updatedRecord) async {
-    // 這裡我們不設定 isProcessing，以避免影響全域按鈕，或者視情況顯示區域性 loading
     state = state.copyWith(receiptRecord: updatedRecord);
     try {
       final repository = ref.read(receiptRepositoryProvider);
@@ -99,46 +111,24 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     }
   }
 
+  // The engine stream processor is completely removed.
   void processCameraImage(dynamic image) {
-    if (!state.isScanning) return;
-
-    final now = DateTime.now();
-    if (now.difference(_lastProcessTime).inMilliseconds < 100) return; // 10 FPS is plenty for tracking
-    _lastProcessTime = now;
-
-    final result = _engine.processFrame(image);
-    
-    final newState = result['state'] as PanoramicState;
-    final int newHeight = result['totalHeight'] as int? ?? state.stitchedHeight;
-    final String? error = result['error'] is String ? result['error'] : null;
-
-    if (state.engineState != newState || state.stitchedHeight != newHeight || error != null) {
-      state = state.copyWith(
-        engineState: newState,
-        stitchedHeight: newHeight,
-        errorMessage: error,
-      );
-    }
+    // No-op for manual capture
   }
 
-  Future<Uint8List?> getStitchedImage() async {
-    try {
-      if (_engine.bufferedFrames.isEmpty) {
-        if (state.errorMessage == null) {
-          state = state.copyWith(errorMessage: 'No frames captured. (Is camera format supported?)');
-        }
-        return null;
+  Future<List<Uint8List>> getCapturedImages() async {
+    if (state.capturedImages.isEmpty) {
+      if (state.errorMessage == null) {
+        state = state.copyWith(errorMessage: 'No frames captured.');
       }
-      return await PanoramicStitcher.stitchFrames(_engine.bufferedFrames);
-    } catch (e) {
-      state = state.copyWith(errorMessage: 'Stitch failed: $e');
-      return null;
+      return [];
     }
+    return state.capturedImages;
   }
 }
-
 
 final receiptScannerControllerProvider = NotifierProvider<ReceiptScannerController, ReceiptScannerState>(() {
   return ReceiptScannerController();
 });
+
 

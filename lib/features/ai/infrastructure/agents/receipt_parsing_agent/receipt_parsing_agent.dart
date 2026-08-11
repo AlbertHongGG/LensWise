@@ -23,17 +23,17 @@ class ReceiptParsingResult {
   }
 }
 
-class ReceiptParsingAgent extends BaseAgent<Uint8List, ReceiptParsingResult> {
+class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptParsingResult> {
   final String targetLanguage;
 
   ReceiptParsingAgent(super.agentName, super.provider, super.logger, {required this.targetLanguage});
 
   @override
-  Future<ReceiptParsingResult> execute(Uint8List input) async {
+  Future<ReceiptParsingResult> execute(List<Uint8List> input) async {
     final request = GenerateRequest(
       systemPrompt: buildReceiptParsingSystemPrompt(targetLanguage),
       prompt: buildReceiptParsingUserPrompt(),
-      images: [input],
+      images: input,
     );
 
     final responseText = await executePrompt(request);

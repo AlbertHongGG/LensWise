@@ -8,10 +8,6 @@ abstract class ScannerModeStrategy {
   /// The title for the current mode, displayed at the top or in the mode switcher.
   String get modeTitle;
 
-  /// Optional: Configuration for continuous image analysis (e.g. for scanning/stitching).
-  /// If null, image analysis is disabled at the native level.
-  AnalysisConfig? get analysisConfig => null;
-
   /// Minimum number of shots required before processing is allowed.
   int get minShotsRequired => 1;
 
@@ -98,7 +94,4 @@ abstract class ScannerModeStrategy {
 
   /// Processes the captured images. It handles calling the AI agent and navigating to the result page.
   Future<void> processImage(BuildContext context, WidgetRef ref);
-
-  /// Called continuously with camera frames if the strategy supports real-time analysis.
-  void onImageForAnalysis(dynamic image, WidgetRef ref) {}
 }

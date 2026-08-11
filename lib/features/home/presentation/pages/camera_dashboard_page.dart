@@ -64,11 +64,6 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: CameraScannerView(
-        analysisConfig: strategy.analysisConfig,
-        // 無條件傳入 callback，交由底層強制啟動硬體資料流，策略層自己決定要不要處理
-        onImageForAnalysis: (image) {
-          ref.read(scannerModeProvider.notifier).currentStrategy.onImageForAnalysis(image, ref);
-        },
         customOverlayBuilder: (cameraState) {
           return Stack(
             fit: StackFit.expand,

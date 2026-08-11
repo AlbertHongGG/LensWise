@@ -3,14 +3,10 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 
 class CameraScannerView extends StatefulWidget {
   final Widget Function(CameraState? state) customOverlayBuilder;
-  final void Function(AnalysisImage image)? onImageForAnalysis;
-  final AnalysisConfig? analysisConfig;
 
   const CameraScannerView({
     super.key,
     required this.customOverlayBuilder,
-    this.onImageForAnalysis,
-    this.analysisConfig,
   });
 
   @override
@@ -50,17 +46,9 @@ class _CameraScannerViewState extends State<CameraScannerView> {
                       ),
                       // 關鍵 3: 既然容器已經是 3:4，這裡無論用 contain 或 cover 都不會觸發底層不對稱裁切 BUG
                       previewFit: CameraPreviewFit.cover,
-                      // 強制開啟全域背景資料流，避免切換模式時硬體沒有啟動分析流
-                      imageAnalysisConfig: widget.analysisConfig ?? AnalysisConfig(
-                        androidOptions: const AndroidAnalysisOptions.yuv420(width: 480),
-                        maxFramesPerSecond: 10,
-                        autoStart: true,
-                      ),
-                      onImageForAnalysis: (image) async {
-                        if (widget.onImageForAnalysis != null) {
-                          widget.onImageForAnalysis!(image);
-                        }
-                      },
+                      // 完全拔除 Analysis Stream (解決嚴重 GC 效能問題與記憶體洩漏)
+                      // previewFit: CameraPreviewFit.cover,
+                      // 不再強制開啟背景資料流，CameraAwesome 現在只負責 ViewFinder (預覽) 與快拍。
                       builder: (cameraState, preview) {
                         // 狀態懸浮 (State Hoisting): 將底層硬體狀態傳遞給外層 UI，但絕不在此渲染任何 UI！
                         if (_cameraState != cameraState) {
