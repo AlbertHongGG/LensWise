@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/product_analysis_agent/product_analysis_data.dart';
@@ -50,28 +51,82 @@ class ProductRecord {
       imagePath: imagePath,
     );
   }
+
+  // --- JSON-Backed Core Logic ---
+
+  Map<String, dynamic> toMap() {
+    return {
+      'productName': productName,
+      'originalName': originalName,
+      'brand': brand,
+      'origin': origin,
+      'summary': summary,
+      'ingredients': ingredients,
+      'allergenAlerts': allergenAlerts,
+      'dietaryFlags': dietaryFlags,
+      'whenRecommended': whenRecommended,
+      'whenNotRecommended': whenNotRecommended,
+    };
+  }
+
+  String get rawJsonData => jsonEncode(toMap());
+
+  factory ProductRecord.fromJsonBacked(String id, DateTime timestamp, String jsonString, String? imagePath) {
+    try {
+      final map = jsonDecode(jsonString) as Map<String, dynamic>;
+      return ProductRecord(
+        id: id,
+        timestamp: timestamp,
+        productName: map['productName']?.toString() ?? '',
+        originalName: map['originalName']?.toString() ?? '',
+        brand: map['brand']?.toString() ?? '',
+        origin: map['origin']?.toString() ?? '',
+        summary: map['summary']?.toString() ?? '',
+        ingredients: (map['ingredients'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        allergenAlerts: (map['allergenAlerts'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        dietaryFlags: (map['dietaryFlags'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        whenRecommended: (map['whenRecommended'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        whenNotRecommended: (map['whenNotRecommended'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        imagePath: imagePath,
+      );
+    } catch (e) {
+      // Fallback in case of parsing error
+      return ProductRecord(
+        id: id,
+        timestamp: timestamp,
+        productName: 'Error Loading Data',
+        originalName: '',
+        brand: '',
+        origin: '',
+        summary: '',
+        ingredients: [],
+        allergenAlerts: [],
+        dietaryFlags: [],
+        whenRecommended: [],
+        whenNotRecommended: [],
+        imagePath: imagePath,
+      );
+    }
+  }
 }
 
 class ProductRecordAdapter extends TypeAdapter<ProductRecord> {
+  // Completely Re-architected: JSON-Backed Persistence
   @override
-  final int typeId = 2;
+  final int typeId = 10; // Breaking change from 2 to isolate corrupted data
 
   @override
   ProductRecord read(BinaryReader reader) {
-    return ProductRecord(
-      id: reader.readString(),
-      timestamp: DateTime.fromMillisecondsSinceEpoch(reader.readInt()),
-      productName: reader.readString(),
-      originalName: reader.readString(),
-      brand: reader.readString(),
-      origin: reader.readString(),
-      summary: reader.readString(),
-      ingredients: reader.readStringList(),
-      allergenAlerts: reader.readStringList(),
-      dietaryFlags: reader.readStringList(),
-      whenRecommended: reader.readStringList(),
-      whenNotRecommended: reader.readStringList(),
-      imagePath: reader.readString(),
+    final id = reader.readString();
+    final timestamp = DateTime.fromMillisecondsSinceEpoch(reader.readInt());
+    final rawJsonData = reader.readString();
+    final imagePath = reader.readString();
+
+    return ProductRecord.fromJsonBacked(
+      id,
+      timestamp,
+      rawJsonData,
+      imagePath.isEmpty ? null : imagePath,
     );
   }
 
@@ -79,16 +134,7 @@ class ProductRecordAdapter extends TypeAdapter<ProductRecord> {
   void write(BinaryWriter writer, ProductRecord obj) {
     writer.writeString(obj.id);
     writer.writeInt(obj.timestamp.millisecondsSinceEpoch);
-    writer.writeString(obj.productName);
-    writer.writeString(obj.originalName);
-    writer.writeString(obj.brand);
-    writer.writeString(obj.origin);
-    writer.writeString(obj.summary);
-    writer.writeStringList(obj.ingredients);
-    writer.writeStringList(obj.allergenAlerts);
-    writer.writeStringList(obj.dietaryFlags);
-    writer.writeStringList(obj.whenRecommended);
-    writer.writeStringList(obj.whenNotRecommended);
+    writer.writeString(obj.rawJsonData);
     writer.writeString(obj.imagePath ?? '');
   }
 }

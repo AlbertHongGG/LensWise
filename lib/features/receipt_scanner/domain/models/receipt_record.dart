@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
@@ -24,6 +25,14 @@ class ReceiptItem {
     );
   }
 
+  Map<String, dynamic> toMap() {
+    return {
+      'originalName': originalName,
+      'translatedName': translatedName,
+      'price': price,
+    };
+  }
+
   factory ReceiptItem.fromMap(Map<String, dynamic> map) {
     return ReceiptItem(
       originalName: map['originalName']?.toString() ?? '',
@@ -41,6 +50,13 @@ class ReceiptFeeItem {
     required this.name,
     required this.amount,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'amount': amount,
+    };
+  }
 
   factory ReceiptFeeItem.fromMap(Map<String, dynamic> map) {
     return ReceiptFeeItem(
@@ -170,69 +186,71 @@ class ReceiptRecord {
       imagePath: imagePath,
     );
   }
+
+  // --- JSON-Backed Core Logic ---
+  
+  Map<String, dynamic> toMap() {
+    return {
+      'receiptDate': receiptDate,
+      'storeName': storeName,
+      'currency': currency,
+      'subtotal': subtotal,
+      'items': items.map((e) => e.toMap()).toList(),
+      'discounts': discounts.map((e) => e.toMap()).toList(),
+      'taxes': taxes.map((e) => e.toMap()).toList(),
+      'totalAmount': totalAmount,
+    };
+  }
+
+  String get rawJsonData => jsonEncode(toMap());
+
+  factory ReceiptRecord.fromJsonBacked(String id, DateTime timestamp, String jsonString, String? imagePath) {
+    try {
+      final map = jsonDecode(jsonString) as Map<String, dynamic>;
+      return ReceiptRecord(
+        id: id,
+        timestamp: timestamp,
+        receiptDate: map['receiptDate']?.toString(),
+        storeName: map['storeName']?.toString(),
+        currency: map['currency']?.toString(),
+        subtotal: (map['subtotal'] as num?)?.toDouble() ?? 0.0,
+        items: (map['items'] as List?)?.map((e) => ReceiptItem.fromMap(Map<String, dynamic>.from(e))).toList() ?? [],
+        discounts: (map['discounts'] as List?)?.map((e) => ReceiptFeeItem.fromMap(Map<String, dynamic>.from(e))).toList() ?? [],
+        taxes: (map['taxes'] as List?)?.map((e) => ReceiptFeeItem.fromMap(Map<String, dynamic>.from(e))).toList() ?? [],
+        totalAmount: (map['totalAmount'] as num?)?.toDouble() ?? 0.0,
+        imagePath: imagePath,
+      );
+    } catch (e) {
+      // Fallback in case of parsing error
+      return ReceiptRecord(
+        id: id,
+        timestamp: timestamp,
+        subtotal: 0.0,
+        items: [],
+        totalAmount: 0.0,
+        imagePath: imagePath,
+      );
+    }
+  }
 }
 
 class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
-  // Breaking Change! Increased typeId to 2 to isolate from old version.
+  // Completely Re-architected: JSON-Backed Persistence
   @override
-  final int typeId = 8;
+  final int typeId = 9;
 
   @override
   ReceiptRecord read(BinaryReader reader) {
     final id = reader.readString();
     final timestamp = DateTime.fromMillisecondsSinceEpoch(reader.readInt());
-    final storeName = reader.readString();
-    final subtotal = reader.readDouble();
-    final totalAmount = reader.readDouble();
-    final receiptDate = reader.readString();
-    final currency = reader.readString();
-    
-    // Read items
-    final itemsLength = reader.readInt();
-    final items = <ReceiptItem>[];
-    for (var i = 0; i < itemsLength; i++) {
-      final originalName = reader.readString();
-      final translatedName = reader.readString();
-      final price = reader.readDouble();
-      items.add(ReceiptItem(
-        originalName: originalName,
-        translatedName: translatedName,
-        price: price,
-      ));
-    }
-
-    // Read discounts
-    final discountsLength = reader.readInt();
-    final discounts = <ReceiptFeeItem>[];
-    for (var i = 0; i < discountsLength; i++) {
-      final name = reader.readString();
-      final amount = reader.readDouble();
-      discounts.add(ReceiptFeeItem(name: name, amount: amount));
-    }
-
-    // Read taxes
-    final taxesLength = reader.readInt();
-    final taxes = <ReceiptFeeItem>[];
-    for (var i = 0; i < taxesLength; i++) {
-      final name = reader.readString();
-      final amount = reader.readDouble();
-      taxes.add(ReceiptFeeItem(name: name, amount: amount));
-    }
-
+    final rawJsonData = reader.readString();
     final imagePath = reader.readString();
 
-    return ReceiptRecord(
-      id: id,
-      timestamp: timestamp,
-      receiptDate: receiptDate.isEmpty ? null : receiptDate,
-      storeName: storeName.isEmpty ? null : storeName,
-      currency: currency.isEmpty ? null : currency,
-      subtotal: subtotal,
-      totalAmount: totalAmount,
-      items: items,
-      discounts: discounts,
-      taxes: taxes,
-      imagePath: imagePath.isEmpty ? null : imagePath,
+    return ReceiptRecord.fromJsonBacked(
+      id,
+      timestamp,
+      rawJsonData,
+      imagePath.isEmpty ? null : imagePath,
     );
   }
 
@@ -240,31 +258,7 @@ class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
   void write(BinaryWriter writer, ReceiptRecord obj) {
     writer.writeString(obj.id);
     writer.writeInt(obj.timestamp.millisecondsSinceEpoch);
-    writer.writeString(obj.storeName ?? '');
-    writer.writeDouble(obj.subtotal);
-    writer.writeDouble(obj.totalAmount);
-    writer.writeString(obj.receiptDate ?? '');
-    writer.writeString(obj.currency ?? '');
-    
-    writer.writeInt(obj.items.length);
-    for (final item in obj.items) {
-      writer.writeString(item.originalName);
-      writer.writeString(item.translatedName);
-      writer.writeDouble(item.price);
-    }
-
-    writer.writeInt(obj.discounts.length);
-    for (final discount in obj.discounts) {
-      writer.writeString(discount.name);
-      writer.writeDouble(discount.amount);
-    }
-
-    writer.writeInt(obj.taxes.length);
-    for (final tax in obj.taxes) {
-      writer.writeString(tax.name);
-      writer.writeDouble(tax.amount);
-    }
-
+    writer.writeString(obj.rawJsonData);
     writer.writeString(obj.imagePath ?? '');
   }
 }
