@@ -68,12 +68,15 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
             return InteractiveViewer(
               minScale: 1.0,
               maxScale: 4.0,
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: _getImageProvider(index),
-                    fit: BoxFit.cover, // Allow full screen cover to avoid black bars
-                    alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+                child: Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image(
+                      image: _getImageProvider(index),
+                      fit: BoxFit.contain, // Professional un-clipped view
+                    ),
                   ),
                 ),
               ),
