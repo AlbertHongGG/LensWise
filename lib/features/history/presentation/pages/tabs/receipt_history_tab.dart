@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
@@ -46,7 +47,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          // TODO: Route to Receipt details
+          context.push('/result/receipt', extra: record);
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -78,7 +79,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '\$ \${record.totalAmount.toStringAsFixed(2)}',
+                      '\$${record.totalAmount.toStringAsFixed(2)}',
                       style: TextStyle(
                         color: isDark ? Colors.white70 : Colors.black87,
                         fontSize: 14,
