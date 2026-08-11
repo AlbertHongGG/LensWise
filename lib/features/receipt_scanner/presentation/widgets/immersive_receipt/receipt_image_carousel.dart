@@ -73,9 +73,13 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
                 child: Center(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Image(
-                      image: _getImageProvider(index),
-                      fit: BoxFit.contain, // Professional un-clipped view
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Image(
+                        image: _getImageProvider(index),
+                        fit: BoxFit.fitWidth,
+                        width: double.infinity,
+                      ),
                     ),
                   ),
                 ),
