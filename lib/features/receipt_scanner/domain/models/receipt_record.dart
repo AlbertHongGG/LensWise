@@ -128,11 +128,14 @@ class ReceiptRecord {
       }
     }
 
+    // Programmatically calculate subtotal to avoid LLM math errors
+    final calculatedSubtotal = processedItems.fold<double>(0.0, (sum, item) => sum + item.price);
+
     return ReceiptRecord(
       id: const Uuid().v4(),
       timestamp: DateTime.now(),
       storeName: data['storeName']?.toString() ?? '',
-      subtotal: double.tryParse(data['subtotal']?.toString() ?? '0') ?? 0.0,
+      subtotal: calculatedSubtotal,
       items: processedItems,
       discounts: processedDiscounts,
       taxes: processedTaxes,
@@ -145,7 +148,7 @@ class ReceiptRecord {
 class ReceiptRecordAdapter extends TypeAdapter<ReceiptRecord> {
   // Breaking Change! Increased typeId to 2 to isolate from old version.
   @override
-  final int typeId = 2;
+  final int typeId = 6;
 
   @override
   ReceiptRecord read(BinaryReader reader) {

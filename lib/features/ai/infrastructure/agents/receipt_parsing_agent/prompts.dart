@@ -32,7 +32,6 @@ String buildReceiptParsingSystemPrompt(String targetLanguage) {
     - originalName (字串): 收據上的原始品名 (可包含自動糾錯)。
     - translatedName (字串): 翻譯為目標語言的品名。
     - price (數字): 該品項的單價或小計金額。
-  - subtotal (數字): 購買品項的小計總額 (未稅/未折抵前)。
   - discounts (物件陣列): 所有折扣或折抵項目。
     - name (字串): 折扣名目 (已翻譯)。
     - amount (數字): 扣減金額 (如果是扣錢，請轉為負數，例如 -22)。
