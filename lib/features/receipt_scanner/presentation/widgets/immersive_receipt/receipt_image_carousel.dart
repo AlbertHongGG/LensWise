@@ -19,16 +19,56 @@ class ReceiptImageCarousel extends StatefulWidget {
 class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
   late PageController _pageController;
   int _currentIndex = 0;
+  late List<TransformationController> _transformControllers;
+  bool _isZoomedIn = false;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _initControllers();
+  }
+
+  void _initControllers() {
+    final count = (widget.memoryImages?.length ?? 0) + widget.filePaths.length;
+    _transformControllers = List.generate(count, (_) => TransformationController());
+    for (var controller in _transformControllers) {
+      controller.addListener(_onScaleChanged);
+    }
+  }
+
+  void _onScaleChanged() {
+    if (_currentIndex < _transformControllers.length) {
+      final scale = _transformControllers[_currentIndex].value.getMaxScaleOnAxis();
+      final isZoomedIn = scale > 1.05; // Added slight margin
+      if (isZoomedIn != _isZoomedIn) {
+        setState(() {
+          _isZoomedIn = isZoomedIn;
+        });
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(ReceiptImageCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final count = (widget.memoryImages?.length ?? 0) + widget.filePaths.length;
+    if (_transformControllers.length != count) {
+      for (var c in _transformControllers) {
+        c.removeListener(_onScaleChanged);
+        c.dispose();
+      }
+      _initControllers();
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    for (var c in _transformControllers) {
+      c.removeListener(_onScaleChanged);
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -57,6 +97,9 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
       children: [
         Container(color: Colors.black), // Base background
         PageView.builder(
+          physics: _isZoomedIn 
+              ? const NeverScrollableScrollPhysics() 
+              : const _CarouselScrollPhysics(),
           controller: _pageController,
           itemCount: _itemCount,
           onPageChanged: (index) {
@@ -65,25 +108,33 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
             });
           },
           itemBuilder: (context, index) {
-            return InteractiveViewer(
-              minScale: 1.0,
-              maxScale: 4.0,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
-                child: Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Image(
-                        image: _getImageProvider(index),
-                        fit: BoxFit.fitWidth,
-                        width: double.infinity,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return InteractiveViewer(
+                  transformationController: _transformControllers[index],
+                  minScale: 1.0,
+                  maxScale: 4.0,
+                  constrained: false, // Core fix: allow child to exceed viewport natively
+                  boundaryMargin: EdgeInsets.zero,
+                  child: Container(
+                    width: constraints.maxWidth,
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight, // Centers the image if it's shorter than viewport
+                    ),
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image(
+                          image: _getImageProvider(index),
+                          fit: BoxFit.fitWidth,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             );
           },
         ),
@@ -117,3 +168,16 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
     );
   }
 }
+
+class _CarouselScrollPhysics extends BouncingScrollPhysics {
+  const _CarouselScrollPhysics({super.parent});
+
+  @override
+  _CarouselScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return _CarouselScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  double get dragStartDistanceMotionThreshold => 30.0; // High threshold so pinch-to-zoom wins easily over horizontal swipe
+}
+

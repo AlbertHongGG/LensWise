@@ -24,6 +24,7 @@ class ReceiptResultPage extends ConsumerStatefulWidget {
 class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
   late ReceiptRecord _currentRecord;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isDrawerOpen = false;
 
   @override
   void initState() {
@@ -60,67 +61,77 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                 bottom: 16,
                 left: 0,
                 right: 0,
-                child: Center(
-                  child: FloatingActionButton(
-                    onPressed: _showImageModal,
-                    backgroundColor: isDark ? Colors.white24 : Colors.black87,
-                    foregroundColor: isDark ? Colors.white : Colors.white,
-                    elevation: 4,
-                    child: const Icon(Icons.image_outlined),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showImageModal() {
-    _scaffoldKey.currentState?.showBottomSheet(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      (context) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
-        minChildSize: 0.3,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: Column(
-            children: [
-              // Drag handle area
-              SingleChildScrollView(
-                controller: scrollController,
-                physics: const ClampingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                child: AnimatedOpacity(
+                  opacity: _isDrawerOpen ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 200),
                   child: Center(
-                    child: Container(
-                      width: 48,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.white30,
-                        borderRadius: BorderRadius.circular(2.5),
-                      ),
+                    child: FloatingActionButton(
+                      onPressed: () => setState(() => _isDrawerOpen = true),
+                      backgroundColor: isDark ? Colors.white24 : Colors.black87,
+                      foregroundColor: isDark ? Colors.white : Colors.white,
+                      elevation: 4,
+                      child: const Icon(Icons.image_outlined),
                     ),
                   ),
                 ),
               ),
-              // Independent scroll/zoom for image
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  child: ReceiptImageCarousel(
-                    memoryImages: widget.memoryImages ?? [],
-                    filePaths: _currentRecord.imagePaths,
+            if (_isDrawerOpen)
+              NotificationListener<DraggableScrollableNotification>(
+                onNotification: (notification) {
+                  if (notification.extent <= 0.05) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && _isDrawerOpen) {
+                        setState(() => _isDrawerOpen = false);
+                      }
+                    });
+                  }
+                  return false;
+                },
+                child: DraggableScrollableSheet(
+                  initialChildSize: 0.5,
+                  minChildSize: 0.0,
+                  maxChildSize: 0.95,
+                  builder: (context, scrollController) => Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                    ),
+                    child: Column(
+                      children: [
+                        // Drag handle area
+                        SingleChildScrollView(
+                          controller: scrollController,
+                          physics: const ClampingScrollPhysics(),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: Container(
+                                width: 48,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  color: Colors.white30,
+                                  borderRadius: BorderRadius.circular(2.5),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      // Independent scroll/zoom for image
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                          child: ReceiptImageCarousel(
+                            memoryImages: widget.memoryImages ?? [],
+                            filePaths: _currentRecord.imagePaths,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
