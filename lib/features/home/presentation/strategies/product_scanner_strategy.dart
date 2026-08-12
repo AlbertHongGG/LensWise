@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/utils/image_processing_pipeline.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
+import 'package:lens_wise/features/home/presentation/pages/captured_image_gallery_screen.dart';
 import 'package:lens_wise/features/home/presentation/widgets/gallery_picker_button.dart';
 import 'package:lens_wise/features/home/presentation/widgets/custom_gallery_bottom_sheet.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
@@ -13,26 +14,154 @@ class ProductScannerStrategy extends ScannerModeStrategy {
   String get modeTitle => '商品';
 
   @override
+  int get minShotsRequired => 1;
+
+  @override
+  int? get maxShotsAllowed => 50;
+
+  @override
+  bool get isAutoProcess => false;
+
+  @override
   Widget buildOverlay(BuildContext context) {
     return const SizedBox.shrink(); // No borders or boxes, full screen immersion
   }
 
   @override
-  Future<void> processImage(BuildContext context, WidgetRef ref) async {
-    if (capturedImages.value.isEmpty) return;
-    
-    final screenSize = MediaQuery.of(context).size;
-    final screenRatio = screenSize.width / screenSize.height;
-    final cropped = await ImageProcessingPipeline.cropToScreenRatio(capturedImages.value.first, screenRatio);
+  Widget buildFloatingAction(BuildContext context, WidgetRef ref) {
+    return ValueListenableBuilder<List<Uint8List>>(
+      valueListenable: capturedImages,
+      builder: (context, images, child) {
+        if (images.isEmpty) return const SizedBox.shrink();
 
-    // 1. Trigger analysis with strictly WYSIWYG image
-    ref.read(productLensControllerProvider.notifier).analyzeImage(cropped);
-    
-    // 2. Navigate to processing page immediately
-    if (context.mounted) {
-      context.push('/product/processing');
-    }
+        return ValueListenableBuilder<bool>(
+          valueListenable: isProcessing,
+          builder: (context, loading, child) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: GestureDetector(
+                onTap: loading
+                    ? null
+                    : () async {
+                        isProcessing.value = true;
+                        try {
+                          await processImage(context, ref);
+                          reset();
+                        } finally {
+                          isProcessing.value = false;
+                        }
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blueAccent.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (loading)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      else
+                        const Icon(Icons.search, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        '開始分析',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
+
+  @override
+  Widget buildRightBottomAction(BuildContext context, WidgetRef ref) {
+    return ValueListenableBuilder<List<Uint8List>>(
+      valueListenable: capturedImages,
+      builder: (context, images, child) {
+        if (images.isEmpty) {
+          return const SizedBox(width: 60, height: 60);
+        }
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CapturedImageGalleryScreen(strategy: this),
+                fullscreenDialog: true,
+              ),
+            );
+          },
+          child: SizedBox(
+            width: 60,
+            height: 60,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: ClipOval(
+                      child: Image.memory(
+                        images.last,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.blueAccent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${images.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget buildLeftBottomAction(BuildContext context, WidgetRef ref) {
     return ValueListenableBuilder<bool>(
@@ -48,13 +177,13 @@ class ProductScannerStrategy extends ScannerModeStrategy {
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => const CustomGalleryBottomSheet(isMultiSelect: false),
+                builder: (context) => const CustomGalleryBottomSheet(isMultiSelect: true, maxItems: 50),
               );
 
               if (bytesList != null && bytesList.isNotEmpty && context.mounted) {
-                onImageCaptured(bytesList.first);
-                await processImage(context, ref);
-                reset();
+                for (final b in bytesList) {
+                  onImageCaptured(b);
+                }
               }
             } finally {
               isProcessing.value = false;
@@ -63,5 +192,27 @@ class ProductScannerStrategy extends ScannerModeStrategy {
         );
       },
     );
+  }
+
+  @override
+  Future<void> processImage(BuildContext context, WidgetRef ref) async {
+    if (capturedImages.value.isEmpty) return;
+    
+    final screenSize = MediaQuery.of(context).size;
+    final screenRatio = screenSize.width / screenSize.height;
+    
+    final croppedImages = <Uint8List>[];
+    for (final bytes in capturedImages.value) {
+      final cropped = await ImageProcessingPipeline.cropToScreenRatio(bytes, screenRatio);
+      croppedImages.add(cropped);
+    }
+    capturedImages.value = croppedImages;
+
+    // Trigger analysis with list of images (Will be supported in Phase 3)
+    ref.read(productLensControllerProvider.notifier).analyzeImage(croppedImages);
+    
+    if (context.mounted) {
+      context.push('/product/processing');
+    }
   }
 }

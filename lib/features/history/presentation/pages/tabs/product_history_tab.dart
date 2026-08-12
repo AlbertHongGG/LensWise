@@ -99,7 +99,7 @@ class ProductHistoryTab extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: LongPressDraggable<HistoryDragData>(
-        data: HistoryDragData(id: record.id, imagePath: record.imagePath, type: HistoryType.product),
+        data: HistoryDragData(id: record.id, imagePaths: record.imagePaths, type: HistoryType.product),
         delay: const Duration(milliseconds: 200),
         feedback: Material(
           type: MaterialType.transparency,

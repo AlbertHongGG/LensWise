@@ -9,12 +9,12 @@ import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/i
 
 class ProductDetailPage extends StatelessWidget {
   final ProductRecord record;
-  final Uint8List? imageBytes;
+  final List<Uint8List>? imageBytesList;
 
   const ProductDetailPage({
     super.key,
     required this.record,
-    this.imageBytes,
+    this.imageBytesList,
   });
 
   @override
@@ -34,8 +34,8 @@ class ProductDetailPage extends StatelessWidget {
             // 增加圖片高度確保完全覆蓋卡片頂部的 32px 圓角，避免露出缺角
             height: MediaQuery.of(context).size.height * 0.48,
             child: ImmersiveBackground(
-              imageBytes: imageBytes,
-              imagePath: record.imagePath,
+              imageBytesList: imageBytesList,
+              imagePaths: record.imagePaths,
             ),
           ),
           

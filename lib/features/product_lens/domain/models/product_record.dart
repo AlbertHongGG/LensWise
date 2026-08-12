@@ -16,7 +16,7 @@ class ProductRecord {
   final List<String> dietaryFlags;
   final List<String> whenRecommended;
   final List<String> whenNotRecommended;
-  final String? imagePath;
+  final List<String> imagePaths;
 
   ProductRecord({
     required this.id,
@@ -31,10 +31,10 @@ class ProductRecord {
     required this.dietaryFlags,
     required this.whenRecommended,
     required this.whenNotRecommended,
-    this.imagePath,
+    this.imagePaths = const [],
   });
 
-  factory ProductRecord.fromAnalysisData(ProductAnalysisData data, {String? imagePath}) {
+  factory ProductRecord.fromAnalysisData(ProductAnalysisData data, {List<String> imagePaths = const []}) {
     return ProductRecord(
       id: const Uuid().v4(),
       timestamp: DateTime.now(),
@@ -48,7 +48,7 @@ class ProductRecord {
       dietaryFlags: data.dietaryFlags,
       whenRecommended: data.recommendedFor,
       whenNotRecommended: data.notRecommendedFor,
-      imagePath: imagePath,
+      imagePaths: imagePaths,
     );
   }
 
@@ -66,12 +66,13 @@ class ProductRecord {
       'dietaryFlags': dietaryFlags,
       'whenRecommended': whenRecommended,
       'whenNotRecommended': whenNotRecommended,
+      'imagePaths': imagePaths,
     };
   }
 
   String get rawJsonData => jsonEncode(toMap());
 
-  factory ProductRecord.fromJsonBacked(String id, DateTime timestamp, String jsonString, String? imagePath) {
+  factory ProductRecord.fromJsonBacked(String id, DateTime timestamp, String jsonString) {
     try {
       final map = jsonDecode(jsonString) as Map<String, dynamic>;
       return ProductRecord(
@@ -87,7 +88,7 @@ class ProductRecord {
         dietaryFlags: (map['dietaryFlags'] as List?)?.map((e) => e.toString()).toList() ?? [],
         whenRecommended: (map['whenRecommended'] as List?)?.map((e) => e.toString()).toList() ?? [],
         whenNotRecommended: (map['whenNotRecommended'] as List?)?.map((e) => e.toString()).toList() ?? [],
-        imagePath: imagePath,
+        imagePaths: (map['imagePaths'] as List?)?.map((e) => e.toString()).toList() ?? [],
       );
     } catch (e) {
       // Fallback in case of parsing error
@@ -104,30 +105,24 @@ class ProductRecord {
         dietaryFlags: [],
         whenRecommended: [],
         whenNotRecommended: [],
-        imagePath: imagePath,
+        imagePaths: [],
       );
     }
   }
 }
 
 class ProductRecordAdapter extends TypeAdapter<ProductRecord> {
-  // Completely Re-architected: JSON-Backed Persistence
+  // Completely Re-architected: JSON-Backed Persistence with Multi-Image Support
   @override
-  final int typeId = 10; // Breaking change from 2 to isolate corrupted data
+  final int typeId = 12; // Upgraded to v12 for multi-image architecture
 
   @override
   ProductRecord read(BinaryReader reader) {
     final id = reader.readString();
     final timestamp = DateTime.fromMillisecondsSinceEpoch(reader.readInt());
     final rawJsonData = reader.readString();
-    final imagePath = reader.readString();
 
-    return ProductRecord.fromJsonBacked(
-      id,
-      timestamp,
-      rawJsonData,
-      imagePath.isEmpty ? null : imagePath,
-    );
+    return ProductRecord.fromJsonBacked(id, timestamp, rawJsonData);
   }
 
   @override
@@ -135,6 +130,5 @@ class ProductRecordAdapter extends TypeAdapter<ProductRecord> {
     writer.writeString(obj.id);
     writer.writeInt(obj.timestamp.millisecondsSinceEpoch);
     writer.writeString(obj.rawJsonData);
-    writer.writeString(obj.imagePath ?? '');
   }
 }

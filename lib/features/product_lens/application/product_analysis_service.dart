@@ -14,13 +14,19 @@ class ProductAnalysisService {
   ProductAnalysisService(this._agent, this._repository, this._mediaService);
 
   /// 執行 AI 解析並自動將成功的結果存入歷史紀錄 (Application Layer Orchestration)
-  Future<ProductAnalysisResult> analyzeAndSave(Uint8List imageBytes) async {
-    final result = await _agent.execute(imageBytes);
+  Future<ProductAnalysisResult> analyzeAndSave(List<Uint8List> imageBytesList) async {
+    final result = await _agent.execute(imageBytesList);
 
     if (result.status == 'success' && result.data != null) {
       try {
-        final imagePath = await _mediaService.saveImage(imageBytes);
-        final record = ProductRecord.fromAnalysisData(result.data!, imagePath: imagePath);
+        final List<String> savedImagePaths = [];
+        
+        for (final bytes in imageBytesList) {
+          final path = await _mediaService.saveImage(bytes);
+          savedImagePaths.add(path);
+        }
+
+        final record = ProductRecord.fromAnalysisData(result.data!, imagePaths: savedImagePaths);
         await _repository.save(record.id, record);
       } catch (e) {
         // 這裡可以考慮加上 Logger，但不應該因為存檔失敗就阻斷使用者的畫面顯示

@@ -123,7 +123,7 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
           final record = ProductRecord.fromAnalysisData(data);
           context.pushReplacement('/product/detail', extra: {
             'record': record,
-            'imageBytes': state.imageBytes,
+            'imageBytesList': state.imageBytesList,
           });
         });
 

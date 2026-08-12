@@ -24,17 +24,17 @@ class ProductAnalysisResult {
   }
 }
 
-class ProductAnalysisAgent extends BaseAgent<Uint8List, ProductAnalysisResult> {
+class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductAnalysisResult> {
   final String targetLanguage;
 
   ProductAnalysisAgent(super.agentName, super.provider, super.logger, {required this.targetLanguage});
 
   @override
-  Future<ProductAnalysisResult> execute(Uint8List input) async {
+  Future<ProductAnalysisResult> execute(List<Uint8List> input) async {
     final request = GenerateRequest(
       systemPrompt: buildProductAnalysisSystemPrompt(targetLanguage),
       prompt: buildProductAnalysisUserPrompt(),
-      images: [input],
+      images: input,
     );
 
     final responseText = await executePrompt(request);

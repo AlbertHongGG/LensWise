@@ -73,7 +73,7 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
         final manager = ref.read(recordManagerServiceProvider);
         final records = await repo.getAll();
         for (final r in records) {
-          await manager.deleteRecord(repository: repo, id: r.id, imagePath: r.imagePath);
+          await manager.deleteRecord(repository: repo, id: r.id, imagePaths: r.imagePaths);
         }
         ref.invalidate(productHistoryProvider);
       };
@@ -240,7 +240,7 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
                       await manager.deleteRecord(repository: ref.read(receiptRepositoryProvider), id: data.id, imagePath: data.imagePath);
                       ref.invalidate(receiptHistoryProvider);
                     } else if (data.type == HistoryType.product) {
-                      await manager.deleteRecord(repository: ref.read(productRepositoryProvider), id: data.id, imagePath: data.imagePath);
+                      await manager.deleteRecord(repository: ref.read(productRepositoryProvider), id: data.id, imagePaths: data.imagePaths);
                       ref.invalidate(productHistoryProvider);
                     } else if (data.type == HistoryType.comparison) {
                       await manager.deleteRecord(repository: ref.read(comparisonRepositoryProvider), id: data.id, imagePath: data.imagePath);

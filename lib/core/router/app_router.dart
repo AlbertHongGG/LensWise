@@ -46,7 +46,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final record = extra?['record'] as ProductRecord?;
-          final imageBytes = extra?['imageBytes'] as Uint8List?;
+          final imageBytesList = extra?['imageBytesList'] as List<Uint8List>?;
           
           if (record == null) {
             return const Scaffold(body: Center(child: Text('查無商品資料')));
@@ -54,7 +54,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           
           return ProductDetailPage(
             record: record,
-            imageBytes: imageBytes,
+            imageBytesList: imageBytesList,
           );
         },
       ),

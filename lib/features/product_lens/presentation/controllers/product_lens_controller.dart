@@ -11,26 +11,26 @@ class ProductLensState {
   final ProductLensStatus status;
   final ProductAnalysisResult? result;
   final String? errorMessage;
-  final Uint8List? imageBytes;
+  final List<Uint8List>? imageBytesList;
 
   ProductLensState({
     this.status = ProductLensStatus.idle,
     this.result,
     this.errorMessage,
-    this.imageBytes,
+    this.imageBytesList,
   });
 
   ProductLensState copyWith({
     ProductLensStatus? status,
     ProductAnalysisResult? result,
     String? errorMessage,
-    Uint8List? imageBytes,
+    List<Uint8List>? imageBytesList,
   }) {
     return ProductLensState(
       status: status ?? this.status,
       result: result ?? this.result,
       errorMessage: errorMessage ?? this.errorMessage,
-      imageBytes: imageBytes ?? this.imageBytes,
+      imageBytesList: imageBytesList ?? this.imageBytesList,
     );
   }
 }
@@ -41,7 +41,7 @@ class ProductLensController extends Notifier<ProductLensState> {
     return ProductLensState();
   }
 
-  Future<void> analyzeImage(Uint8List imageBytes) async {
+  Future<void> analyzeImage(List<Uint8List> imageBytesList) async {
     final aiState = ref.read(aiConfigControllerProvider);
     if (!aiState.isAIAgentEnabled) {
       state = state.copyWith(
@@ -51,10 +51,10 @@ class ProductLensController extends Notifier<ProductLensState> {
       return;
     }
 
-    state = state.copyWith(status: ProductLensStatus.loading, imageBytes: imageBytes);
+    state = state.copyWith(status: ProductLensStatus.loading, imageBytesList: imageBytesList);
     try {
       final service = ref.read(productAnalysisServiceProvider);
-      final result = await service.analyzeAndSave(imageBytes);
+      final result = await service.analyzeAndSave(imageBytesList);
       ref.invalidate(productHistoryProvider);
       
       if (result.status == 'success') {
