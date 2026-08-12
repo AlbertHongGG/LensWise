@@ -11,6 +11,106 @@ import 'package:lens_wise/features/ai/infrastructure/logger/system_log_manager.d
 import 'package:lens_wise/features/ai/presentation/screens/agent_log_detail_screen.dart';
 import 'package:lens_wise/core/widgets/swipe_to_obliterate_button.dart';
 
+// --- AiLogListTab WITH KEEPALIVE ---
+class AiLogListTab extends StatefulWidget {
+  final List<AiLogModel> logs;
+  final bool isDark;
+  final void Function(FileSystemEntity, bool) onLogTap;
+
+  const AiLogListTab({
+    super.key,
+    required this.logs,
+    required this.isDark,
+    required this.onLogTap,
+  });
+
+  @override
+  State<AiLogListTab> createState() => _AiLogListTabState();
+}
+
+class _AiLogListTabState extends State<AiLogListTab> with AutomaticKeepAliveClientMixin {
+  
+  @override
+  bool get wantKeepAlive => true; // CRUCIAL: Keeps tab state alive off-screen
+
+  Widget _buildEmptyState() {
+    return const Center(
+      child: Text(
+        '目前沒有系統日誌。',
+        style: TextStyle(fontFamily: 'Outfit', fontSize: 16),
+      ),
+    );
+  }
+
+  Widget _buildLogCard(AiLogModel log, String subtitle) {
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 8),
+      color: widget.isDark ? AppColors.surfaceDark : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: widget.isDark ? Colors.white12 : Colors.black12, width: 1),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.smart_toy_outlined, 
+            color: AppColors.primary
+          ),
+        ),
+        title: Text(log.title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: () => widget.onLogTap(log.file, widget.isDark),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context); // CRUCIAL: Required for AutomaticKeepAliveClientMixin
+
+    if (widget.logs.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 100, top: 8),
+      itemCount: widget.logs.length,
+      itemBuilder: (context, index) {
+        final log = widget.logs[index];
+        final subtitle = DateFormat('yyyy-MM-dd HH:mm:ss').format(log.dateTime);
+
+        return LongPressDraggable<AiLogModel>(
+          data: log,
+          feedback: Material(
+            color: Colors.transparent,
+            child: Opacity(
+              opacity: 0.8,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width - 32,
+                child: _buildLogCard(log, subtitle),
+              ),
+            ),
+          ),
+          childWhenDragging: Opacity(
+            opacity: 0.3,
+            child: _buildLogCard(log, subtitle),
+          ),
+          child: _buildLogCard(log, subtitle),
+        );
+      },
+    );
+  }
+}
+
+// --- MAIN SCREEN ---
 class AiLogViewerScreen extends ConsumerStatefulWidget {
   const AiLogViewerScreen({super.key});
 
@@ -21,7 +121,7 @@ class AiLogViewerScreen extends ConsumerStatefulWidget {
 class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with SingleTickerProviderStateMixin {
   TabController? _tabController;
   List<String> _tabs = [];
-  List<AiLogModel> _allLogs = [];
+  Map<String, List<AiLogModel>> _cachedFilteredLogs = {};
 
   @override
   void dispose() {
@@ -40,16 +140,32 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
   }
 
   void _initializeTabs(List<FileSystemEntity> logFiles) {
-    _allLogs = logFiles.map((f) => AiLogModel.fromFile(f)).toList();
-    _allLogs.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+    final allLogs = logFiles.map((f) => AiLogModel.fromFile(f)).toList();
+    allLogs.sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
-    final agentCategories = _allLogs.map((l) => l.agentName).toSet().toList();
+    final agentCategories = allLogs.map((l) => l.agentName).toSet().toList();
     final newTabs = ['All', ...agentCategories];
+
+    // Data Pre-computation: Pre-filter logs to avoid Rebuild overhead
+    final newCachedLogs = <String, List<AiLogModel>>{};
+    for (final tab in newTabs) {
+      if (tab == 'All') {
+        newCachedLogs[tab] = allLogs;
+      } else {
+        newCachedLogs[tab] = allLogs.where((l) => l.agentName == tab).toList();
+      }
+    }
+    _cachedFilteredLogs = newCachedLogs;
 
     if (_tabs.length != newTabs.length || !_tabs.every((t) => newTabs.contains(t))) {
       _tabs = newTabs;
+      final oldIndex = _tabController?.index ?? 0;
       _tabController?.dispose();
-      _tabController = TabController(length: _tabs.length, vsync: this);
+      _tabController = TabController(
+        length: _tabs.length, 
+        vsync: this, 
+        initialIndex: oldIndex >= _tabs.length ? 0 : oldIndex,
+      );
     }
   }
 
@@ -134,70 +250,6 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
     );
   }
 
-  Widget _buildLogCard(AiLogModel log, String subtitle, bool isDark) {
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 8),
-      color: isDark ? AppColors.surfaceDark : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isDark ? Colors.white12 : Colors.black12, width: 1),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.smart_toy_outlined, 
-            color: AppColors.primary
-          ),
-        ),
-        title: Text(log.title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right_rounded),
-        onTap: () => _openLogDetail(log.file, isDark),
-      ),
-    );
-  }
-
-  Widget _buildLogListView(List<AiLogModel> logs, bool isDark) {
-    if (logs.isEmpty) {
-      return _buildEmptyState(isDark);
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 80, top: 8),
-      itemCount: logs.length,
-      itemBuilder: (context, index) {
-        final log = logs[index];
-        final subtitle = DateFormat('yyyy-MM-dd HH:mm:ss').format(log.dateTime);
-
-        return LongPressDraggable<AiLogModel>(
-          data: log,
-          feedback: Material(
-            color: Colors.transparent,
-            child: Opacity(
-              opacity: 0.8,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width - 32,
-                child: _buildLogCard(log, subtitle, isDark),
-              ),
-            ),
-          ),
-          childWhenDragging: Opacity(
-            opacity: 0.3,
-            child: _buildLogCard(log, subtitle, isDark),
-          ),
-          child: _buildLogCard(log, subtitle, isDark),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -267,18 +319,18 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                       ),
                     ),
 
-                    // TabBarView
+                    // RESTORED: Native TabBarView with KeepAlive Tabs
                     Expanded(
                       child: TabBarView(
                         controller: _tabController,
-                        physics: const NeverScrollableScrollPhysics(),
+                        // Not using NeverScrollableScrollPhysics so users CAN slide it
                         children: _tabs.map((tab) {
-                          final filteredLogs = tab == 'All' 
-                            ? _allLogs 
-                            : _allLogs.where((l) => l.agentName == tab).toList();
-                          return KeyedSubtree(
-                            key: ValueKey(tab),
-                            child: _buildLogListView(filteredLogs, isDark),
+                          final filteredLogs = _cachedFilteredLogs[tab] ?? [];
+                          return AiLogListTab(
+                            key: ValueKey(tab), // Crucial for state matching
+                            logs: filteredLogs,
+                            isDark: isDark,
+                            onLogTap: _openLogDetail,
                           );
                         }).toList(),
                       ),
