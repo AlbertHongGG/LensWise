@@ -18,12 +18,10 @@ class CameraDashboardPage extends ConsumerStatefulWidget {
 }
 
 class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
-  bool _isProcessing = false;
-
   Future<void> _takePicture(ScannerModeStrategy strategy, CameraState? cameraState) async {
-    if (_isProcessing || cameraState == null) return;
+    if (strategy.isLocked || cameraState == null) return;
     
-    setState(() { _isProcessing = true; });
+    strategy.actionState.value = CameraActionState.capturing;
 
     try {
       if (cameraState is PhotoCameraState) {
@@ -49,8 +47,8 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
     } catch (e) {
       debugPrint('[ERROR] Failed to take picture: $e');
     } finally {
-      if (mounted) {
-        setState(() { _isProcessing = false; });
+      if (strategy.currentState == CameraActionState.capturing) {
+        strategy.actionState.value = CameraActionState.idle;
       }
     }
   }

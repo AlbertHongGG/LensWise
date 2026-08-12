@@ -4,6 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 
+enum CameraActionState {
+  idle,
+  capturing,
+  pickingGallery,
+  analyzing
+}
+
 abstract class ScannerModeStrategy {
   /// The title for the current mode, displayed at the top or in the mode switcher.
   String get modeTitle;
@@ -21,8 +28,11 @@ abstract class ScannerModeStrategy {
   /// The images captured so far in the current session.
   final ValueNotifier<List<Uint8List>> capturedImages = ValueNotifier([]);
 
-  /// True if the strategy is currently processing an image (e.g., AI request).
-  final ValueNotifier<bool> isProcessing = ValueNotifier(false);
+  /// The current action state of the camera UI.
+  final ValueNotifier<CameraActionState> actionState = ValueNotifier(CameraActionState.idle);
+
+  bool get isLocked => actionState.value != CameraActionState.idle;
+  CameraActionState get currentState => actionState.value;
 
   /// Called when a new image is captured.
   void onImageCaptured(Uint8List image) {
@@ -62,11 +72,14 @@ abstract class ScannerModeStrategy {
   /// Builds the center shutter button.
   /// A default implementation is provided which calls [defaultTakePicture].
   Widget buildShutterButton(BuildContext context, WidgetRef ref, dynamic cameraState, Future<void> Function() defaultTakePicture) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isProcessing,
-      builder: (context, processing, child) {
+    return ValueListenableBuilder<CameraActionState>(
+      valueListenable: actionState,
+      builder: (context, state, child) {
+        final locked = state != CameraActionState.idle;
+        final isCapturing = state == CameraActionState.capturing;
+        
         return GestureDetector(
-          onTap: processing ? null : defaultTakePicture,
+          onTap: locked ? null : defaultTakePicture,
           child: Container(
             width: 76,
             height: 76,
@@ -83,7 +96,7 @@ abstract class ScannerModeStrategy {
                   shape: BoxShape.circle,
                   color: Colors.white,
                 ),
-                child: processing ? const CircularProgressIndicator(color: Colors.black) : null,
+                child: isCapturing ? const CircularProgressIndicator(color: Colors.black) : null,
               ),
             ),
           ),

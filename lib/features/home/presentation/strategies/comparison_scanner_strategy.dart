@@ -34,32 +34,35 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
       builder: (context, images, child) {
         if (images.length < minShotsRequired) return const SizedBox.shrink();
 
-        return ValueListenableBuilder<bool>(
-          valueListenable: isProcessing,
-          builder: (context, loading, child) {
+        return ValueListenableBuilder<CameraActionState>(
+          valueListenable: actionState,
+          builder: (context, state, child) {
+            final locked = state != CameraActionState.idle;
+            final isAnalyzing = state == CameraActionState.analyzing;
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: GestureDetector(
-                onTap: loading
+                onTap: locked
                     ? null
                     : () async {
-                        isProcessing.value = true;
+                        actionState.value = CameraActionState.analyzing;
                         try {
                           await processImage(context, ref);
                           reset();
                         } finally {
-                          isProcessing.value = false;
+                          actionState.value = CameraActionState.idle;
                         }
                       },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(30), // 圓潤膠囊形狀 StadiumBorder
+                    borderRadius: BorderRadius.circular(30),
                     border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blueAccent.withValues(alpha: 0.3),
+                        color: Colors.purpleAccent.withValues(alpha: 0.3),
                         blurRadius: 12,
                         spreadRadius: 2,
                       ),
@@ -68,14 +71,14 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (loading)
+                      if (isAnalyzing)
                         const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
                       else
-                        const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                        const Icon(Icons.compare, color: Colors.white, size: 20),
                       const SizedBox(width: 8),
                       const Text(
                         '開始比對',
@@ -141,7 +144,7 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: const BoxDecoration(
-                      color: Colors.redAccent,
+                      color: Colors.purpleAccent,
                       shape: BoxShape.circle,
                     ),
                     child: Text(
@@ -164,20 +167,22 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
 
   @override
   Widget buildLeftBottomAction(BuildContext context, WidgetRef ref) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isProcessing,
-      builder: (context, loading, child) {
+    return ValueListenableBuilder<CameraActionState>(
+      valueListenable: actionState,
+      builder: (context, state, child) {
+        final locked = state != CameraActionState.idle;
+        final isPicking = state == CameraActionState.pickingGallery;
+
         return GalleryPickerButton(
-          isLoading: loading,
-          onTap: () async {
-            if (isProcessing.value) return;
-            isProcessing.value = true;
+          isLoading: isPicking,
+          onTap: locked ? null : () async {
+            actionState.value = CameraActionState.pickingGallery;
             try {
               final bytesList = await showModalBottomSheet<List<Uint8List>>(
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => const CustomGalleryBottomSheet(isMultiSelect: true, maxItems: 99),
+                builder: (context) => const CustomGalleryBottomSheet(isMultiSelect: true, maxItems: 2),
               );
 
               if (bytesList != null && bytesList.isNotEmpty && context.mounted) {
@@ -186,7 +191,7 @@ class ComparisonScannerStrategy extends ScannerModeStrategy {
                 }
               }
             } finally {
-              isProcessing.value = false;
+              actionState.value = CameraActionState.idle;
             }
           },
         );

@@ -34,21 +34,24 @@ class ReceiptScannerStrategy extends ScannerModeStrategy {
       builder: (context, images, child) {
         if (images.isEmpty) return const SizedBox.shrink();
 
-        return ValueListenableBuilder<bool>(
-          valueListenable: isProcessing,
-          builder: (context, loading, child) {
+        return ValueListenableBuilder<CameraActionState>(
+          valueListenable: actionState,
+          builder: (context, state, child) {
+            final locked = state != CameraActionState.idle;
+            final isAnalyzing = state == CameraActionState.analyzing;
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: GestureDetector(
-                onTap: loading
+                onTap: locked
                     ? null
                     : () async {
-                        isProcessing.value = true;
+                        actionState.value = CameraActionState.analyzing;
                         try {
                           await processImage(context, ref);
                           reset();
                         } finally {
-                          isProcessing.value = false;
+                          actionState.value = CameraActionState.idle;
                         }
                       },
                 child: Container(
@@ -68,7 +71,7 @@ class ReceiptScannerStrategy extends ScannerModeStrategy {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (loading)
+                      if (isAnalyzing)
                         const SizedBox(
                           width: 20,
                           height: 20,
@@ -164,14 +167,16 @@ class ReceiptScannerStrategy extends ScannerModeStrategy {
 
   @override
   Widget buildLeftBottomAction(BuildContext context, WidgetRef ref) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isProcessing,
-      builder: (context, loading, child) {
+    return ValueListenableBuilder<CameraActionState>(
+      valueListenable: actionState,
+      builder: (context, state, child) {
+        final locked = state != CameraActionState.idle;
+        final isPicking = state == CameraActionState.pickingGallery;
+
         return GalleryPickerButton(
-          isLoading: loading,
-          onTap: () async {
-            if (isProcessing.value) return;
-            isProcessing.value = true;
+          isLoading: isPicking,
+          onTap: locked ? null : () async {
+            actionState.value = CameraActionState.pickingGallery;
             try {
               final bytesList = await showModalBottomSheet<List<Uint8List>>(
                 context: context,
@@ -186,7 +191,7 @@ class ReceiptScannerStrategy extends ScannerModeStrategy {
                 }
               }
             } finally {
-              isProcessing.value = false;
+              actionState.value = CameraActionState.idle;
             }
           },
         );
