@@ -8,7 +8,7 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_hero_section.dart';
-import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_point_card.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_unified_board.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_contenders_drawer.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_roster_bar.dart';
 
@@ -239,20 +239,18 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                   ),
                 ),
                 
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-                // 3. Detail Level: Comparison Points
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32).copyWith(bottom: 120), // Padding for Bottom Roster Bar
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => ComparisonPointCard(
-                        point: result.comparisonPoints[index],
+                // 2. The Integrated Console (Seamlessly overlapping the Hero section)
+                SliverToBoxAdapter(
+                  child: Transform.translate(
+                    offset: const Offset(0, -16), // Negative offset to fuse with Hero
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 120), // Padding for Bottom Roster Bar
+                      child: ComparisonUnifiedBoard(
+                        result: result,
                         leftIndex: _leftIndex,
                         rightIndex: _rightIndex,
                         isDark: isDark,
                       ),
-                      childCount: result.comparisonPoints.length,
                     ),
                   ),
                 ),
