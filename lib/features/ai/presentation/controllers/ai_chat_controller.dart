@@ -79,18 +79,18 @@ class AiChatController extends Notifier<AiChatSessionState> {
     // Save history before adding the new query
     final history = List<ChatMessage>.from(state.messages);
 
+    state = state.copyWith(
+      messages: [...state.messages, userMessage],
+      isProcessing: true,
+      errorMessage: null,
+    );
+
     final aiMessageId = _generateId();
     var aiMessage = ChatMessage(
       id: aiMessageId,
       type: ChatMessageType.ai,
       text: '',
       timestamp: DateTime.now(),
-    );
-
-    state = state.copyWith(
-      messages: [...state.messages, userMessage, aiMessage],
-      isProcessing: true,
-      errorMessage: null,
     );
 
     try {
@@ -103,18 +103,33 @@ class AiChatController extends Notifier<AiChatSessionState> {
 
       final stream = agent.executeStream(request);
 
+      bool isFirstChunk = true;
+
       await for (final chunk in stream) {
         aiMessage = aiMessage.copyWith(text: aiMessage.text + chunk);
 
-        final newMessages = List<ChatMessage>.from(state.messages);
-        final index = newMessages.indexWhere((m) => m.id == aiMessageId);
-        if (index != -1) {
-          newMessages[index] = aiMessage;
-          state = state.copyWith(messages: newMessages);
+        if (isFirstChunk) {
+          isFirstChunk = false;
+          state = state.copyWith(
+            messages: [...state.messages, aiMessage],
+            isProcessing: false,
+          );
+        } else {
+          final newMessages = List<ChatMessage>.from(state.messages);
+          final index = newMessages.indexWhere((m) => m.id == aiMessageId);
+          if (index != -1) {
+            newMessages[index] = aiMessage;
+            state = state.copyWith(messages: newMessages);
+          }
         }
       }
 
-      state = state.copyWith(isProcessing: false);
+      if (isFirstChunk) {
+        state = state.copyWith(
+          messages: [...state.messages, aiMessage],
+          isProcessing: false,
+        );
+      }
     } catch (e) {
       final newMessages = List<ChatMessage>.from(state.messages);
       final index = newMessages.indexWhere((m) => m.id == aiMessageId);
@@ -132,7 +147,7 @@ class AiChatController extends Notifier<AiChatSessionState> {
         newMessages.add(ChatMessage(
           id: _generateId(),
           type: ChatMessageType.error,
-          text: '發生錯誤：$e',
+          text: errorText,
           timestamp: DateTime.now(),
         ));
       }
