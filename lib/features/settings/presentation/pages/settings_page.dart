@@ -9,6 +9,7 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/immersive_scaffold.dart';
 import 'package:lens_wise/core/widgets/premium_config_header.dart';
 import 'package:lens_wise/core/widgets/app_switch.dart';
+import 'package:lens_wise/features/ai/presentation/screens/ai_log_viewer_screen.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -71,6 +72,17 @@ class SettingsPage extends ConsumerWidget {
                 title: 'API 與引擎設定',
                 onTap: () {
                   context.push('/settings/ai');
+                },
+              ),
+              SettingsTile(
+                icon: Icons.data_object_rounded,
+                iconColor: AppColors.primary,
+                title: 'AI 系統日誌',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AiLogViewerScreen()),
+                  );
                 },
               ),
             ],

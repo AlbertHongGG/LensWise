@@ -83,30 +83,16 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
               Positioned(
                 top: MediaQuery.of(context).padding.top + 16,
                 right: 20,
-                child: Row(
-                  children: [
-                    _buildTopIconButton(
-                      icon: Icons.code_rounded,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const AiLogViewerScreen()),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 12),
-                    _buildTopIconButton(
-                      icon: Icons.history,
-                      onTap: () {
-                        final mode = ref.read(scannerModeProvider);
-                        switch (mode) {
-                          case ScannerMode.receipt: context.push('/history?tab=0'); break;
-                          case ScannerMode.product: context.push('/history?tab=1'); break;
-                          case ScannerMode.comparison: context.push('/history?tab=2'); break;
-                        }
-                      },
-                    ),
-                  ],
+                child: _buildTopIconButton(
+                  icon: Icons.history,
+                  onTap: () {
+                    final mode = ref.read(scannerModeProvider);
+                    switch (mode) {
+                      case ScannerMode.receipt: context.push('/history?tab=0'); break;
+                      case ScannerMode.product: context.push('/history?tab=1'); break;
+                      case ScannerMode.comparison: context.push('/history?tab=2'); break;
+                    }
+                  },
                 ),
               ),
 
