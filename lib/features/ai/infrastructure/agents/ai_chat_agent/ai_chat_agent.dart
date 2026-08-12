@@ -1,4 +1,4 @@
-﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
@@ -40,7 +40,7 @@ class AiChatAgent extends BaseAgent<AiChatRequest, String> {
     buffer.writeln('AI: ');
 
     final request = GenerateRequest(
-      systemPrompt: '你是一個專業的助理，請根據提供的內容與情境，簡潔、專業地回答問題。',
+      systemPrompt: buildAiChatSystemPrompt(),
       prompt: buffer.toString(),
     );
 

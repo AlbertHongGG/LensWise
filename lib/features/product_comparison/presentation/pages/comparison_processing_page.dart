@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+ï»¿import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -48,7 +48,7 @@ class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingP
   Widget _buildBody(BuildContext context, ProductComparisonScannerState state, bool isDark) {
     if (state.errorMessage != null) {
       return PremiumErrorView(
-        title: 'æ¯”å?å¤±æ?',
+        title: 'æ¯”ï¿½?å¤±ï¿½?',
         message: state.errorMessage!,
         isDark: isDark,
         onActionPressed: () {
@@ -66,12 +66,12 @@ class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingP
           ThinkingOrb(size: 100, isDark: isDark),
           const SizedBox(height: 32),
           const Text(
-            'AI æ­?œ¨æ¬Šè¡¡å·®ç•°...',
+            'AI ï¿½?ï¿½ï¿½æ¬Šè¡¡å·®ç•°...',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
           Text(
-            '?™å¯?½é?è¦å¹¾ç§’é??„æ???,
+            '?ï¿½å¯?ï¿½ï¿½?è¦å¹¾ç§’ï¿½??ï¿½ï¿½???,
             textAlign: TextAlign.center,
             style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
           ),

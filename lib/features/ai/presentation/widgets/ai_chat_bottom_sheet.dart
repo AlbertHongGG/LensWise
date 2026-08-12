@@ -8,17 +8,35 @@ import 'package:lens_wise/core/voice/controllers/voice_controller.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-void showAiChatBottomSheet(BuildContext context) {
+void showAiChatBottomSheet(
+  BuildContext context, {
+  required String contextId,
+  required String systemContextPrompt,
+  required String initialMessage,
+}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => const AiChatBottomSheet(),
+    builder: (context) => AiChatBottomSheet(
+      contextId: contextId,
+      systemContextPrompt: systemContextPrompt,
+      initialMessage: initialMessage,
+    ),
   );
 }
 
 class AiChatBottomSheet extends ConsumerStatefulWidget {
-  const AiChatBottomSheet({super.key});
+  final String contextId;
+  final String systemContextPrompt;
+  final String initialMessage;
+
+  const AiChatBottomSheet({
+    super.key,
+    required this.contextId,
+    required this.systemContextPrompt,
+    required this.initialMessage,
+  });
 
   @override
   ConsumerState<AiChatBottomSheet> createState() => _AiChatBottomSheetState();
@@ -35,6 +53,11 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(voiceControllerProvider.notifier).initialize();
+      ref.read(aiChatControllerProvider.notifier).initialize(
+            contextId: widget.contextId,
+            systemContextPrompt: widget.systemContextPrompt,
+            initialMessage: widget.initialMessage,
+          );
     });
   }
 

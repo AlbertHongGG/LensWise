@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/errors/app_error_mapper.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
-import 'package:lens_wise/core/widgets/thinking_orb.dart';
+import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/immersive_background.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/hero_title_overlay.dart';
