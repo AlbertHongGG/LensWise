@@ -265,7 +265,7 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
               ),
               const SizedBox(width: 12),
               Text(
-                'AI ?��??��??��?',
+                'AI 深度探討',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

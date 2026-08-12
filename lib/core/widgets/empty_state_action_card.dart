@@ -109,7 +109,7 @@ class EmptyStateActionCard extends StatelessWidget {
           Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
           SizedBox(width: 12),
           Text(
-            '?‹å??ƒæ?',
+            'é–‹å§‹æƒæ',
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
