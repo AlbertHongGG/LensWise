@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/product_analysis_agent/product_analysis_data.dart';
+import 'package:lens_wise/features/history/domain/models/i_history_record.dart';
 
-class ProductRecord {
+class ProductRecord implements IHistoryRecord {
+  @override
   final String id;
+  @override
   final DateTime timestamp;
   final String productName;
   final String originalName;
@@ -17,6 +21,21 @@ class ProductRecord {
   final List<String> whenRecommended;
   final List<String> whenNotRecommended;
   final List<String> imagePaths;
+
+  @override
+  String get displayTitle => productName;
+
+  @override
+  String get displaySubtitle => brand.isEmpty ? '未知品牌' : brand;
+
+  @override
+  IconData get displayIcon => Icons.inventory_2_outlined;
+
+  @override
+  String? get deletionImagePath => null;
+
+  @override
+  List<String>? get deletionImagePaths => imagePaths;
 
   ProductRecord({
     required this.id,
@@ -34,11 +53,16 @@ class ProductRecord {
     this.imagePaths = const [],
   });
 
-  factory ProductRecord.fromAnalysisData(ProductAnalysisData data, {List<String> imagePaths = const []}) {
+  factory ProductRecord.fromAnalysisData(
+    ProductAnalysisData data, {
+    List<String> imagePaths = const [],
+  }) {
     return ProductRecord(
       id: const Uuid().v4(),
       timestamp: DateTime.now(),
-      productName: data.productName.isNotEmpty ? data.productName : (data.originalName.isNotEmpty ? data.originalName : '未知商品'),
+      productName: data.productName.isNotEmpty
+          ? data.productName
+          : (data.originalName.isNotEmpty ? data.originalName : '未知商品'),
       originalName: data.originalName,
       brand: data.brand,
       origin: data.origin,
@@ -72,7 +96,11 @@ class ProductRecord {
 
   String get rawJsonData => jsonEncode(toMap());
 
-  factory ProductRecord.fromJsonBacked(String id, DateTime timestamp, String jsonString) {
+  factory ProductRecord.fromJsonBacked(
+    String id,
+    DateTime timestamp,
+    String jsonString,
+  ) {
     try {
       final map = jsonDecode(jsonString) as Map<String, dynamic>;
       return ProductRecord(
@@ -83,12 +111,30 @@ class ProductRecord {
         brand: map['brand']?.toString() ?? '',
         origin: map['origin']?.toString() ?? '',
         summary: map['summary']?.toString() ?? '',
-        ingredients: (map['ingredients'] as List?)?.map((e) => e.toString()).toList() ?? [],
-        allergenAlerts: (map['allergenAlerts'] as List?)?.map((e) => e.toString()).toList() ?? [],
-        dietaryFlags: (map['dietaryFlags'] as List?)?.map((e) => e.toString()).toList() ?? [],
-        whenRecommended: (map['whenRecommended'] as List?)?.map((e) => e.toString()).toList() ?? [],
-        whenNotRecommended: (map['whenNotRecommended'] as List?)?.map((e) => e.toString()).toList() ?? [],
-        imagePaths: (map['imagePaths'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        ingredients:
+            (map['ingredients'] as List?)?.map((e) => e.toString()).toList() ??
+            [],
+        allergenAlerts:
+            (map['allergenAlerts'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
+        dietaryFlags:
+            (map['dietaryFlags'] as List?)?.map((e) => e.toString()).toList() ??
+            [],
+        whenRecommended:
+            (map['whenRecommended'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
+        whenNotRecommended:
+            (map['whenNotRecommended'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
+        imagePaths:
+            (map['imagePaths'] as List?)?.map((e) => e.toString()).toList() ??
+            [],
       );
     } catch (e) {
       // Fallback in case of parsing error

@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
-import 'package:lens_wise/core/storage/storage_providers.dart';
-import 'package:lens_wise/core/storage/record_manager_service.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/swipe_to_obliterate_button.dart';
+import 'package:lens_wise/features/history/domain/models/i_history_record.dart';
+import 'package:lens_wise/features/history/domain/controllers/i_history_controller.dart';
 import 'package:lens_wise/features/history/presentation/pages/tabs/product_history_tab.dart';
 import 'package:lens_wise/features/history/presentation/pages/tabs/receipt_history_tab.dart';
 import 'package:lens_wise/features/history/presentation/pages/tabs/comparison_history_tab.dart';
 import 'dart:ui';
 
-enum HistoryType { receipt, product, comparison }
-
 class HistoryDragData {
-  final String id;
-  final String? imagePath;
-  final List<String>? imagePaths;
-  final HistoryType type;
-  const HistoryDragData({required this.id, this.imagePath, this.imagePaths, required this.type});
+  final IHistoryRecord record;
+  final IHistoryController controller;
+  const HistoryDragData({required this.record, required this.controller});
 }
 
 class UnifiedHistoryPage extends ConsumerStatefulWidget {
@@ -40,6 +36,10 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
       vsync: this,
       initialIndex: widget.initialTabIndex,
     );
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      setState(() {});
+    });
   }
 
   @override
@@ -48,47 +48,34 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
     super.dispose();
   }
 
+  IHistoryController _getCurrentController() {
+    switch (_tabController.index) {
+      case 0:
+        return ref.read(receiptHistoryProvider.notifier);
+      case 1:
+        return ref.read(productHistoryProvider.notifier);
+      case 2:
+      default:
+        return ref.read(comparisonHistoryProvider.notifier);
+    }
+  }
+
+  String _getCurrentTabTitle() {
+    switch (_tabController.index) {
+      case 0:
+        return 'CLEAR RECEIPT HISTORY';
+      case 1:
+        return 'CLEAR PRODUCT HISTORY';
+      case 2:
+      default:
+        return 'CLEAR COMPARISON HISTORY';
+    }
+  }
+
   void _showClearAllDrawer() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final currentTab = _tabController.index;
-    
-    String title = '';
-    Future<void> Function()? onSwipe;
-    
-    if (currentTab == 0) {
-      title = 'CLEAR RECEIPT HISTORY';
-      onSwipe = () async {
-        final repo = ref.read(receiptRepositoryProvider);
-        final manager = ref.read(recordManagerServiceProvider);
-        final records = await repo.getAll();
-        for (final r in records) {
-          await manager.deleteRecord(repository: repo, id: r.id, imagePaths: r.imagePaths);
-        }
-        ref.invalidate(receiptHistoryProvider);
-      };
-    } else if (currentTab == 1) {
-      title = 'CLEAR PRODUCT HISTORY';
-      onSwipe = () async {
-        final repo = ref.read(productRepositoryProvider);
-        final manager = ref.read(recordManagerServiceProvider);
-        final records = await repo.getAll();
-        for (final r in records) {
-          await manager.deleteRecord(repository: repo, id: r.id, imagePaths: r.imagePaths);
-        }
-        ref.invalidate(productHistoryProvider);
-      };
-    } else if (currentTab == 2) {
-      title = 'CLEAR COMPARISON HISTORY';
-      onSwipe = () async {
-        final repo = ref.read(comparisonRepositoryProvider);
-        final manager = ref.read(recordManagerServiceProvider);
-        final records = await repo.getAll();
-        for (final r in records) {
-          await manager.deleteRecord(repository: repo, id: r.id, imagePath: r.imagePath);
-        }
-        ref.invalidate(comparisonHistoryProvider);
-      };
-    }
+    final controller = _getCurrentController();
+    final title = _getCurrentTabTitle();
 
     showModalBottomSheet(
       context: context,
@@ -127,7 +114,7 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
             const SizedBox(height: 32),
             SwipeToObliterateButton(
               onConfirmed: () async {
-                if (onSwipe != null) await onSwipe();
+                await controller.clearAll();
                 if (ctx.mounted) Navigator.pop(ctx);
               },
             ),
@@ -234,18 +221,7 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
                 child: DragTarget<HistoryDragData>(
                   onAcceptWithDetails: (details) async {
                     final data = details.data;
-                    final manager = ref.read(recordManagerServiceProvider);
-                    
-                    if (data.type == HistoryType.receipt) {
-                      await manager.deleteRecord(repository: ref.read(receiptRepositoryProvider), id: data.id, imagePath: data.imagePath);
-                      ref.invalidate(receiptHistoryProvider);
-                    } else if (data.type == HistoryType.product) {
-                      await manager.deleteRecord(repository: ref.read(productRepositoryProvider), id: data.id, imagePaths: data.imagePaths);
-                      ref.invalidate(productHistoryProvider);
-                    } else if (data.type == HistoryType.comparison) {
-                      await manager.deleteRecord(repository: ref.read(comparisonRepositoryProvider), id: data.id, imagePath: data.imagePath);
-                      ref.invalidate(comparisonHistoryProvider);
-                    }
+                    await data.controller.deleteRecord(data.record);
                   },
                   builder: (context, candidateData, rejectedData) {
                     final isHovering = candidateData.isNotEmpty;

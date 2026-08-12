@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
-import 'package:lens_wise/core/widgets/thinking_orb.dart';
+import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/controllers/receipt_scanner_controller.dart';
 
 class ReceiptProcessingPage extends ConsumerStatefulWidget {
@@ -47,7 +47,7 @@ class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
   Widget _buildBody(BuildContext context, ReceiptScannerState state, bool isDark) {
     if (state.errorMessage != null) {
       return PremiumErrorView(
-        title: 'è§£æå¤±æ•—',
+        title: 'è§??å¤±æ?',
         message: state.errorMessage!,
         isDark: isDark,
         onActionPressed: () {
@@ -65,12 +65,12 @@ class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
           ThinkingOrb(size: 100, isDark: isDark),
           const SizedBox(height: 32),
           const Text(
-            'AI æ­£åœ¨è§£ææ”¶æ“šå…§å®¹...',
+            'AI æ­?œ¨è§???¶æ??§å®¹...',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
           Text(
-            'é€™å¯èƒ½éœ€è¦å¹¾ç§’é˜çš„æ™‚é–“',
+            '?™å¯?½é?è¦å¹¾ç§’é??„æ???,
             textAlign: TextAlign.center,
             style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
           ),

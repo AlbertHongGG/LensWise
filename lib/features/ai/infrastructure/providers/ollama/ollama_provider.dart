@@ -9,21 +9,21 @@ import 'package:lens_wise/features/ai/infrastructure/providers/image_encoder.dar
 class OllamaProvider with AIImageEncoderMixin implements AIProvider {
   @override
   final String name = 'ollama';
-  
+
   final String _model;
   final String _baseUrl;
 
-  OllamaProvider({
-    required String modelName,
-    required String baseUrl,
-  })  : _model = modelName,
-        _baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+  OllamaProvider({required String modelName, required String baseUrl})
+    : _model = modelName,
+      _baseUrl = baseUrl.endsWith('/')
+          ? baseUrl.substring(0, baseUrl.length - 1)
+          : baseUrl;
 
   @override
   Future<GenerateResponse> generate(GenerateRequest request) async {
     try {
       final url = Uri.parse('$_baseUrl/api/generate');
-      
+
       final Map<String, dynamic> body = {
         'model': _model,
         'prompt': request.prompt,
@@ -50,9 +50,7 @@ class OllamaProvider with AIImageEncoderMixin implements AIProvider {
       }
 
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      return GenerateResponse(
-        text: data['response'] ?? '',
-      );
+      return GenerateResponse(text: data['response'] ?? '');
     } catch (e) {
       throw AIConnectionError(name, e.toString());
     }
@@ -65,7 +63,7 @@ class OllamaProvider with AIImageEncoderMixin implements AIProvider {
     try {
       final httpRequest = http.Request('POST', url);
       httpRequest.headers['Content-Type'] = 'application/json';
-      
+
       final Map<String, dynamic> body = {
         'model': _model,
         'prompt': request.prompt,
@@ -89,14 +87,15 @@ class OllamaProvider with AIImageEncoderMixin implements AIProvider {
         throw Exception('Ollama API error: ${response.statusCode}');
       }
 
-      await for (final line in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
+      await for (final line
+          in response.stream
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())) {
         final trimmed = line.trim();
         if (trimmed.isEmpty) continue;
         try {
           final data = jsonDecode(trimmed);
-          yield GenerateResponse(
-            text: data['response'] ?? '',
-          );
+          yield GenerateResponse(text: data['response'] ?? '');
         } catch (_) {
           // Ignore parse errors on partial lines
         }

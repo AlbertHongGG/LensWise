@@ -175,24 +175,26 @@ class ProductScannerStrategy extends ScannerModeStrategy {
 
         return GalleryPickerButton(
           isLoading: isPicking,
-          onTap: locked ? null : () async {
-            actionState.value = CameraActionState.pickingGallery;
-            try {
-              final bytesList = await showModalBottomSheet<List<Uint8List>>(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const CustomGalleryBottomSheet(isMultiSelect: true, maxItems: 50),
-              );
+          onTap: locked ? () {} : () {
+            Future(() async {
+              actionState.value = CameraActionState.pickingGallery;
+              try {
+                final bytesList = await showModalBottomSheet<List<Uint8List>>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const CustomGalleryBottomSheet(isMultiSelect: true, maxItems: 50),
+                );
 
-              if (bytesList != null && bytesList.isNotEmpty && context.mounted) {
-                for (final b in bytesList) {
-                  onImageCaptured(b);
+                if (bytesList != null && bytesList.isNotEmpty && context.mounted) {
+                  for (final b in bytesList) {
+                    onImageCaptured(b);
+                  }
                 }
+              } finally {
+                actionState.value = CameraActionState.idle;
               }
-            } finally {
-              actionState.value = CameraActionState.idle;
-            }
+            });
           },
         );
       },

@@ -9,10 +9,20 @@ class HiveRepository<T> implements ILocalStorageRepository<T> {
 
   @override
   Future<void> init() async {
-    if (!Hive.isBoxOpen(boxName)) {
-      _box = await Hive.openBox<T>(boxName);
-    } else {
-      _box = Hive.box<T>(boxName);
+    try {
+      if (!Hive.isBoxOpen(boxName)) {
+        _box = await Hive.openBox<T>(boxName);
+      } else {
+        _box = Hive.box<T>(boxName);
+      }
+    } catch (e) {
+      if (e is HiveError && e.message.contains('unknown typeId')) {
+        // If data is incompatible (e.g. typeId changed), wipe the box and start fresh.
+        await Hive.deleteBoxFromDisk(boxName);
+        _box = await Hive.openBox<T>(boxName);
+      } else {
+        rethrow;
+      }
     }
   }
 

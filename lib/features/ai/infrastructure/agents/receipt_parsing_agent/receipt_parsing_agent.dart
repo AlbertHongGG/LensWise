@@ -23,10 +23,16 @@ class ReceiptParsingResult {
   }
 }
 
-class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptParsingResult> {
+class ReceiptParsingAgent
+    extends BaseAgent<List<Uint8List>, ReceiptParsingResult> {
   final String targetLanguage;
 
-  ReceiptParsingAgent(super.agentName, super.provider, super.logger, {required this.targetLanguage});
+  ReceiptParsingAgent(
+    super.agentName,
+    super.provider,
+    super.logger, {
+    required this.targetLanguage,
+  });
 
   @override
   Future<ReceiptParsingResult> execute(List<Uint8List> input) async {
@@ -37,20 +43,22 @@ class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptParsingResul
     );
 
     final responseText = await executePrompt(request);
-    
+
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
       return ReceiptParsingResult.fromJson(jsonMap);
     } catch (e) {
       return ReceiptParsingResult(
-        status: 'needs_more_info', 
-        message: '收據解析失敗，請確保照片清晰且文字未被裁切。'
+        status: 'needs_more_info',
+        message: '收據解析失敗，請確保照片清晰且文字未被裁切。',
       );
     }
   }
 }
 
-final receiptParsingAgentProvider = Provider.autoDispose<ReceiptParsingAgent>((ref) {
+final receiptParsingAgentProvider = Provider.autoDispose<ReceiptParsingAgent>((
+  ref,
+) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return ReceiptParsingAgent(
     'ReceiptParsing',

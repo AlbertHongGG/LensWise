@@ -29,7 +29,7 @@ class ProductHistoryTab extends ConsumerWidget {
           records: records,
           areItemsTheSame: (a, b) => a.id == b.id,
           itemBuilder: (context, record) {
-            return _buildProductCard(context, record, isDark);
+            return _buildProductCard(context, ref, record, isDark);
           },
         );
       },
@@ -38,7 +38,7 @@ class ProductHistoryTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, ProductRecord record, bool isDark) {
+  Widget _buildProductCard(BuildContext context, WidgetRef ref, ProductRecord record, bool isDark) {
     final cardWidget = GlassContainer(
       borderRadius: BorderRadius.circular(20),
       color: Colors.white,
@@ -99,7 +99,7 @@ class ProductHistoryTab extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: LongPressDraggable<HistoryDragData>(
-        data: HistoryDragData(id: record.id, imagePaths: record.imagePaths, type: HistoryType.product),
+        data: HistoryDragData(record: record, controller: ref.read(productHistoryProvider.notifier)),
         delay: const Duration(milliseconds: 200),
         feedback: Material(
           type: MaterialType.transparency,

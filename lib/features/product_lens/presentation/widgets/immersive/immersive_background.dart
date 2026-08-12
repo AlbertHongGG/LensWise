@@ -29,10 +29,13 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final hasBytes = widget.imageBytesList != null && widget.imageBytesList!.isNotEmpty;
+
+    final hasBytes =
+        widget.imageBytesList != null && widget.imageBytesList!.isNotEmpty;
     final hasPaths = widget.imagePaths.isNotEmpty;
-    final itemCount = hasBytes ? widget.imageBytesList!.length : (hasPaths ? widget.imagePaths.length : 0);
+    final itemCount = hasBytes
+        ? widget.imageBytesList!.length
+        : (hasPaths ? widget.imagePaths.length : 0);
 
     if (itemCount == 0) {
       return Container(color: isDark ? Colors.grey[900] : Colors.grey[300]);
@@ -65,11 +68,13 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
             }
           },
         ),
-        
+
         // Page Indicator
         if (itemCount > 1)
           Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.08, // Adjust based on bottom card overlap
+            bottom:
+                MediaQuery.of(context).size.height *
+                0.08, // Adjust based on bottom card overlap
             left: 0,
             right: 0,
             child: Row(
@@ -81,15 +86,15 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
                   width: _currentIndex == index ? 24 : 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: _currentIndex == index 
-                        ? Colors.white 
+                    color: _currentIndex == index
+                        ? Colors.white
                         : Colors.white.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(4),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 4,
-                      )
+                      ),
                     ],
                   ),
                 ),

@@ -14,7 +14,7 @@ abstract class BaseAgent<T_IN, T_OUT> {
 
   Future<String> executePrompt(GenerateRequest request) async {
     final startTime = DateTime.now().millisecondsSinceEpoch;
-    
+
     // Convert request to a loggable Map (excluding raw images for size reasons)
     final requestLog = {
       'systemPrompt': request.systemPrompt,
@@ -28,7 +28,10 @@ abstract class BaseAgent<T_IN, T_OUT> {
       logger.logInteraction(requestLog, response.text, startTime);
       return response.text;
     } catch (e, stackTrace) {
-      logger.logInteraction(requestLog, {'error': e.toString(), 'stackTrace': stackTrace.toString()}, startTime);
+      logger.logInteraction(requestLog, {
+        'error': e.toString(),
+        'stackTrace': stackTrace.toString(),
+      }, startTime);
       rethrow;
     }
   }

@@ -82,7 +82,7 @@ class ProductResultCard extends StatelessWidget {
             onPressed: onClose,
             child: const Text('Try Again'),
           ),
-        )
+        ),
       ],
     );
   }
@@ -91,7 +91,9 @@ class ProductResultCard extends StatelessWidget {
     final data = result.data;
     if (data == null) return const SizedBox.shrink();
 
-    final productName = data.productName.isNotEmpty ? data.productName : 'Unknown Product';
+    final productName = data.productName.isNotEmpty
+        ? data.productName
+        : 'Unknown Product';
     final brand = data.brand;
     final summary = data.summary;
     final ingredients = data.ingredients;
@@ -131,7 +133,9 @@ class ProductResultCard extends StatelessWidget {
                 icon: const Icon(Icons.close_rounded),
                 onPressed: onClose,
                 style: IconButton.styleFrom(
-                  backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                  backgroundColor: theme.colorScheme.onSurface.withValues(
+                    alpha: 0.1,
+                  ),
                 ),
               ),
             ],
@@ -147,22 +151,36 @@ class ProductResultCard extends StatelessWidget {
           ],
           if (allergens.isNotEmpty) ...[
             const SizedBox(height: 24),
-            _buildSectionTitle(context, 'Allergens', Icons.warning_amber_rounded, theme.colorScheme.error),
+            _buildSectionTitle(
+              context,
+              'Allergens',
+              Icons.warning_amber_rounded,
+              theme.colorScheme.error,
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: allergens.map((e) => _buildChip(context, e, true)).toList(),
+              children: allergens
+                  .map((e) => _buildChip(context, e, true))
+                  .toList(),
             ),
           ],
           if (ingredients.isNotEmpty) ...[
             const SizedBox(height: 24),
-            _buildSectionTitle(context, 'Ingredients', Icons.science_outlined, theme.colorScheme.primary),
+            _buildSectionTitle(
+              context,
+              'Ingredients',
+              Icons.science_outlined,
+              theme.colorScheme.primary,
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: ingredients.map((e) => _buildChip(context, e, false)).toList(),
+              children: ingredients
+                  .map((e) => _buildChip(context, e, false))
+                  .toList(),
             ),
           ],
           const SizedBox(height: 16),
@@ -171,7 +189,12 @@ class ProductResultCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title, IconData icon, Color color) {
+  Widget _buildSectionTitle(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+  ) {
     final theme = Theme.of(context);
     return Row(
       children: [
@@ -193,16 +216,22 @@ class ProductResultCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isAlert ? theme.colorScheme.errorContainer : theme.colorScheme.surfaceContainerHighest,
+        color: isAlert
+            ? theme.colorScheme.errorContainer
+            : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isAlert ? theme.colorScheme.error.withOpacity(0.3) : Colors.transparent,
+          color: isAlert
+              ? theme.colorScheme.error.withOpacity(0.3)
+              : Colors.transparent,
         ),
       ),
       child: Text(
         label,
         style: theme.textTheme.labelMedium?.copyWith(
-          color: isAlert ? theme.colorScheme.onErrorContainer : theme.colorScheme.onSurfaceVariant,
+          color: isAlert
+              ? theme.colorScheme.onErrorContainer
+              : theme.colorScheme.onSurfaceVariant,
           fontWeight: isAlert ? FontWeight.bold : FontWeight.normal,
         ),
       ),

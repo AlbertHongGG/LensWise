@@ -41,10 +41,7 @@ class GeminiFlowChatResponse {
   final String text;
   final List<String>? images;
 
-  GeminiFlowChatResponse({
-    required this.text,
-    this.images,
-  });
+  GeminiFlowChatResponse({required this.text, this.images});
 
   factory GeminiFlowChatResponse.fromJson(Map<String, dynamic> json) {
     return GeminiFlowChatResponse(
@@ -58,14 +55,16 @@ class GeminiFlowStreamData {
   final String text;
   final List<String>? images;
 
-  GeminiFlowStreamData({
-    required this.text,
-    this.images,
-  });
+  GeminiFlowStreamData({required this.text, this.images});
 
   factory GeminiFlowStreamData.fromJson(Map<String, dynamic> json) {
     return GeminiFlowStreamData(
-      text: json['text'] ?? json['chunk'] ?? json['response'] ?? json['content'] ?? '',
+      text:
+          json['text'] ??
+          json['chunk'] ??
+          json['response'] ??
+          json['content'] ??
+          '',
       images: json['images'] != null ? List<String>.from(json['images']) : null,
     );
   }

@@ -51,12 +51,15 @@ class ProductLensController extends Notifier<ProductLensState> {
       return;
     }
 
-    state = state.copyWith(status: ProductLensStatus.loading, imageBytesList: imageBytesList);
+    state = state.copyWith(
+      status: ProductLensStatus.loading,
+      imageBytesList: imageBytesList,
+    );
     try {
       final service = ref.read(productAnalysisServiceProvider);
       final result = await service.analyzeAndSave(imageBytesList);
       ref.invalidate(productHistoryProvider);
-      
+
       if (result.status == 'success') {
         state = state.copyWith(
           status: ProductLensStatus.success,
@@ -75,12 +78,13 @@ class ProductLensController extends Notifier<ProductLensState> {
       );
     }
   }
-  
+
   void reset() {
     state = ProductLensState();
   }
 }
 
-final productLensControllerProvider = NotifierProvider<ProductLensController, ProductLensState>(
-  () => ProductLensController(),
-);
+final productLensControllerProvider =
+    NotifierProvider<ProductLensController, ProductLensState>(
+      () => ProductLensController(),
+    );

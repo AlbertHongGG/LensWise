@@ -5,9 +5,5 @@ class GenerateRequest {
   final String? systemPrompt;
   final List<Uint8List>? images;
 
-  GenerateRequest({
-    required this.prompt,
-    this.systemPrompt,
-    this.images,
-  });
+  GenerateRequest({required this.prompt, this.systemPrompt, this.images});
 }

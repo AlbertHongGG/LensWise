@@ -6,7 +6,9 @@ class GeminiFlowClient {
   late final String _baseUrl;
 
   GeminiFlowClient({String baseUrl = 'http://127.0.0.1:8000'}) {
-    _baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    _baseUrl = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
   }
 
   Future<GeminiFlowChatResponse> chat({
@@ -85,17 +87,24 @@ class GeminiFlowClient {
         final trimmed = line.trim();
         if (trimmed.isEmpty) continue;
         if (trimmed.startsWith("event:")) continue;
-        
+
         if (trimmed.startsWith("data:")) {
           final dataStr = trimmed.substring(5).trim();
           try {
             final data = jsonDecode(dataStr);
             // Handle variations in text field name based on typical SSE backends
-            final textContent = data['text'] ?? data['chunk'] ?? data['response'] ?? data['content'] ?? '';
-            
+            final textContent =
+                data['text'] ??
+                data['chunk'] ??
+                data['response'] ??
+                data['content'] ??
+                '';
+
             yield GeminiFlowStreamData(
               text: textContent,
-              images: data['images'] != null ? List<String>.from(data['images']) : null,
+              images: data['images'] != null
+                  ? List<String>.from(data['images'])
+                  : null,
             );
           } catch (e) {
             // ignore JSON parse error for incomplete chunks if any

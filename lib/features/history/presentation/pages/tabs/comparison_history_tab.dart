@@ -109,7 +109,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: LongPressDraggable<HistoryDragData>(
-        data: HistoryDragData(id: record.id, imagePath: record.imagePath, type: HistoryType.comparison),
+        data: HistoryDragData(record: record, controller: ref.read(comparisonHistoryProvider.notifier)),
         delay: const Duration(milliseconds: 200),
         feedback: Material(
           type: MaterialType.transparency,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
-import 'package:lens_wise/core/widgets/thinking_orb.dart';
+import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 
 class EmptyStateActionCard extends StatelessWidget {
   final String title;
@@ -109,7 +109,7 @@ class EmptyStateActionCard extends StatelessWidget {
           Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
           SizedBox(width: 12),
           Text(
-            'é–‹å§‹æƒæ',
+            '?‹å??ƒæ?',
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,

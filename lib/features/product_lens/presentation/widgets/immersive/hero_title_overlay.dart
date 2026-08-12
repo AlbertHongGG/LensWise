@@ -34,14 +34,17 @@ class HeroTitleOverlay extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.2),
                     blurRadius: 15,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
               child: Text(
-                '${brand.isEmpty ? "未知品牌" : brand} ${origin.isNotEmpty ? "· $origin" : ""}'.toUpperCase(),
+                '${brand.isEmpty ? "未知品牌" : brand} ${origin.isNotEmpty ? "· $origin" : ""}'
+                    .toUpperCase(),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
@@ -50,7 +53,7 @@ class HeroTitleOverlay extends StatelessWidget {
                 ),
               ),
             ),
-          
+
           // Translated Product Name (Strict Single Line with Auto-Scaling)
           SizedBox(
             width: double.infinity,
@@ -69,7 +72,7 @@ class HeroTitleOverlay extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Original Name (Strict Single Line with Auto-Scaling)
           if (originalName.isNotEmpty && originalName != productName)
             Padding(
@@ -86,7 +89,9 @@ class HeroTitleOverlay extends StatelessWidget {
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                       fontStyle: FontStyle.italic,
-                      color: isDark ? Colors.grey[400] : const Color(0xFF6B7280),
+                      color: isDark
+                          ? Colors.grey[400]
+                          : const Color(0xFF6B7280),
                       letterSpacing: 0.2,
                     ),
                   ),

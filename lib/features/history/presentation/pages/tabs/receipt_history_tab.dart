@@ -31,7 +31,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
           records: records,
           areItemsTheSame: (a, b) => a.id == b.id,
           itemBuilder: (context, record) {
-            return _buildReceiptCard(context, record, isDark);
+            return _buildReceiptCard(context, ref, record, isDark);
           },
         );
       },
@@ -40,7 +40,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildReceiptCard(BuildContext context, ReceiptRecord record, bool isDark) {
+  Widget _buildReceiptCard(BuildContext context, WidgetRef ref, ReceiptRecord record, bool isDark) {
     final cardWidget = GlassContainer(
       borderRadius: BorderRadius.circular(20),
       color: Colors.white,
@@ -104,7 +104,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: LongPressDraggable<HistoryDragData>(
-        data: HistoryDragData(id: record.id, imagePaths: record.imagePaths, type: HistoryType.receipt),
+        data: HistoryDragData(record: record, controller: ref.read(receiptHistoryProvider.notifier)),
         delay: const Duration(milliseconds: 200),
         feedback: Material(
           color: Colors.transparent,

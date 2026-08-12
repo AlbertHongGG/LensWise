@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
-import 'package:lens_wise/core/widgets/thinking_orb.dart';
+import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
 import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
 
@@ -48,7 +48,7 @@ class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingP
   Widget _buildBody(BuildContext context, ProductComparisonScannerState state, bool isDark) {
     if (state.errorMessage != null) {
       return PremiumErrorView(
-        title: '比對失敗',
+        title: '比�?失�?',
         message: state.errorMessage!,
         isDark: isDark,
         onActionPressed: () {
@@ -66,12 +66,12 @@ class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingP
           ThinkingOrb(size: 100, isDark: isDark),
           const SizedBox(height: 32),
           const Text(
-            'AI 正在權衡差異...',
+            'AI �?��權衡差異...',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
           Text(
-            '這可能需要幾秒鐘的時間',
+            '?�可?��?要幾秒�??��???,
             textAlign: TextAlign.center,
             style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
           ),

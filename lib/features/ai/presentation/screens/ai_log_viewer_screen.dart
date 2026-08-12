@@ -28,8 +28,8 @@ class AiLogListTab extends StatefulWidget {
   State<AiLogListTab> createState() => _AiLogListTabState();
 }
 
-class _AiLogListTabState extends State<AiLogListTab> with AutomaticKeepAliveClientMixin {
-  
+class _AiLogListTabState extends State<AiLogListTab>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true; // CRUCIAL: Keeps tab state alive off-screen
 
@@ -49,7 +49,10 @@ class _AiLogListTabState extends State<AiLogListTab> with AutomaticKeepAliveClie
       color: widget.isDark ? AppColors.surfaceDark : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: widget.isDark ? Colors.white12 : Colors.black12, width: 1),
+        side: BorderSide(
+          color: widget.isDark ? Colors.white12 : Colors.black12,
+          width: 1,
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -59,12 +62,15 @@ class _AiLogListTabState extends State<AiLogListTab> with AutomaticKeepAliveClie
             color: AppColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.smart_toy_outlined, 
-            color: AppColors.primary
+          child: const Icon(Icons.smart_toy_outlined, color: AppColors.primary),
+        ),
+        title: Text(
+          log.title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Outfit',
           ),
         ),
-        title: Text(log.title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit')),
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.chevron_right_rounded),
         onTap: () => widget.onLogTap(log.file, widget.isDark),
@@ -118,7 +124,8 @@ class AiLogViewerScreen extends ConsumerStatefulWidget {
   ConsumerState<AiLogViewerScreen> createState() => _AiLogViewerScreenState();
 }
 
-class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with SingleTickerProviderStateMixin {
+class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen>
+    with SingleTickerProviderStateMixin {
   TabController? _tabController;
   List<String> _tabs = [];
   Map<String, List<AiLogModel>> _cachedFilteredLogs = {};
@@ -131,11 +138,16 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
 
   String _translateAgentName(String name) {
     switch (name) {
-      case 'All': return '全部';
-      case 'ProductComparison': return '商品比對';
-      case 'ProductAnalysis': return '商品分析';
-      case 'ReceiptParsing': return '發票掃描';
-      default: return name;
+      case 'All':
+        return '全部';
+      case 'ProductComparison':
+        return '商品比對';
+      case 'ProductAnalysis':
+        return '商品分析';
+      case 'ReceiptParsing':
+        return '發票掃描';
+      default:
+        return name;
     }
   }
 
@@ -157,13 +169,14 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
     }
     _cachedFilteredLogs = newCachedLogs;
 
-    if (_tabs.length != newTabs.length || !_tabs.every((t) => newTabs.contains(t))) {
+    if (_tabs.length != newTabs.length ||
+        !_tabs.every((t) => newTabs.contains(t))) {
       _tabs = newTabs;
       final oldIndex = _tabController?.index ?? 0;
       _tabController?.dispose();
       _tabController = TabController(
-        length: _tabs.length, 
-        vsync: this, 
+        length: _tabs.length,
+        vsync: this,
         initialIndex: oldIndex >= _tabs.length ? 0 : oldIndex,
       );
     }
@@ -171,7 +184,7 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
 
   void _clearAllLogs() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -181,7 +194,12 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
           color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.only(left: 24, right: 24, top: 12, bottom: 48),
+        padding: const EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 12,
+          bottom: 48,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -227,17 +245,22 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
     try {
       final content = await File(file.path).readAsString();
       final json = jsonDecode(content);
-      
+
       if (!mounted) return;
-      
+
       final fileName = file.path.split(Platform.pathSeparator).last;
-      
+
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => AgentLogDetailScreen(logData: json, fileName: fileName)),
+        MaterialPageRoute(
+          builder: (context) =>
+              AgentLogDetailScreen(logData: json, fileName: fileName),
+        ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to read log: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to read log: $e')));
     }
   }
 
@@ -257,7 +280,9 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
     final agentLogsAsync = ref.watch(agentLogListProvider);
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: isDark
+          ? AppColors.backgroundDark
+          : AppColors.backgroundLight,
       body: agentLogsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
@@ -265,10 +290,7 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
           if (logFiles.isEmpty) {
             return SafeArea(
               child: Stack(
-                children: [
-                  _buildEmptyState(isDark),
-                  _buildEdgeSwipeDetector(),
-                ],
+                children: [_buildEmptyState(isDark), _buildEdgeSwipeDetector()],
               ),
             );
           }
@@ -282,9 +304,14 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                   children: [
                     // TabBar Only
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.04),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: TabBar(
@@ -293,7 +320,9 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                         dividerColor: Colors.transparent,
                         tabAlignment: TabAlignment.start,
                         indicator: BoxDecoration(
-                          color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.white,
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.15)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: isDark
                               ? []
@@ -302,20 +331,34 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                                     color: Colors.black.withValues(alpha: 0.04),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
-                                  )
+                                  ),
                                 ],
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicatorPadding: const EdgeInsets.all(4),
                         labelColor: isDark ? Colors.white : AppColors.primary,
-                        unselectedLabelColor: isDark ? Colors.white54 : Colors.black54,
-                        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        unselectedLabelColor: isDark
+                            ? Colors.white54
+                            : Colors.black54,
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
                         splashBorderRadius: BorderRadius.circular(12),
-                        tabs: _tabs.map((tab) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Tab(text: _translateAgentName(tab)),
-                        )).toList(),
+                        tabs: _tabs
+                            .map(
+                              (tab) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                ),
+                                child: Tab(text: _translateAgentName(tab)),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
 
@@ -338,7 +381,7 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                   ],
                 ),
               ),
-              
+
               // Floating Trash Can Target
               Positioned(
                 bottom: 32,
@@ -355,7 +398,7 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                     },
                     builder: (context, candidateData, rejectedData) {
                       final isHovering = candidateData.isNotEmpty;
-                      
+
                       return GestureDetector(
                         onTap: _clearAllLogs,
                         child: AnimatedContainer(
@@ -366,16 +409,22 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                             shape: BoxShape.circle,
                             color: isHovering
                                 ? Colors.redAccent.withValues(alpha: 0.9)
-                                : (isDark ? Colors.black.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.8)),
+                                : (isDark
+                                      ? Colors.black.withValues(alpha: 0.6)
+                                      : Colors.white.withValues(alpha: 0.8)),
                             boxShadow: [
                               BoxShadow(
-                                color: isHovering ? Colors.redAccent.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.1),
+                                color: isHovering
+                                    ? Colors.redAccent.withValues(alpha: 0.4)
+                                    : Colors.black.withValues(alpha: 0.1),
                                 blurRadius: isHovering ? 20 : 10,
                                 offset: const Offset(0, 4),
-                              )
+                              ),
                             ],
                             border: Border.all(
-                              color: isHovering ? Colors.red : (isDark ? Colors.white12 : Colors.black12),
+                              color: isHovering
+                                  ? Colors.red
+                                  : (isDark ? Colors.white12 : Colors.black12),
                               width: isHovering ? 2 : 1,
                             ),
                           ),
@@ -383,8 +432,14 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                             child: BackdropFilter(
                               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                               child: Icon(
-                                isHovering ? Icons.delete_forever : Icons.delete_outline,
-                                color: isHovering ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
+                                isHovering
+                                    ? Icons.delete_forever
+                                    : Icons.delete_outline,
+                                color: isHovering
+                                    ? Colors.white
+                                    : (isDark
+                                          ? Colors.white70
+                                          : Colors.black54),
                                 size: isHovering ? 32 : 24,
                               ),
                             ),
@@ -400,7 +455,7 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
               _buildEdgeSwipeDetector(),
             ],
           );
-        }
+        },
       ),
     );
   }

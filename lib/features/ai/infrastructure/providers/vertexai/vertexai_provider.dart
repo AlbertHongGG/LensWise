@@ -9,7 +9,7 @@ import 'package:lens_wise/features/ai/infrastructure/providers/image_encoder.dar
 class VertexAIProvider with AIImageEncoderMixin implements AIProvider {
   @override
   final String name = 'vertexai';
-  
+
   final String _model;
   final String _projectId;
   final String _region;
@@ -20,17 +20,18 @@ class VertexAIProvider with AIImageEncoderMixin implements AIProvider {
     required String projectId,
     required String region,
     required String accessToken,
-  })  : _model = modelName,
-        _projectId = projectId,
-        _region = region,
-        _accessToken = accessToken;
+  }) : _model = modelName,
+       _projectId = projectId,
+       _region = region,
+       _accessToken = accessToken;
 
   @override
   Future<GenerateResponse> generate(GenerateRequest request) async {
     try {
       final url = Uri.parse(
-          'https://$_region-aiplatform.googleapis.com/v1/projects/$_projectId/locations/$_region/publishers/google/models/$_model:generateContent');
-      
+        'https://$_region-aiplatform.googleapis.com/v1/projects/$_projectId/locations/$_region/publishers/google/models/$_model:generateContent',
+      );
+
       final body = _buildBody(request);
 
       final response = await http.post(
@@ -43,7 +44,9 @@ class VertexAIProvider with AIImageEncoderMixin implements AIProvider {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Vertex AI API error: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Vertex AI API error: ${response.statusCode} - ${response.body}',
+        );
       }
 
       final data = jsonDecode(utf8.decode(response.bodyBytes));
@@ -58,7 +61,8 @@ class VertexAIProvider with AIImageEncoderMixin implements AIProvider {
   @override
   Stream<GenerateResponse> generateStream(GenerateRequest request) async* {
     final url = Uri.parse(
-        'https://$_region-aiplatform.googleapis.com/v1/projects/$_projectId/locations/$_region/publishers/google/models/$_model:streamGenerateContent?alt=sse');
+      'https://$_region-aiplatform.googleapis.com/v1/projects/$_projectId/locations/$_region/publishers/google/models/$_model:streamGenerateContent?alt=sse',
+    );
     final client = http.Client();
     try {
       final httpRequest = http.Request('POST', url);
@@ -73,10 +77,13 @@ class VertexAIProvider with AIImageEncoderMixin implements AIProvider {
         throw Exception('Vertex AI API error: ${response.statusCode}');
       }
 
-      await for (final line in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
+      await for (final line
+          in response.stream
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())) {
         final trimmed = line.trim();
         if (trimmed.isEmpty) continue;
-        
+
         if (trimmed.startsWith('data: ')) {
           final jsonString = trimmed.substring(6).trim();
           if (jsonString.isEmpty) continue;
@@ -101,34 +108,30 @@ class VertexAIProvider with AIImageEncoderMixin implements AIProvider {
 
   Map<String, dynamic> _buildBody(GenerateRequest request) {
     final parts = <Map<String, dynamic>>[
-      {'text': request.prompt}
+      {'text': request.prompt},
     ];
 
     final base64Images = encodeImagesToBase64(request);
     if (base64Images != null) {
       for (final base64String in base64Images) {
         parts.add({
-          'inlineData': {
-            'mimeType': 'image/jpeg',
-            'data': base64String
-          }
+          'inlineData': {'mimeType': 'image/jpeg', 'data': base64String},
         });
       }
     }
 
     final Map<String, dynamic> body = {
       'contents': [
-        {
-          'role': 'user',
-          'parts': parts
-        }
+        {'role': 'user', 'parts': parts},
       ],
     };
 
     if (request.systemPrompt != null && request.systemPrompt!.isNotEmpty) {
       body['systemInstruction'] = {
         'role': 'system',
-        'parts': [{'text': request.systemPrompt}]
+        'parts': [
+          {'text': request.systemPrompt},
+        ],
       };
     }
 
@@ -139,7 +142,9 @@ class VertexAIProvider with AIImageEncoderMixin implements AIProvider {
     String text = '';
     if (data['candidates'] != null && (data['candidates'] as List).isNotEmpty) {
       final content = data['candidates'][0]['content'];
-      if (content != null && content['parts'] != null && (content['parts'] as List).isNotEmpty) {
+      if (content != null &&
+          content['parts'] != null &&
+          (content['parts'] as List).isNotEmpty) {
         text = content['parts'][0]['text'] ?? '';
       }
     }

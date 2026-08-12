@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lens_wise/core/widgets/thinking_orb.dart';
+import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 
 class PremiumConfigHeader extends StatelessWidget {
   final String title;

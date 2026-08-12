@@ -8,7 +8,7 @@ class SystemLogManager {
     try {
       final appDir = await getApplicationDocumentsDirectory();
       final logDir = Directory('${appDir.path}/.runtime/log');
-      
+
       if (await logDir.exists()) {
         await logDir.delete(recursive: true);
       }
@@ -26,7 +26,9 @@ final agentLoggerProvider = Provider<AIAgentLogger>((ref) {
   return AIAgentLogger('SystemViewer');
 });
 
-final agentLogListProvider = FutureProvider.autoDispose<List<FileSystemEntity>>((ref) async {
-  final logger = ref.watch(agentLoggerProvider);
-  return await logger.getLogs();
-});
+final agentLogListProvider = FutureProvider.autoDispose<List<FileSystemEntity>>(
+  (ref) async {
+    final logger = ref.watch(agentLoggerProvider);
+    return await logger.getLogs();
+  },
+);

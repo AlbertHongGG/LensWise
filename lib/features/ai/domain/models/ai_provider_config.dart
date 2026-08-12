@@ -1,16 +1,10 @@
-
-
-enum AIProviderType {
-  geminiflow,
-  ollama,
-  vertexai
-}
+enum AIProviderType { geminiflow, ollama, vertexai }
 
 abstract class AIProviderConfig {
   final String modelName;
-  
+
   const AIProviderConfig({required this.modelName});
-  
+
   Map<String, dynamic> toJson();
 }
 
@@ -23,10 +17,7 @@ class GeminiFlowConfig extends AIProviderConfig {
   });
 
   @override
-  Map<String, dynamic> toJson() => {
-        'modelName': modelName,
-        'baseUrl': baseUrl,
-      };
+  Map<String, dynamic> toJson() => {'modelName': modelName, 'baseUrl': baseUrl};
 
   factory GeminiFlowConfig.fromJson(Map<String, dynamic> json) {
     return GeminiFlowConfig(
@@ -34,7 +25,7 @@ class GeminiFlowConfig extends AIProviderConfig {
       baseUrl: json['baseUrl'] ?? 'http://127.0.0.1:8000',
     );
   }
-  
+
   GeminiFlowConfig copyWith({String? modelName, String? baseUrl}) {
     return GeminiFlowConfig(
       modelName: modelName ?? this.modelName,
@@ -52,10 +43,7 @@ class OllamaConfig extends AIProviderConfig {
   });
 
   @override
-  Map<String, dynamic> toJson() => {
-        'modelName': modelName,
-        'baseUrl': baseUrl,
-      };
+  Map<String, dynamic> toJson() => {'modelName': modelName, 'baseUrl': baseUrl};
 
   factory OllamaConfig.fromJson(Map<String, dynamic> json) {
     return OllamaConfig(
@@ -63,7 +51,7 @@ class OllamaConfig extends AIProviderConfig {
       baseUrl: json['baseUrl'] ?? 'http://localhost:11434',
     );
   }
-  
+
   OllamaConfig copyWith({String? modelName, String? baseUrl}) {
     return OllamaConfig(
       modelName: modelName ?? this.modelName,
@@ -86,11 +74,11 @@ class VertexAIConfig extends AIProviderConfig {
 
   @override
   Map<String, dynamic> toJson() => {
-        'modelName': modelName,
-        'projectId': projectId,
-        'region': region,
-        'accessToken': accessToken,
-      };
+    'modelName': modelName,
+    'projectId': projectId,
+    'region': region,
+    'accessToken': accessToken,
+  };
 
   factory VertexAIConfig.fromJson(Map<String, dynamic> json) {
     return VertexAIConfig(
@@ -100,7 +88,7 @@ class VertexAIConfig extends AIProviderConfig {
       accessToken: json['accessToken'] ?? '',
     );
   }
-  
+
   VertexAIConfig copyWith({
     String? modelName,
     String? projectId,

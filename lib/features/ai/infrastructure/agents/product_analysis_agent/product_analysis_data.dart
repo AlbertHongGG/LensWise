@@ -30,11 +30,31 @@ class ProductAnalysisData {
       brand: json['brand'] as String? ?? '',
       origin: json['origin'] as String? ?? '',
       summary: json['summary'] as String? ?? '',
-      ingredients: (json['ingredients'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      allergens: (json['allergens'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      dietaryFlags: (json['dietaryFlags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      recommendedFor: (json['recommendedFor'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      notRecommendedFor: (json['notRecommendedFor'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      ingredients:
+          (json['ingredients'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      allergens:
+          (json['allergens'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      dietaryFlags:
+          (json['dietaryFlags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      recommendedFor:
+          (json['recommendedFor'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      notRecommendedFor:
+          (json['notRecommendedFor'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
     );
   }
 

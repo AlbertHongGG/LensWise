@@ -22,7 +22,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
   late TextEditingController _projectIdController;
   late TextEditingController _regionController;
   late TextEditingController _accessTokenController;
-  
+
   AIProviderType? _lastProviderType;
   Timer? _debounceTimer;
 
@@ -50,21 +50,26 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
   void _syncControllers(AIConfigState state) {
     if (_lastProviderType == state.providerType) return;
     _lastProviderType = state.providerType;
-    
+
     final config = state.activeConfig;
-    
+
     if (_modelNameController.text != config.modelName) {
       _modelNameController.text = config.modelName;
     }
-    
+
     if (config is GeminiFlowConfig) {
-      if (_baseUrlController.text != config.baseUrl) _baseUrlController.text = config.baseUrl;
+      if (_baseUrlController.text != config.baseUrl)
+        _baseUrlController.text = config.baseUrl;
     } else if (config is OllamaConfig) {
-      if (_baseUrlController.text != config.baseUrl) _baseUrlController.text = config.baseUrl;
+      if (_baseUrlController.text != config.baseUrl)
+        _baseUrlController.text = config.baseUrl;
     } else if (config is VertexAIConfig) {
-      if (_projectIdController.text != config.projectId) _projectIdController.text = config.projectId;
-      if (_regionController.text != config.region) _regionController.text = config.region;
-      if (_accessTokenController.text != config.accessToken) _accessTokenController.text = config.accessToken;
+      if (_projectIdController.text != config.projectId)
+        _projectIdController.text = config.projectId;
+      if (_regionController.text != config.region)
+        _regionController.text = config.region;
+      if (_accessTokenController.text != config.accessToken)
+        _accessTokenController.text = config.accessToken;
     }
   }
 
@@ -73,7 +78,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       final state = ref.read(aiConfigControllerProvider);
       final config = state.activeConfig;
-      
+
       AIProviderConfig newConfig = config;
       if (config is GeminiFlowConfig) {
         newConfig = config.copyWith(
@@ -94,14 +99,16 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
         );
       }
 
-      ref.read(aiConfigControllerProvider.notifier).saveConfig(
-        activeProviderConfig: newConfig,
-      );
+      ref
+          .read(aiConfigControllerProvider.notifier)
+          .saveConfig(activeProviderConfig: newConfig);
     });
   }
 
   void _onAIAgentToggle(bool value) {
-    ref.read(aiConfigControllerProvider.notifier).saveConfig(isAIAgentEnabled: value);
+    ref
+        .read(aiConfigControllerProvider.notifier)
+        .saveConfig(isAIAgentEnabled: value);
   }
 
   IconData _getProviderIcon(AIProviderType type) {
@@ -166,26 +173,41 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
               ...AIProviderType.values.map((type) {
                 final isSelected = state.providerType == type;
                 return ListTile(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  tileColor: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : null,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  tileColor: isSelected
+                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                      : null,
                   leading: Icon(
                     _getProviderIcon(type),
-                    color: isSelected ? Theme.of(context).primaryColor : (isDark ? Colors.white54 : Colors.black54),
+                    color: isSelected
+                        ? Theme.of(context).primaryColor
+                        : (isDark ? Colors.white54 : Colors.black54),
                   ),
                   title: Text(
                     type.name.toUpperCase(),
                     style: TextStyle(
                       fontFamily: 'Outfit',
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      color: isSelected ? Theme.of(context).primaryColor : (isDark ? Colors.white : Colors.black),
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : (isDark ? Colors.white : Colors.black),
                     ),
                   ),
-                  trailing: isSelected 
-                    ? Icon(Icons.check_circle_rounded, color: Theme.of(context).primaryColor)
-                    : null,
+                  trailing: isSelected
+                      ? Icon(
+                          Icons.check_circle_rounded,
+                          color: Theme.of(context).primaryColor,
+                        )
+                      : null,
                   onTap: () {
                     _lastProviderType = null;
-                    ref.read(aiConfigControllerProvider.notifier).saveConfig(providerType: type);
+                    ref
+                        .read(aiConfigControllerProvider.notifier)
+                        .saveConfig(providerType: type);
                     Navigator.pop(context);
                   },
                 );
@@ -194,7 +216,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
             ],
           ),
         );
-      }
+      },
     );
   }
 
@@ -202,7 +224,9 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
     final type = state.providerType;
     final isEnabled = state.isAIAgentEnabled;
     return GestureDetector(
-      onTap: isEnabled ? () => _showProviderSelectorBottomSheet(state, isDark) : null,
+      onTap: isEnabled
+          ? () => _showProviderSelectorBottomSheet(state, isDark)
+          : null,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         color: Colors.transparent,
@@ -245,7 +269,14 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
     );
   }
 
-  Widget _buildSettingsTile(String hint, IconData icon, TextEditingController controller, bool isDark, {bool obscureText = false, bool isEnabled = true}) {
+  Widget _buildSettingsTile(
+    String hint,
+    IconData icon,
+    TextEditingController controller,
+    bool isDark, {
+    bool obscureText = false,
+    bool isEnabled = true,
+  }) {
     return Opacity(
       opacity: isEnabled ? 1.0 : 0.4,
       child: TextFormField(
@@ -266,16 +297,18 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
           ),
           prefixIcon: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Icon(
-              icon,
-              color: Theme.of(context).primaryColor,
-              size: 22,
-            ),
+            child: Icon(icon, color: Theme.of(context).primaryColor, size: 22),
           ),
-          prefixIconConstraints: const BoxConstraints(minWidth: 50, minHeight: 50),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 50,
+            minHeight: 50,
+          ),
           filled: true,
           fillColor: Colors.transparent,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
@@ -298,22 +331,63 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
   List<Widget> _buildParameterFields(AIConfigState state, bool isDark) {
     final List<Widget> fields = [];
     final isEnabled = state.isAIAgentEnabled;
-    
+
     fields.add(_buildDivider(isDark));
-    fields.add(_buildSettingsTile('Model Name', Icons.smart_toy_rounded, _modelNameController, isDark, isEnabled: isEnabled));
-    
+    fields.add(
+      _buildSettingsTile(
+        'Model Name',
+        Icons.smart_toy_rounded,
+        _modelNameController,
+        isDark,
+        isEnabled: isEnabled,
+      ),
+    );
+
     if (state.activeConfig is VertexAIConfig) {
       fields.add(_buildDivider(isDark));
-      fields.add(_buildSettingsTile('Project ID', Icons.business_rounded, _projectIdController, isDark, isEnabled: isEnabled));
+      fields.add(
+        _buildSettingsTile(
+          'Project ID',
+          Icons.business_rounded,
+          _projectIdController,
+          isDark,
+          isEnabled: isEnabled,
+        ),
+      );
       fields.add(_buildDivider(isDark));
-      fields.add(_buildSettingsTile('Region', Icons.public_rounded, _regionController, isDark, isEnabled: isEnabled));
+      fields.add(
+        _buildSettingsTile(
+          'Region',
+          Icons.public_rounded,
+          _regionController,
+          isDark,
+          isEnabled: isEnabled,
+        ),
+      );
       fields.add(_buildDivider(isDark));
-      fields.add(_buildSettingsTile('Access Token', Icons.key_rounded, _accessTokenController, isDark, obscureText: true, isEnabled: isEnabled));
+      fields.add(
+        _buildSettingsTile(
+          'Access Token',
+          Icons.key_rounded,
+          _accessTokenController,
+          isDark,
+          obscureText: true,
+          isEnabled: isEnabled,
+        ),
+      );
     } else {
       fields.add(_buildDivider(isDark));
-      fields.add(_buildSettingsTile('Base URL', Icons.dns_rounded, _baseUrlController, isDark, isEnabled: isEnabled));
+      fields.add(
+        _buildSettingsTile(
+          'Base URL',
+          Icons.dns_rounded,
+          _baseUrlController,
+          isDark,
+          isEnabled: isEnabled,
+        ),
+      );
     }
-    
+
     return fields;
   }
 
@@ -373,7 +447,9 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
+                          color: isDark
+                              ? Colors.black26
+                              : Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -382,7 +458,10 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [

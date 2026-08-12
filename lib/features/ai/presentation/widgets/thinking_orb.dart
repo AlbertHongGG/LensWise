@@ -68,7 +68,13 @@ class _Pt3Res {
   _Pt3Res(this.x, this.y, this.z, this.inActive);
 }
 
-_Pt3Res _applyMoves(double px, double py, double pz, List<_Move> moves, _Sc sc) {
+_Pt3Res _applyMoves(
+  double px,
+  double py,
+  double pz,
+  List<_Move> moves,
+  _Sc sc,
+) {
   double x = px;
   double y = py;
   double z = pz;
@@ -101,7 +107,13 @@ _Pt3Res _applyMoves(double px, double py, double pz, List<_Move> moves, _Sc sc) 
 
 typedef _Projector = List<double> Function(double x, double y, double z);
 
-_Projector _makeProj(double yaw, double tilt, double cx, double cy, double scale) {
+_Projector _makeProj(
+  double yaw,
+  double tilt,
+  double cx,
+  double cy,
+  double scale,
+) {
   final st = math.sin(tilt);
   final ct = math.cos(tilt);
   final sy = math.sin(yaw);
@@ -117,24 +129,27 @@ _Projector _makeProj(double yaw, double tilt, double cx, double cy, double scale
 
 class _Dot {
   final double x, y, z, r, white;
-  _Dot({required this.x, required this.y, required this.z, required this.r, required this.white});
+  _Dot({
+    required this.x,
+    required this.y,
+    required this.z,
+    required this.r,
+    required this.white,
+  });
 }
 
 class ThinkingOrb extends StatefulWidget {
   final double size;
   final bool isDark;
-  
-  const ThinkingOrb({
-    super.key, 
-    this.size = 64.0,
-    this.isDark = false,
-  });
+
+  const ThinkingOrb({super.key, this.size = 64.0, this.isDark = false});
 
   @override
   State<ThinkingOrb> createState() => _ThinkingOrbState();
 }
 
-class _ThinkingOrbState extends State<ThinkingOrb> with SingleTickerProviderStateMixin {
+class _ThinkingOrbState extends State<ThinkingOrb>
+    with SingleTickerProviderStateMixin {
   late Ticker _ticker;
   double _t = 0;
   // Scaled counts for size=64 count=0.35
@@ -197,18 +212,18 @@ class _RubikPainter extends CustomPainter {
     final cy = size.height / 2;
     final R = (size.width / 2) * 0.82;
     final pt = _makeProj(t * 0.55, 0.35 + 0.1 * math.sin(t * 0.9), cx, cy, R);
-    
+
     // rsPow = 0.6
     final rs = math.pow(size.width / 300.0, 0.6).toDouble();
     final sc = _solveCycle(t, 14, 0.42, 1.2);
 
     final dots = <_Dot>[];
-    
+
     // Scaled radii for size=1.05
     final rBase = 0.6 * 1.05;
     final rDepth = 1.7 * 1.05;
     final rActive = 0.3 * 1.05;
-    
+
     final inkFar = 0.62;
     final inkSpan = 0.54;
 
@@ -219,13 +234,19 @@ class _RubikPainter extends CustomPainter {
       final lonCount = math.max(1, (cosLat.abs() * lonDensity).round());
       for (int lj = 0; lj < lonCount; lj++) {
         final lon = (lj / lonCount) * 2 * math.pi;
-        final res = _applyMoves(cosLat * math.cos(lon), sinLat, cosLat * math.sin(lon), moves, sc);
+        final res = _applyMoves(
+          cosLat * math.cos(lon),
+          sinLat,
+          cosLat * math.sin(lon),
+          moves,
+          sc,
+        );
         final proj = pt(res.x, res.y, res.z);
         final px = proj[0];
         final py = proj[1];
         final zr = proj[2];
         final depth = (zr + 1) / 2;
-        
+
         final r = (rBase + rDepth * depth + (res.inActive ? rActive : 0)) * rs;
         final white = inkFar - inkSpan * depth - (res.inActive ? 0.14 : 0);
         dots.add(_Dot(x: px, y: py, z: zr, r: r, white: white));
@@ -246,5 +267,6 @@ class _RubikPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _RubikPainter oldDelegate) => t != oldDelegate.t || isDark != oldDelegate.isDark;
+  bool shouldRepaint(covariant _RubikPainter oldDelegate) =>
+      t != oldDelegate.t || isDark != oldDelegate.isDark;
 }

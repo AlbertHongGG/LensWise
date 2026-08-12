@@ -26,7 +26,9 @@ class ProviderFactory {
       );
     } else if (config is VertexAIConfig) {
       if (config.projectId.isEmpty || config.accessToken.isEmpty) {
-        throw Exception('[ERROR] Vertex AI Project ID or Access Token is missing.');
+        throw Exception(
+          '[ERROR] Vertex AI Project ID or Access Token is missing.',
+        );
       }
       return VertexAIProvider(
         projectId: config.projectId,
@@ -36,7 +38,9 @@ class ProviderFactory {
       );
     }
 
-    throw UnsupportedError('[ERROR] Unsupported AIProviderConfig type: ${config.runtimeType}');
+    throw UnsupportedError(
+      '[ERROR] Unsupported AIProviderConfig type: ${config.runtimeType}',
+    );
   }
 }
 

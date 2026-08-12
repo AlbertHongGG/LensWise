@@ -1,4 +1,7 @@
-String buildProductComparisonSystemPrompt(String targetLanguage, int imageCount) {
+String buildProductComparisonSystemPrompt(
+  String targetLanguage,
+  int imageCount,
+) {
   return '''你是一個專注於「商品視覺比對與決策分析」的頂尖多模態 AI 助理。
 使用者的輸入會包含 $imageCount 張照片，這些照片分別代表需要進行比較的不同商品 (按照上傳順序：商品 0, 商品 1, ...)。
 你的任務是深度分析這些圖片的細節，提取各項特徵進行客觀的動態比較，並以結構化的 JSON 格式回傳。

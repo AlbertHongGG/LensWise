@@ -9,7 +9,7 @@ mixin AIImageEncoderMixin {
     if (request.images == null || request.images!.isEmpty) {
       return null;
     }
-    
+
     return request.images!.map((bytes) => base64Encode(bytes)).toList();
   }
 }

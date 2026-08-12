@@ -8,15 +8,13 @@ import 'package:lens_wise/features/ai/infrastructure/providers/image_encoder.dar
 class GeminiFlowProvider with AIImageEncoderMixin implements AIProvider {
   @override
   final String name = 'geminiflow';
-  
+
   final GeminiFlowClient _client;
   final String _model;
 
-  GeminiFlowProvider({
-    required String modelName,
-    required String baseUrl,
-  })  : _model = modelName,
-        _client = GeminiFlowClient(baseUrl: baseUrl);
+  GeminiFlowProvider({required String modelName, required String baseUrl})
+    : _model = modelName,
+      _client = GeminiFlowClient(baseUrl: baseUrl);
 
   @override
   Future<GenerateResponse> generate(GenerateRequest request) async {
@@ -30,9 +28,7 @@ class GeminiFlowProvider with AIImageEncoderMixin implements AIProvider {
         images: encodeImagesToBase64(request),
       );
 
-      return GenerateResponse(
-        text: response.text,
-      );
+      return GenerateResponse(text: response.text);
     } catch (e) {
       throw AIConnectionError(name, e.toString());
     }

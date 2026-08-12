@@ -1,7 +1,5 @@
 class GenerateResponse {
   final String text;
 
-  GenerateResponse({
-    required this.text,
-  });
+  GenerateResponse({required this.text});
 }

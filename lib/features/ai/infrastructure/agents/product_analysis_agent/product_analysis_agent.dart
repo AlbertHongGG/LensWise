@@ -19,15 +19,23 @@ class ProductAnalysisResult {
     return ProductAnalysisResult(
       status: json['status'] as String? ?? 'error',
       message: json['message'] as String?,
-      data: json['data'] != null ? ProductAnalysisData.fromJson(json['data'] as Map<String, dynamic>) : null,
+      data: json['data'] != null
+          ? ProductAnalysisData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
     );
   }
 }
 
-class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductAnalysisResult> {
+class ProductAnalysisAgent
+    extends BaseAgent<List<Uint8List>, ProductAnalysisResult> {
   final String targetLanguage;
 
-  ProductAnalysisAgent(super.agentName, super.provider, super.logger, {required this.targetLanguage});
+  ProductAnalysisAgent(
+    super.agentName,
+    super.provider,
+    super.logger, {
+    required this.targetLanguage,
+  });
 
   @override
   Future<ProductAnalysisResult> execute(List<Uint8List> input) async {
@@ -38,25 +46,27 @@ class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductAnalysisRes
     );
 
     final responseText = await executePrompt(request);
-    
+
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
       return ProductAnalysisResult.fromJson(jsonMap);
     } catch (e) {
       return ProductAnalysisResult(
-        status: 'needs_more_info', 
-        message: '解析過程發生錯誤，可能是照片資訊太過複雜。請換個角度拍攝。'
+        status: 'needs_more_info',
+        message: '解析過程發生錯誤，可能是照片資訊太過複雜。請換個角度拍攝。',
       );
     }
   }
 }
 
-final productAnalysisAgentProvider = Provider.autoDispose<ProductAnalysisAgent>((ref) {
-  final language = ref.watch(settingsProvider).targetLanguage;
-  return ProductAnalysisAgent(
-    'ProductAnalysis',
-    ref.watch(aiProviderProvider),
-    AIAgentLogger('ProductAnalysis'),
-    targetLanguage: language,
-  );
-});
+final productAnalysisAgentProvider = Provider.autoDispose<ProductAnalysisAgent>(
+  (ref) {
+    final language = ref.watch(settingsProvider).targetLanguage;
+    return ProductAnalysisAgent(
+      'ProductAnalysis',
+      ref.watch(aiProviderProvider),
+      AIAgentLogger('ProductAnalysis'),
+      targetLanguage: language,
+    );
+  },
+);

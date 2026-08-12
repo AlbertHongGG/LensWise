@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lens_wise/features/history/domain/models/i_history_record.dart';
 
 class ReceiptItem {
   final String originalName;
@@ -66,8 +68,10 @@ class ReceiptFeeItem {
   }
 }
 
-class ReceiptRecord {
+class ReceiptRecord implements IHistoryRecord {
+  @override
   final String id;
+  @override
   final DateTime timestamp;
   final String? receiptDate;
   final String? storeName;
@@ -78,6 +82,21 @@ class ReceiptRecord {
   final List<ReceiptFeeItem> taxes;
   final double totalAmount;
   final List<String> imagePaths;
+
+  @override
+  String get displayTitle => storeName?.isNotEmpty == true ? storeName! : '未知商店';
+
+  @override
+  String get displaySubtitle => '總計: $totalAmount ${currency ?? ""}';
+
+  @override
+  IconData get displayIcon => Icons.receipt_long;
+
+  @override
+  String? get deletionImagePath => null;
+
+  @override
+  List<String>? get deletionImagePaths => imagePaths;
 
   ReceiptRecord({
     required this.id,

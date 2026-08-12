@@ -52,6 +52,8 @@ dependencies:
   photo_manager: ^3.3.0
   photo_manager_image_provider: ^2.2.0
   flutter_markdown: ^0.7.7+1
+  speech_to_text: ^7.4.0
+  permission_handler: ^13.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

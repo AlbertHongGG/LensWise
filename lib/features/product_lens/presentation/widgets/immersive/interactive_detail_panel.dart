@@ -25,7 +25,9 @@ class InteractiveDetailPanel extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  ...record.allergenAlerts.map((a) => _buildBadge(ctx, a, isAlert: true)),
+                  ...record.allergenAlerts.map(
+                    (a) => _buildBadge(ctx, a, isAlert: true),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -41,7 +43,10 @@ class InteractiveDetailPanel extends StatelessWidget {
                 style: const TextStyle(fontSize: 15, height: 1.6),
               ),
             ] else
-              const Text('無詳細成分標示', style: TextStyle(fontStyle: FontStyle.italic)),
+              const Text(
+                '無詳細成分標示',
+                style: TextStyle(fontStyle: FontStyle.italic),
+              ),
           ],
         ),
       ),
@@ -60,16 +65,34 @@ class InteractiveDetailPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildProsConsBlock(ctx, '推薦情境', Icons.check_circle_outline, Colors.green, record.whenRecommended),
+            _buildProsConsBlock(
+              ctx,
+              '推薦情境',
+              Icons.check_circle_outline,
+              Colors.green,
+              record.whenRecommended,
+            ),
             const SizedBox(height: 24),
-            _buildProsConsBlock(ctx, '不推薦情境', Icons.cancel_outlined, Colors.redAccent, record.whenNotRecommended),
+            _buildProsConsBlock(
+              ctx,
+              '不推薦情境',
+              Icons.cancel_outlined,
+              Colors.redAccent,
+              record.whenNotRecommended,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProsConsBlock(BuildContext context, String title, IconData icon, Color color, List<String> items) {
+  Widget _buildProsConsBlock(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    List<String> items,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -77,31 +100,56 @@ class InteractiveDetailPanel extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(width: 8),
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color)),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: color,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         if (items.isEmpty)
-          const Text('無特別註明', style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey))
+          const Text(
+            '無特別註明',
+            style: TextStyle(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+              color: Colors.grey,
+            ),
+          )
         else
-          ...items.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6, right: 8),
-                      child: CircleAvatar(radius: 3, backgroundColor: color),
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, right: 8),
+                    child: CircleAvatar(radius: 3, backgroundColor: color),
+                  ),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: const TextStyle(fontSize: 15, height: 1.4),
                     ),
-                    Expanded(child: Text(item, style: const TextStyle(fontSize: 15, height: 1.4))),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildBadge(BuildContext context, String text, {required bool isAlert}) {
+  Widget _buildBadge(
+    BuildContext context,
+    String text, {
+    required bool isAlert,
+  }) {
     final color = isAlert ? Colors.redAccent : AppColors.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -117,7 +165,14 @@ class InteractiveDetailPanel extends StatelessWidget {
             Icon(Icons.warning_amber_rounded, size: 14, color: color),
             const SizedBox(width: 4),
           ],
-          Text(text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -125,8 +180,11 @@ class InteractiveDetailPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasIngredients = record.ingredients.isNotEmpty || record.allergenAlerts.isNotEmpty;
-    final hasProsCons = record.whenRecommended.isNotEmpty || record.whenNotRecommended.isNotEmpty;
+    final hasIngredients =
+        record.ingredients.isNotEmpty || record.allergenAlerts.isNotEmpty;
+    final hasProsCons =
+        record.whenRecommended.isNotEmpty ||
+        record.whenNotRecommended.isNotEmpty;
 
     if (!hasIngredients && !hasProsCons) return const SizedBox.shrink();
 
@@ -158,7 +216,7 @@ class _GlassButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -178,12 +236,18 @@ class _GlassButton extends StatelessWidget {
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Material(
-            color: isDark ? Colors.black.withValues(alpha: 0.45) : Colors.white.withValues(alpha: 0.55),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.45)
+                : Colors.white.withValues(alpha: 0.55),
             child: InkWell(
               onTap: onPressed,
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Icon(icon, size: 20, color: isDark ? Colors.white : const Color(0xFF111418)),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: isDark ? Colors.white : const Color(0xFF111418),
+                ),
               ),
             ),
           ),
@@ -198,12 +262,16 @@ class _DetailSheet extends StatelessWidget {
   final IconData icon;
   final Widget child;
 
-  const _DetailSheet({required this.title, required this.icon, required this.child});
+  const _DetailSheet({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -232,7 +300,10 @@ class _DetailSheet extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
