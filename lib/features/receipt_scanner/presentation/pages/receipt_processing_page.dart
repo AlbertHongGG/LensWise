@@ -1,4 +1,4 @@
-﻿import 'dart:typed_data';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,7 +47,7 @@ class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
   Widget _buildBody(BuildContext context, ReceiptScannerState state, bool isDark) {
     if (state.errorMessage != null) {
       return PremiumErrorView(
-        title: '�??失�?',
+        title: '解析失敗',
         message: state.errorMessage!,
         isDark: isDark,
         onActionPressed: () {
@@ -65,12 +65,12 @@ class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
           ThinkingOrb(size: 100, isDark: isDark),
           const SizedBox(height: 32),
           const Text(
-            'AI �?���???��??�容...',
+            'AI 正在解析收據內容...',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
           Text(
-            '?�可?��?要幾秒�??��???,
+            '這可能需要幾秒鐘的時間',
             textAlign: TextAlign.center,
             style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
           ),

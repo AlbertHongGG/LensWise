@@ -129,7 +129,7 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
       }
       if (next.hasError && !(previous?.hasError ?? false)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('?��??��?語音辨�?，�?確�?麥�?風�??��?系統?�否?�援??)),
+          const SnackBar(content: Text('無法啟用語音辨識，請確認麥克風權限與系統是否支援。')),
         );
       }
     });
@@ -202,7 +202,7 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
             ),
             const SizedBox(height: 24),
             Text(
-              'AI ?��??��???,
+              'AI 聆聽中...',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -211,7 +211,7 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
             ),
             const SizedBox(height: 12),
             Text(
-              '請至設�??��? AI 輔助?�能以使?�智?��?話�?,
+              '請至設定開啟 AI 輔助功能以使用智能對話。',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
