@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/product_comparison/application/comparison_analysis_service.dart';
-import 'package:lens_wise/features/ai/infrastructure/agents/product_comparison_agent/product_comparison_agent.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';

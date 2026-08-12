@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 
 class ComparisonUnifiedBoard extends StatelessWidget {

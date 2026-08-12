@@ -285,12 +285,12 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildGlassButton(
-                    icon: Icons.forum_outlined,
+                    icon: Icons.auto_awesome,
                     onTap: () => showComparisonChat(context, result),
                   ),
                   const SizedBox(height: 16),
                   _buildGlassButton(
-                    icon: Icons.auto_awesome,
+                    icon: Icons.summarize_outlined,
                     onTap: _showAiVerdictSheet,
                   ),
                   const SizedBox(height: 16),
