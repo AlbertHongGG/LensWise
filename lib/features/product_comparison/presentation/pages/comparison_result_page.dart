@@ -9,9 +9,7 @@ import 'package:lens_wise/features/product_comparison/domain/models/comparison_r
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_hero_section.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_point_card.dart';
-import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_product_carousel.dart';
-import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_roster_bar.dart';
-import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_summary_card.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_contenders_row.dart';
 
 class ComparisonResultPage extends StatefulWidget {
   final ComparisonResultArgs args;
@@ -28,6 +26,7 @@ class ComparisonResultPage extends StatefulWidget {
 class _ComparisonResultPageState extends State<ComparisonResultPage> {
   int _leftIndex = 0;
   int _rightIndex = 1;
+  bool _isVerdictOpen = false;
 
   int get _imageCount {
     if (widget.args.rawImages != null) return widget.args.rawImages!.length;
@@ -169,23 +168,8 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
             CustomScrollView(
               slivers: [
                 const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                // 1. Top Level: Product Carousel (Overview)
-                SliverToBoxAdapter(
-                  child: ComparisonProductCarousel(
-                    products: result.products,
-                    imageProviderFactory: _getImageProvider,
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
-                // 2. Mid Level: Summary Card (Overall Analysis)
-                SliverToBoxAdapter(
-                  child: ComparisonSummaryCard(
-                    result: result,
-                    isDark: isDark,
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                // 3. Detail Level: Hero VS Section (1v1 Comparison)
+                
+                // 1. Core Visual: Hero VS Section (1v1 Comparison)
                 SliverToBoxAdapter(
                   child: ComparisonHeroSection(
                     result: result,
@@ -194,8 +178,23 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                     imageProviderFactory: _getImageProvider,
                   ),
                 ),
+                
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+                // 2. Unified Roster: Contenders selection directly below Hero
+                SliverToBoxAdapter(
+                  child: ComparisonContendersRow(
+                    products: result.products,
+                    leftIndex: _leftIndex,
+                    rightIndex: _rightIndex,
+                    imageProviderFactory: _getImageProvider,
+                    onProductTapped: _onAvatarTapped,
+                  ),
+                ),
+                
+                // 3. Detail Level: Comparison Points
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32).copyWith(bottom: 120),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32).copyWith(bottom: 100), // Extra bottom padding for FAB
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => ComparisonPointCard(
@@ -210,18 +209,115 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                 ),
               ],
             ),
-            if (_imageCount > 2)
-              Positioned(
-                bottom: 24,
-                left: 0,
-                right: 0,
-                child: ComparisonRosterBar(
-                  imageCount: _imageCount,
-                  leftIndex: _leftIndex,
-                  rightIndex: _rightIndex,
-                  isDark: isDark,
-                  imageProviderFactory: _getImageProvider,
-                  onAvatarTapped: _onAvatarTapped,
+            // Floating AI Verdict Button
+            Positioned(
+              bottom: 16,
+              left: 0,
+              right: 0,
+              child: AnimatedOpacity(
+                opacity: _isVerdictOpen ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: Center(
+                  child: FloatingActionButton(
+                    onPressed: () => setState(() => _isVerdictOpen = true),
+                    backgroundColor: isDark ? Colors.white24 : Colors.black87,
+                    foregroundColor: isDark ? Colors.white : Colors.white,
+                    elevation: 4,
+                    child: const Icon(Icons.auto_awesome),
+                  ),
+                ),
+              ),
+            ),
+            if (_isVerdictOpen)
+              NotificationListener<DraggableScrollableNotification>(
+                onNotification: (notification) {
+                  if (notification.extent <= 0.05) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && _isVerdictOpen) {
+                        setState(() => _isVerdictOpen = false);
+                      }
+                    });
+                  }
+                  return false;
+                },
+                child: DraggableScrollableSheet(
+                  initialChildSize: 0.6,
+                  minChildSize: 0.0,
+                  maxChildSize: 0.85,
+                  builder: (context, scrollController) => Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 24,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: ListView(
+                      controller: scrollController,
+                      padding: EdgeInsets.zero,
+                      children: [
+                        // Drag handle area
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: Container(
+                              width: 48,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.white30 : Colors.black26,
+                                borderRadius: BorderRadius.circular(2.5),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Content
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 24),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Text(
+                                    'AI 推薦總結',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark ? Colors.white : Colors.black87,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                result.summary,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  height: 1.8,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
           ],
