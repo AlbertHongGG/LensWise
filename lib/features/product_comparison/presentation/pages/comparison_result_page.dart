@@ -12,6 +12,7 @@ import 'package:lens_wise/features/product_comparison/presentation/widgets/compa
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_contenders_drawer.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_roster_bar.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_chat_adapter.dart';
 
 class ComparisonResultPage extends StatefulWidget {
   final ComparisonResultArgs args;
@@ -283,6 +284,11 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  _buildGlassButton(
+                    icon: Icons.forum_outlined,
+                    onTap: () => showComparisonChat(context, result),
+                  ),
+                  const SizedBox(height: 16),
                   _buildGlassButton(
                     icon: Icons.auto_awesome,
                     onTap: _showAiVerdictSheet,
