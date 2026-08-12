@@ -79,8 +79,16 @@ class AiChatController extends Notifier<AiChatSessionState> {
     // Save history before adding the new query
     final history = List<ChatMessage>.from(state.messages);
 
+    final aiMessageId = _generateId();
+    var aiMessage = ChatMessage(
+      id: aiMessageId,
+      type: ChatMessageType.ai,
+      text: '',
+      timestamp: DateTime.now(),
+    );
+
     state = state.copyWith(
-      messages: [...state.messages, userMessage],
+      messages: [...state.messages, userMessage, aiMessage],
       isProcessing: true,
       errorMessage: null,
     );
@@ -93,28 +101,44 @@ class AiChatController extends Notifier<AiChatSessionState> {
         newQuery: text,
       );
 
-      final responseText = await agent.execute(request);
+      final stream = agent.executeStream(request);
 
-      final aiMessage = ChatMessage(
-        id: _generateId(),
-        type: ChatMessageType.ai,
-        text: responseText,
-        timestamp: DateTime.now(),
-      );
+      await for (final chunk in stream) {
+        aiMessage = aiMessage.copyWith(text: aiMessage.text + chunk);
 
-      state = state.copyWith(
-        messages: [...state.messages, aiMessage],
-        isProcessing: false,
-      );
+        final newMessages = List<ChatMessage>.from(state.messages);
+        final index = newMessages.indexWhere((m) => m.id == aiMessageId);
+        if (index != -1) {
+          newMessages[index] = aiMessage;
+          state = state.copyWith(messages: newMessages);
+        }
+      }
+
+      state = state.copyWith(isProcessing: false);
     } catch (e) {
-      final errorMsg = ChatMessage(
-        id: _generateId(),
-        type: ChatMessageType.error,
-        text: '發生錯誤：$e',
-        timestamp: DateTime.now(),
-      );
+      final newMessages = List<ChatMessage>.from(state.messages);
+      final index = newMessages.indexWhere((m) => m.id == aiMessageId);
+      
+      final errorText = aiMessage.text.isEmpty 
+          ? '發生錯誤：$e' 
+          : '${aiMessage.text}\n\n[發生錯誤：$e]';
+          
+      if (index != -1) {
+        newMessages[index] = aiMessage.copyWith(
+          text: errorText,
+          type: ChatMessageType.error,
+        );
+      } else {
+        newMessages.add(ChatMessage(
+          id: _generateId(),
+          type: ChatMessageType.error,
+          text: '發生錯誤：$e',
+          timestamp: DateTime.now(),
+        ));
+      }
+      
       state = state.copyWith(
-        messages: [...state.messages, errorMsg],
+        messages: newMessages,
         isProcessing: false,
       );
     }

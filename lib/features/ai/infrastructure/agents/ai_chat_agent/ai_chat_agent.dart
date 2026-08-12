@@ -47,6 +47,32 @@ class AiChatAgent extends BaseAgent<AiChatRequest, String> {
     final responseText = await executePrompt(request);
     return responseText;
   }
+
+  @override
+  Stream<String> executeStream(AiChatRequest input) async* {
+    final buffer = StringBuffer();
+
+    // Inject dynamic system context
+    buffer.writeln(input.systemContextPrompt);
+    buffer.writeln('\n--- 對話歷史 ---');
+
+    // Inject history
+    for (final msg in input.history) {
+      buffer.writeln(
+        buildAiChatHistory(msg.text, msg.type == ChatMessageType.user),
+      );
+    }
+
+    buffer.writeln('User: ${input.newQuery}');
+    buffer.writeln('AI: ');
+
+    final request = GenerateRequest(
+      systemPrompt: buildAiChatSystemPrompt(),
+      prompt: buffer.toString(),
+    );
+
+    yield* executePromptStream(request);
+  }
 }
 
 final aiChatAgentProvider = Provider.autoDispose<AiChatAgent>((ref) {

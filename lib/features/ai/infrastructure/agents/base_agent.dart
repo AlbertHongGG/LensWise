@@ -12,6 +12,10 @@ abstract class BaseAgent<T_IN, T_OUT> {
 
   Future<T_OUT> execute(T_IN input);
 
+  Stream<T_OUT> executeStream(T_IN input) {
+    throw UnimplementedError('This agent does not support streaming execution.');
+  }
+
   Future<String> executePrompt(GenerateRequest request) async {
     final startTime = DateTime.now().millisecondsSinceEpoch;
 
@@ -31,6 +35,35 @@ abstract class BaseAgent<T_IN, T_OUT> {
       logger.logInteraction(requestLog, {
         'error': e.toString(),
         'stackTrace': stackTrace.toString(),
+      }, startTime);
+      rethrow;
+    }
+  }
+
+  Stream<String> executePromptStream(GenerateRequest request) async* {
+    final startTime = DateTime.now().millisecondsSinceEpoch;
+
+    final requestLog = {
+      'systemPrompt': request.systemPrompt,
+      'prompt': request.prompt,
+      'hasImages': request.images != null && request.images!.isNotEmpty,
+      'imageCount': request.images?.length ?? 0,
+      'isStream': true,
+    };
+
+    final buffer = StringBuffer();
+    try {
+      final stream = provider.generateStream(request);
+      await for (final response in stream) {
+        buffer.write(response.text);
+        yield response.text;
+      }
+      logger.logInteraction(requestLog, buffer.toString(), startTime);
+    } catch (e, stackTrace) {
+      logger.logInteraction(requestLog, {
+        'error': e.toString(),
+        'stackTrace': stackTrace.toString(),
+        'partialResponse': buffer.toString(),
       }, startTime);
       rethrow;
     }
