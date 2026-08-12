@@ -24,12 +24,9 @@ class ComparisonResultPage extends StatefulWidget {
   State<ComparisonResultPage> createState() => _ComparisonResultPageState();
 }
 
-enum DrawerState { none, aiVerdict, contenders }
-
 class _ComparisonResultPageState extends State<ComparisonResultPage> {
   int _leftIndex = 0;
   int _rightIndex = 1;
-  DrawerState _drawerState = DrawerState.none;
 
   int get _imageCount {
     if (widget.args.rawImages != null) return widget.args.rawImages!.length;
@@ -158,6 +155,66 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
     );
   }
 
+  void _showAiVerdictSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.pop(context),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.2,
+            maxChildSize: 0.85,
+            builder: (context, scrollController) => GestureDetector(
+              onTap: () {}, // Prevent taps on content from closing the sheet
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                ),
+                child: _buildAiVerdictContent(context, scrollController, widget.args.result, isDark),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showContendersSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.pop(context),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.2,
+            maxChildSize: 0.85,
+            builder: (context, scrollController) => GestureDetector(
+              onTap: () {}, // Prevent taps on content from closing the sheet
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                ),
+                child: _buildContendersContent(context, scrollController, widget.args.result, isDark),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -221,71 +278,31 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
             Positioned(
               top: 16,
               right: 16,
-              child: AnimatedOpacity(
-                opacity: _drawerState == DrawerState.none ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FloatingActionButton(
-                      heroTag: 'ai_verdict',
-                      mini: true,
-                      onPressed: () => setState(() => _drawerState = DrawerState.aiVerdict),
-                      backgroundColor: isDark ? Colors.white24 : Colors.black87,
-                      foregroundColor: isDark ? Colors.white : Colors.white,
-                      elevation: 4,
-                      child: const Icon(Icons.auto_awesome),
-                    ),
-                    const SizedBox(height: 16),
-                    FloatingActionButton(
-                      heroTag: 'contenders',
-                      mini: true,
-                      onPressed: () => setState(() => _drawerState = DrawerState.contenders),
-                      backgroundColor: isDark ? Colors.white24 : Colors.black87,
-                      foregroundColor: isDark ? Colors.white : Colors.white,
-                      elevation: 4,
-                      child: const Icon(Icons.view_carousel_outlined),
-                    ),
-                  ],
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FloatingActionButton(
+                    heroTag: 'ai_verdict',
+                    mini: true,
+                    onPressed: _showAiVerdictSheet,
+                    backgroundColor: isDark ? Colors.white24 : Colors.black87,
+                    foregroundColor: isDark ? Colors.white : Colors.white,
+                    elevation: 4,
+                    child: const Icon(Icons.auto_awesome),
+                  ),
+                  const SizedBox(height: 16),
+                  FloatingActionButton(
+                    heroTag: 'contenders',
+                    mini: true,
+                    onPressed: _showContendersSheet,
+                    backgroundColor: isDark ? Colors.white24 : Colors.black87,
+                    foregroundColor: isDark ? Colors.white : Colors.white,
+                    elevation: 4,
+                    child: const Icon(Icons.view_carousel_outlined),
+                  ),
+                ],
               ),
             ),
-            
-            // Unified Bottom Drawer
-            if (_drawerState != DrawerState.none)
-              NotificationListener<DraggableScrollableNotification>(
-                onNotification: (notification) {
-                  if (notification.extent <= 0.05) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted && _drawerState != DrawerState.none) {
-                        setState(() => _drawerState = DrawerState.none);
-                      }
-                    });
-                  }
-                  return false;
-                },
-                child: DraggableScrollableSheet(
-                  initialChildSize: 0.6,
-                  minChildSize: 0.0,
-                  maxChildSize: 0.85,
-                  builder: (context, scrollController) => Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 24,
-                          spreadRadius: 4,
-                        ),
-                      ],
-                    ),
-                    child: _drawerState == DrawerState.aiVerdict
-                        ? _buildAiVerdictContent(context, scrollController, result, isDark)
-                        : _buildContendersContent(context, scrollController, result, isDark),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

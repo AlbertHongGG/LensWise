@@ -69,17 +69,11 @@ class ComparisonContendersDrawer extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Grid Content
+        // Banner List Content
         Expanded(
-          child: GridView.builder(
+          child: ListView.builder(
             controller: scrollController,
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.8, // Taller cards (poster style)
-            ),
             itemCount: result.products.length,
             itemBuilder: (context, index) {
               final product = result.products[index];
@@ -88,6 +82,8 @@ class ComparisonContendersDrawer extends StatelessWidget {
               return GestureDetector(
                 onTap: () => onProductTapped(index),
                 child: Container(
+                  height: 140, // Banner height
+                  margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
@@ -120,18 +116,18 @@ class ComparisonContendersDrawer extends StatelessWidget {
                           left: 0,
                           right: 0,
                           child: Container(
-                            height: 80,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.bottomCenter,
                                 end: Alignment.topCenter,
                                 colors: [
                                   Colors.black.withValues(alpha: 0.9),
+                                  Colors.black.withValues(alpha: 0.6),
                                   Colors.transparent,
                                 ],
                               ),
                             ),
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.fromLTRB(16, 48, 16, 12),
                             alignment: Alignment.bottomLeft,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -142,19 +138,19 @@ class ComparisonContendersDrawer extends StatelessWidget {
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                    fontSize: 16,
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 if (product.originalName.isNotEmpty && product.originalName != product.translatedName)
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 2),
+                                    padding: const EdgeInsets.only(top: 4),
                                     child: Text(
                                       product.originalName,
                                       style: TextStyle(
                                         color: Colors.white.withValues(alpha: 0.7),
-                                        fontSize: 11,
+                                        fontSize: 12,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -168,10 +164,10 @@ class ComparisonContendersDrawer extends StatelessWidget {
                         // Selection Badge (Left or Right arrow)
                         if (isSelected)
                           Positioned(
-                            top: 8,
-                            right: 8,
+                            top: 12,
+                            right: 12,
                             child: Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
                                 shape: BoxShape.circle,
@@ -185,7 +181,7 @@ class ComparisonContendersDrawer extends StatelessWidget {
                               child: Icon(
                                 index == leftIndex ? Icons.keyboard_double_arrow_left : Icons.keyboard_double_arrow_right,
                                 color: Colors.white,
-                                size: 20,
+                                size: 24,
                               ),
                             ),
                           ),
