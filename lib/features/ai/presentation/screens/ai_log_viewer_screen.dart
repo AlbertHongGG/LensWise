@@ -271,11 +271,15 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen> with Sing
                     Expanded(
                       child: TabBarView(
                         controller: _tabController,
+                        physics: const NeverScrollableScrollPhysics(),
                         children: _tabs.map((tab) {
                           final filteredLogs = tab == 'All' 
                             ? _allLogs 
                             : _allLogs.where((l) => l.agentName == tab).toList();
-                          return _buildLogListView(filteredLogs, isDark);
+                          return KeyedSubtree(
+                            key: ValueKey(tab),
+                            child: _buildLogListView(filteredLogs, isDark),
+                          );
                         }).toList(),
                       ),
                     ),
