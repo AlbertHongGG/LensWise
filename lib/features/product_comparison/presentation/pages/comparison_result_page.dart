@@ -10,6 +10,7 @@ import 'package:lens_wise/features/product_comparison/presentation/pages/compari
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_hero_section.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_unified_board.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_contenders_drawer.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_roster_bar.dart';
 
 class ComparisonResultPage extends StatefulWidget {
@@ -382,13 +383,30 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                 ],
               ),
               const SizedBox(height: 24),
-              Text(
-                result.summary,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                  height: 1.8,
-                  letterSpacing: 0.5,
+              MarkdownBody(
+                data: result.summary,
+                styleSheet: MarkdownStyleSheet(
+                  h2: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                    height: 1.5,
+                  ),
+                  p: TextStyle(
+                    fontSize: 16,
+                    color: isDark ? Colors.white.withValues(alpha: 0.85) : Colors.black87,
+                    height: 1.8,
+                    letterSpacing: 0.5,
+                  ),
+                  listBullet: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 16,
+                  ),
+                  strong: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                  blockSpacing: 16,
                 ),
               ),
             ],
