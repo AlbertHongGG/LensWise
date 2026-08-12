@@ -22,11 +22,11 @@ class ComparisonUnifiedBoard extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      // Add generous padding inside the board
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      // Add generous padding inside the board, especially at top for breathing room
+      padding: const EdgeInsets.only(top: 40, bottom: 24, left: 16, right: 16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.05),

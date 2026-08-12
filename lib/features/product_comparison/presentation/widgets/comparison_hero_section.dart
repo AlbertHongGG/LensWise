@@ -30,27 +30,51 @@ class ComparisonHeroSection extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      leftWidget,
-                      _buildProductNameOverlay(leftIndex),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
                     ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        leftWidget,
+                        _buildProductNameOverlay(leftIndex),
+                      ],
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 4),
               Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(right: Radius.circular(24)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      rightWidget,
-                      _buildProductNameOverlay(rightIndex),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.horizontal(right: Radius.circular(24)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
                     ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.horizontal(right: Radius.circular(24)),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        rightWidget,
+                        _buildProductNameOverlay(rightIndex),
+                      ],
+                    ),
                   ),
                 ),
               ),

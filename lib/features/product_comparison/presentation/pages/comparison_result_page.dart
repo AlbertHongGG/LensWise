@@ -229,29 +229,32 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
               slivers: [
                 const SliverToBoxAdapter(child: SizedBox(height: 16)),
                 
-                // 1. Core Visual: Hero VS Section (1v1 Comparison)
+                // 1 & 2. Hero Section and Integrated Console (Stacked for Z-order)
                 SliverToBoxAdapter(
-                  child: ComparisonHeroSection(
-                    result: result,
-                    leftIndex: _leftIndex,
-                    rightIndex: _rightIndex,
-                    imageProviderFactory: _getImageProvider,
-                  ),
-                ),
-                
-                // 2. The Integrated Console (Seamlessly overlapping the Hero section)
-                SliverToBoxAdapter(
-                  child: Transform.translate(
-                    offset: const Offset(0, -16), // Negative offset to fuse with Hero
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 120), // Padding for Bottom Roster Bar
-                      child: ComparisonUnifiedBoard(
+                  child: Stack(
+                    children: [
+                      // Bottom Layer: The Integrated Console (tucked 24px behind the hero)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 220 - 24,
+                          bottom: 120, // Padding for Bottom Roster Bar
+                        ),
+                        child: ComparisonUnifiedBoard(
+                          result: result,
+                          leftIndex: _leftIndex,
+                          rightIndex: _rightIndex,
+                          isDark: isDark,
+                        ),
+                      ),
+                      
+                      // Top Layer: Hero VS Section (Pressing down on the board)
+                      ComparisonHeroSection(
                         result: result,
                         leftIndex: _leftIndex,
                         rightIndex: _rightIndex,
-                        isDark: isDark,
+                        imageProviderFactory: _getImageProvider,
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
