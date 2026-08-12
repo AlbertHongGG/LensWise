@@ -56,7 +56,7 @@ class ComparisonContendersDrawer extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Text(
-                '參戰圖鑑',
+                '產品圖鑑',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

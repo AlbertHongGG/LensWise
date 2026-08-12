@@ -277,34 +277,58 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
 
             // Floating Action Area (Top Right)
             Positioned(
-              top: 16,
+              top: 24, // Slightly lower for better safe area breathing room
               right: 16,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  FloatingActionButton(
-                    heroTag: 'ai_verdict',
-                    mini: true,
-                    onPressed: _showAiVerdictSheet,
-                    backgroundColor: isDark ? Colors.white24 : Colors.black87,
-                    foregroundColor: isDark ? Colors.white : Colors.white,
-                    elevation: 4,
-                    child: const Icon(Icons.auto_awesome),
+                  _buildGlassButton(
+                    icon: Icons.auto_awesome,
+                    onTap: _showAiVerdictSheet,
                   ),
                   const SizedBox(height: 16),
-                  FloatingActionButton(
-                    heroTag: 'contenders',
-                    mini: true,
-                    onPressed: _showContendersSheet,
-                    backgroundColor: isDark ? Colors.white24 : Colors.black87,
-                    foregroundColor: isDark ? Colors.white : Colors.white,
-                    elevation: 4,
-                    child: const Icon(Icons.view_carousel_outlined),
+                  _buildGlassButton(
+                    icon: Icons.view_carousel_outlined,
+                    onTap: _showContendersSheet,
                   ),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassButton({required IconData icon, required VoidCallback onTap}) {
+    return ClipOval(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withValues(alpha: 0.35), // Sophisticated dark transparency
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: Colors.white, size: 22),
+            ),
+          ),
         ),
       ),
     );
