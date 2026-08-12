@@ -9,7 +9,8 @@ import 'package:lens_wise/features/product_comparison/domain/models/comparison_r
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_hero_section.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_point_card.dart';
-import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_contenders_row.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_contenders_drawer.dart';
+import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_roster_bar.dart';
 
 class ComparisonResultPage extends StatefulWidget {
   final ComparisonResultArgs args;
@@ -23,10 +24,12 @@ class ComparisonResultPage extends StatefulWidget {
   State<ComparisonResultPage> createState() => _ComparisonResultPageState();
 }
 
+enum DrawerState { none, aiVerdict, contenders }
+
 class _ComparisonResultPageState extends State<ComparisonResultPage> {
   int _leftIndex = 0;
   int _rightIndex = 1;
-  bool _isVerdictOpen = false;
+  DrawerState _drawerState = DrawerState.none;
 
   int get _imageCount {
     if (widget.args.rawImages != null) return widget.args.rawImages!.length;
@@ -181,20 +184,9 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                 
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-                // 2. Unified Roster: Contenders selection directly below Hero
-                SliverToBoxAdapter(
-                  child: ComparisonContendersRow(
-                    products: result.products,
-                    leftIndex: _leftIndex,
-                    rightIndex: _rightIndex,
-                    imageProviderFactory: _getImageProvider,
-                    onProductTapped: _onAvatarTapped,
-                  ),
-                ),
-                
                 // 3. Detail Level: Comparison Points
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32).copyWith(bottom: 100), // Extra bottom padding for FAB
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32).copyWith(bottom: 120), // Padding for Bottom Roster Bar
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => ComparisonPointCard(
@@ -209,32 +201,64 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                 ),
               ],
             ),
-            // Floating AI Verdict Button
+            
+            // Bottom Roster Bar
             Positioned(
-              bottom: 16,
+              bottom: 0,
               left: 0,
               right: 0,
+              child: ComparisonRosterBar(
+                itemCount: result.products.length,
+                leftIndex: _leftIndex,
+                rightIndex: _rightIndex,
+                imageProviderFactory: _getImageProvider,
+                onProductTapped: _onAvatarTapped,
+                isDark: isDark,
+              ),
+            ),
+
+            // Floating Action Area (Top Right)
+            Positioned(
+              top: 16,
+              right: 16,
               child: AnimatedOpacity(
-                opacity: _isVerdictOpen ? 0.0 : 1.0,
+                opacity: _drawerState == DrawerState.none ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 200),
-                child: Center(
-                  child: FloatingActionButton(
-                    onPressed: () => setState(() => _isVerdictOpen = true),
-                    backgroundColor: isDark ? Colors.white24 : Colors.black87,
-                    foregroundColor: isDark ? Colors.white : Colors.white,
-                    elevation: 4,
-                    child: const Icon(Icons.auto_awesome),
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FloatingActionButton(
+                      heroTag: 'ai_verdict',
+                      mini: true,
+                      onPressed: () => setState(() => _drawerState = DrawerState.aiVerdict),
+                      backgroundColor: isDark ? Colors.white24 : Colors.black87,
+                      foregroundColor: isDark ? Colors.white : Colors.white,
+                      elevation: 4,
+                      child: const Icon(Icons.auto_awesome),
+                    ),
+                    const SizedBox(height: 16),
+                    FloatingActionButton(
+                      heroTag: 'contenders',
+                      mini: true,
+                      onPressed: () => setState(() => _drawerState = DrawerState.contenders),
+                      backgroundColor: isDark ? Colors.white24 : Colors.black87,
+                      foregroundColor: isDark ? Colors.white : Colors.white,
+                      elevation: 4,
+                      child: const Icon(Icons.view_carousel_outlined),
+                    ),
+                  ],
                 ),
               ),
             ),
-            if (_isVerdictOpen)
+            
+            // Unified Bottom Drawer
+            if (_drawerState != DrawerState.none)
               NotificationListener<DraggableScrollableNotification>(
                 onNotification: (notification) {
                   if (notification.extent <= 0.05) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted && _isVerdictOpen) {
-                        setState(() => _isVerdictOpen = false);
+                      if (mounted && _drawerState != DrawerState.none) {
+                        setState(() => _drawerState = DrawerState.none);
                       }
                     });
                   }
@@ -256,73 +280,91 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
                         ),
                       ],
                     ),
-                    child: ListView(
-                      controller: scrollController,
-                      padding: EdgeInsets.zero,
-                      children: [
-                        // Drag handle area
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Center(
-                            child: Container(
-                              width: 48,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                color: isDark ? Colors.white30 : Colors.black26,
-                                borderRadius: BorderRadius.circular(2.5),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Content
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 24),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Text(
-                                    'AI 推薦總結',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark ? Colors.white : Colors.black87,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                result.summary,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: isDark ? Colors.white70 : Colors.black87,
-                                  height: 1.8,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: _drawerState == DrawerState.aiVerdict
+                        ? _buildAiVerdictContent(context, scrollController, result, isDark)
+                        : _buildContendersContent(context, scrollController, result, isDark),
                   ),
                 ),
               ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAiVerdictContent(BuildContext context, ScrollController scrollController, ComparisonResult result, bool isDark) {
+    return ListView(
+      controller: scrollController,
+      padding: EdgeInsets.zero,
+      children: [
+        // Drag handle area
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Center(
+            child: Container(
+              width: 48,
+              height: 5,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white30 : Colors.black26,
+                borderRadius: BorderRadius.circular(2.5),
+              ),
+            ),
+          ),
+        ),
+        // Content
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    'AI 推薦總結',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                result.summary,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: isDark ? Colors.white70 : Colors.black87,
+                  height: 1.8,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContendersContent(BuildContext context, ScrollController scrollController, ComparisonResult result, bool isDark) {
+    return ComparisonContendersDrawer(
+      result: result,
+      leftIndex: _leftIndex,
+      rightIndex: _rightIndex,
+      imageProviderFactory: _getImageProvider,
+      onProductTapped: _onAvatarTapped,
+      scrollController: scrollController,
+      isDark: isDark,
     );
   }
 
