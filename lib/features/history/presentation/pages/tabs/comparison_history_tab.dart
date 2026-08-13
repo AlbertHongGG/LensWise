@@ -7,7 +7,6 @@ import 'package:lens_wise/core/storage/record_manager_service.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 
@@ -51,12 +50,11 @@ class ComparisonHistoryTab extends ConsumerWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          final result = record.result;
-          final args = ProductComparisonResultArgs(
-            result: result,
+          final args = ProductComparisonRecordArgs(
+            result: record,
             imagePath: record.imagePath,
           );
-          context.push('/result/comparison', extra: args);
+          context.push('/comparison_history_detail', extra: args);
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -77,7 +75,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      record.result.title.isNotEmpty ? record.result.title : '規格比對紀錄',
+                      record.title.isNotEmpty ? record.title : '規格比對紀錄',
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black87,
                         fontWeight: FontWeight.bold,
@@ -87,14 +85,21 @@ class ComparisonHistoryTab extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      record.result.comparisonPoints.isNotEmpty ? '${record.result.comparisonPoints.length} 項差異特徵' : '無差異特徵',
-                      style: TextStyle(
-                        color: isDark ? Colors.white70 : Colors.black54,
-                        fontSize: 13,
+                    SizedBox(
+                      height: 24,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: record.products.take(3).length,
+                        separatorBuilder: (context, index) => const SizedBox(width: 4),
+                        itemBuilder: (context, idx) {
+                          final p = record.products[idx];
+                          return Chip(
+                            label: Text(p.translatedName, style: const TextStyle(fontSize: 10)),
+                            padding: EdgeInsets.zero,
+                          );
+                        },
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

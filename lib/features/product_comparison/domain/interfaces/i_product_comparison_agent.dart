@@ -1,6 +1,6 @@
 import 'dart:typed_data';
-import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 
 abstract class IProductComparisonAgent {
-  Future<ProductComparisonResult> execute(List<Uint8List> input);
+  Future<ProductComparisonRecord> execute(List<Uint8List> input);
 }

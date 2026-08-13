@@ -2,10 +2,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
-import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/immersive_background.dart';
-import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/hero_title_overlay.dart';
-import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/verdict_floating_card.dart';
-import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/interactive_detail_panel.dart';
+import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/immersive_background.dart';
+import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/hero_title_overlay.dart';
+import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/verdict_floating_card.dart';
+import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/interactive_detail_panel.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final ProductLensRecord record;

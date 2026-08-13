@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 
 class ComparisonHeroSection extends StatelessWidget {
-  final ProductComparisonResult result;
+  final ProductComparisonRecord result;
   final int leftIndex;
   final int rightIndex;
   final ImageProvider Function(int) imageProviderFactory;

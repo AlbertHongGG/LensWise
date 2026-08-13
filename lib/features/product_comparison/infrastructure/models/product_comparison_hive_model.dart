@@ -11,15 +11,27 @@ class ProductComparisonHiveModel extends HiveObject {
   final int timestampMs;
 
   @HiveField(2)
-  final String rawJsonResult;
+  final String title;
 
   @HiveField(3)
+  final String summary;
+
+  @HiveField(4)
+  final String productsJson;
+
+  @HiveField(5)
+  final String comparisonPointsJson;
+
+  @HiveField(6)
   final String imagePath;
 
   ProductComparisonHiveModel({
     required this.id,
     required this.timestampMs,
-    required this.rawJsonResult,
+    required this.title,
+    required this.summary,
+    required this.productsJson,
+    required this.comparisonPointsJson,
     required this.imagePath,
   });
 
@@ -27,7 +39,10 @@ class ProductComparisonHiveModel extends HiveObject {
     return ProductComparisonHiveModel(
       id: record.id,
       timestampMs: record.timestamp.millisecondsSinceEpoch,
-      rawJsonResult: record.rawJsonResult,
+      title: record.title,
+      summary: record.summary,
+      productsJson: jsonEncode(record.products.map((e) => e.toJson()).toList()),
+      comparisonPointsJson: jsonEncode(record.comparisonPoints.map((e) => e.toJson()).toList()),
       imagePath: record.imagePath,
     );
   }
@@ -36,7 +51,14 @@ class ProductComparisonHiveModel extends HiveObject {
     return ProductComparisonRecord(
       id: id,
       timestamp: DateTime.fromMillisecondsSinceEpoch(timestampMs),
-      rawJsonResult: rawJsonResult,
+      title: title,
+      summary: summary,
+      products: (jsonDecode(productsJson) as List<dynamic>)
+          .map((e) => ComparisonProduct.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      comparisonPoints: (jsonDecode(comparisonPointsJson) as List<dynamic>)
+          .map((e) => ComparisonPoint.fromJson(e as Map<String, dynamic>))
+          .toList(),
       imagePath: imagePath,
     );
   }
@@ -51,7 +73,10 @@ class ProductComparisonHiveModelAdapter extends TypeAdapter<ProductComparisonHiv
     return ProductComparisonHiveModel(
       id: reader.readString(),
       timestampMs: reader.readInt(),
-      rawJsonResult: reader.readString(),
+      title: reader.readString(),
+      summary: reader.readString(),
+      productsJson: reader.readString(),
+      comparisonPointsJson: reader.readString(),
       imagePath: reader.readString(),
     );
   }
@@ -60,7 +85,10 @@ class ProductComparisonHiveModelAdapter extends TypeAdapter<ProductComparisonHiv
   void write(BinaryWriter writer, ProductComparisonHiveModel obj) {
     writer.writeString(obj.id);
     writer.writeInt(obj.timestampMs);
-    writer.writeString(obj.rawJsonResult);
+    writer.writeString(obj.title);
+    writer.writeString(obj.summary);
+    writer.writeString(obj.productsJson);
+    writer.writeString(obj.comparisonPointsJson);
     writer.writeString(obj.imagePath);
   }
 }

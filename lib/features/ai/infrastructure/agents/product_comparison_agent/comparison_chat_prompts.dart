@@ -1,6 +1,6 @@
-import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 
-String buildComparisonChatSystemPrompt(ProductComparisonResult result) {
+String buildComparisonChatSystemPrompt(ProductComparisonRecord result) {
   final productsContext = result.products.map((p) {
     return '- ${p.translatedName} (${p.originalName})';
   }).join('\n');

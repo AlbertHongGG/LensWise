@@ -12,14 +12,17 @@ abstract class ProductComparisonRecord with _$ProductComparisonRecord implements
   const factory ProductComparisonRecord({
     required String id,
     required DateTime timestamp,
-    required String rawJsonResult,
+    required String title,
+    required String summary,
+    @Default([]) List<ComparisonProduct> products,
+    @Default([]) List<ComparisonPoint> comparisonPoints,
     required String imagePath,
   }) = _ProductComparisonRecord;
 
   factory ProductComparisonRecord.fromJson(Map<String, dynamic> json) => _$ProductComparisonRecordFromJson(json);
 
   @override
-  String get displayTitle => '商品比對紀錄';
+  String get displayTitle => title.isNotEmpty ? title : '商品比對紀錄';
 
   @override
   String get displaySubtitle => '點擊查看比對結果';
@@ -32,4 +35,24 @@ abstract class ProductComparisonRecord with _$ProductComparisonRecord implements
 
   @override
   List<String>? get deletionImagePaths => imagePath.split(',');
+}
+
+@freezed
+abstract class ComparisonProduct with _$ComparisonProduct {
+  const factory ComparisonProduct({
+    required String originalName,
+    required String translatedName,
+  }) = _ComparisonProduct;
+
+  factory ComparisonProduct.fromJson(Map<String, dynamic> json) => _$ComparisonProductFromJson(json);
+}
+
+@freezed
+abstract class ComparisonPoint with _$ComparisonPoint {
+  const factory ComparisonPoint({
+    required String aspect,
+    @Default([]) List<String> values,
+  }) = _ComparisonPoint;
+
+  factory ComparisonPoint.fromJson(Map<String, dynamic> json) => _$ComparisonPointFromJson(json);
 }

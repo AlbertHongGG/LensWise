@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/product_comparison/application/product_comparison_service.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 
-import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 import 'package:lens_wise/core/router/navigation_service.dart';
 
 class ProductComparisonScannerState {
   final List<Uint8List> capturedImages;
   final bool isAnalyzing;
   final String? errorMessage;
-  final ProductComparisonResult? parsingResult;
+  final ProductComparisonRecord? parsingResult;
 
   ProductComparisonScannerState({
     this.capturedImages = const [],
@@ -23,7 +23,7 @@ class ProductComparisonScannerState {
     List<Uint8List>? capturedImages,
     bool? isAnalyzing,
     String? errorMessage,
-    ProductComparisonResult? parsingResult,
+    ProductComparisonRecord? parsingResult,
   }) {
     return ProductComparisonScannerState(
       capturedImages: capturedImages ?? this.capturedImages,
@@ -79,7 +79,7 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
       state = state.copyWith(parsingResult: result, isAnalyzing: false);
       
       // Decoupled Navigation: Controller dictates routing upon success
-      navService.navigateToProductComparisonResult(result, images);
+      navService.navigateToProductComparisonRecord(result, images);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false);
     }
