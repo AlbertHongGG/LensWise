@@ -11,7 +11,7 @@ class HistoryTabConfig<T extends IHistoryRecord> {
   final IconData emptyStateIcon;
   final AsyncValue<List<T>> Function(WidgetRef ref) watchHistory;
   final IHistoryController Function(WidgetRef ref) readController;
-  final Widget Function(BuildContext context, WidgetRef ref, T record, bool isDark) cardBuilder;
+  final Widget Function(BuildContext context, WidgetRef ref, IHistoryRecord record, bool isDark) cardBuilder;
 
   const HistoryTabConfig({
     required this.tabName,

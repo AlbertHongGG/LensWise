@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:lens_wise/features/history/domain/models/history_tab_config.dart';
+import 'package:lens_wise/features/history/domain/models/i_history_record.dart';
 import 'package:lens_wise/features/history/presentation/widgets/draggable_history_card.dart';
 
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
@@ -19,7 +20,8 @@ final defaultHistoryConfigs = <HistoryTabConfig>[
     emptyStateIcon: Icons.receipt_long_outlined,
     watchHistory: (ref) => ref.watch(receiptHistoryProvider),
     readController: (ref) => ref.read(receiptHistoryProvider.notifier),
-    cardBuilder: (context, ref, record, isDark) {
+    cardBuilder: (context, ref, IHistoryRecord rawRecord, isDark) {
+      final record = rawRecord as ReceiptScannerRecord;
       final card = GlassContainer(
         borderRadius: BorderRadius.circular(20),
         color: Colors.white,
@@ -94,7 +96,8 @@ final defaultHistoryConfigs = <HistoryTabConfig>[
     emptyStateIcon: Icons.qr_code_scanner_outlined,
     watchHistory: (ref) => ref.watch(productHistoryProvider),
     readController: (ref) => ref.read(productHistoryProvider.notifier),
-    cardBuilder: (context, ref, record, isDark) {
+    cardBuilder: (context, ref, IHistoryRecord rawRecord, isDark) {
+      final record = rawRecord as ProductLensRecord;
       final card = GlassContainer(
         borderRadius: BorderRadius.circular(20),
         color: Colors.white,
@@ -165,7 +168,8 @@ final defaultHistoryConfigs = <HistoryTabConfig>[
     emptyStateIcon: Icons.compare_arrows_outlined,
     watchHistory: (ref) => ref.watch(comparisonHistoryProvider),
     readController: (ref) => ref.read(comparisonHistoryProvider.notifier),
-    cardBuilder: (context, ref, record, isDark) {
+    cardBuilder: (context, ref, IHistoryRecord rawRecord, isDark) {
+      final record = rawRecord as ProductComparisonRecord;
       final card = GlassContainer(
         borderRadius: BorderRadius.circular(20),
         color: Colors.white,

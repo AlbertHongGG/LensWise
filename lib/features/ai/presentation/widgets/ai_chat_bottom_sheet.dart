@@ -73,8 +73,7 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
       }
     });
   }
-
-  void _scrollTextFieldToRight() {
+  void _scrollTextFieldToRight() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_textFieldScrollController.hasClients) {
         _textFieldScrollController.animateTo(
@@ -91,6 +90,9 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
     if (text.isEmpty) return;
 
     ref.read(aiChatControllerProvider.notifier).sendMessage(text);
+    
+    // Stop listening to prevent late voice results from overwriting the cleared input
+    ref.read(voiceControllerProvider.notifier).stopListening();
     
     _controller.clear();
     _baseTypedText = '';
