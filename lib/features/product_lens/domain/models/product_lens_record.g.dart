@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'product_record.dart';
+part of 'product_lens_record.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_ProductRecord _$ProductRecordFromJson(Map<String, dynamic> json) =>
-    _ProductRecord(
+_ProductLensRecord _$ProductLensRecordFromJson(Map<String, dynamic> json) =>
+    _ProductLensRecord(
       id: json['id'] as String,
       timestamp: DateTime.parse(json['timestamp'] as String),
       productName: json['productName'] as String,
@@ -37,7 +37,7 @@ _ProductRecord _$ProductRecordFromJson(Map<String, dynamic> json) =>
           const [],
     );
 
-Map<String, dynamic> _$ProductRecordToJson(_ProductRecord instance) =>
+Map<String, dynamic> _$ProductLensRecordToJson(_ProductLensRecord instance) =>
     <String, dynamic>{
       'id': instance.id,
       'timestamp': instance.timestamp.toIso8601String(),

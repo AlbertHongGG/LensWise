@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:lens_wise/features/history/domain/models/i_history_record.dart';
 
-part 'product_record.freezed.dart';
-part 'product_record.g.dart';
+part 'product_lens_record.freezed.dart';
+part 'product_lens_record.g.dart';
 
 @freezed
-abstract class ProductRecord with _$ProductRecord implements IHistoryRecord {
-  const ProductRecord._();
+abstract class ProductLensRecord with _$ProductLensRecord implements IHistoryRecord {
+  const ProductLensRecord._();
 
-  const factory ProductRecord({
+  const factory ProductLensRecord({
     required String id,
     required DateTime timestamp,
     required String productName,
@@ -23,9 +23,9 @@ abstract class ProductRecord with _$ProductRecord implements IHistoryRecord {
     required List<String> whenRecommended,
     required List<String> whenNotRecommended,
     @Default([]) List<String> imagePaths,
-  }) = _ProductRecord;
+  }) = _ProductLensRecord;
 
-  factory ProductRecord.fromJson(Map<String, dynamic> json) => _$ProductRecordFromJson(json);
+  factory ProductLensRecord.fromJson(Map<String, dynamic> json) => _$ProductLensRecordFromJson(json);
 
   @override
   String get displayTitle => productName.isNotEmpty ? productName : (originalName.isNotEmpty ? originalName : '未知商品');

@@ -17,12 +17,12 @@ import 'package:lens_wise/features/product_comparison/presentation/pages/compari
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_lens/presentation/pages/product_processing_page.dart';
 import 'package:lens_wise/features/product_lens/presentation/pages/product_detail_page.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 
 // Result Pages
 import 'package:lens_wise/features/receipt_scanner/presentation/pages/receipt_processing_page.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/pages/receipt_result_page.dart';
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_page.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -45,7 +45,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/product/detail',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final record = extra?['record'] as ProductRecord?;
+          final record = extra?['record'] as ProductLensRecord?;
           final imageBytesList = extra?['imageBytesList'] as List<Uint8List>?;
           
           if (record == null) {
@@ -81,7 +81,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final record = extra?['record'] as ReceiptRecord?;
+          final record = extra?['record'] as ReceiptScannerRecord?;
           final memoryImages = extra?['memoryImages'] as List<Uint8List>?;
 
           if (record == null) {
@@ -122,9 +122,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/result/comparison',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
-          final args = state.extra as ComparisonResultArgs;
+          final args = state.extra as ProductComparisonResultArgs;
           return CupertinoPage(
-            child: ComparisonResultPage(args: args),
+            child: ProductComparisonResultPage(args: args),
           );
         },
       ),

@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_paper_card.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/receipt_chat_adapter.dart';
 
 class ReceiptResultPage extends ConsumerStatefulWidget {
-  final ReceiptRecord record;
+  final ReceiptScannerRecord record;
   final List<Uint8List>? memoryImages;
 
   const ReceiptResultPage({
@@ -23,7 +23,7 @@ class ReceiptResultPage extends ConsumerStatefulWidget {
 }
 
 class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
-  late ReceiptRecord _currentRecord;
+  late ReceiptScannerRecord _currentRecord;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOpen = false;
 
@@ -153,12 +153,12 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
     );
   }
 
-  Future<void> _updateRecord(ReceiptRecord updated) async {
+  Future<void> _updateRecord(ReceiptScannerRecord updated) async {
     setState(() {
       _currentRecord = updated;
     });
     try {
-      final repository = ref.read(receiptRepositoryProvider);
+      final repository = ref.read(receiptScannerRepositoryProvider);
       await repository.save(updated.id, updated);
       ref.invalidate(receiptHistoryProvider);
     } catch (e) {

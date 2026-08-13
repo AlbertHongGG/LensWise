@@ -1,12 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 
 class ReceiptItemRow extends StatelessWidget {
   final ReceiptItem item;
   final int index;
-  final ReceiptRecord record;
-  final Function(ReceiptRecord) onUpdate;
+  final ReceiptScannerRecord record;
+  final Function(ReceiptScannerRecord) onUpdate;
 
   const ReceiptItemRow({
     super.key,

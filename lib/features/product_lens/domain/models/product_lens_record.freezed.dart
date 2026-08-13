@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'product_record.dart';
+part of 'product_lens_record.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -13,22 +13,22 @@ part of 'product_record.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$ProductRecord {
+mixin _$ProductLensRecord {
 
  String get id; DateTime get timestamp; String get productName; String get originalName; String get brand; String get origin; String get summary; List<String> get ingredients; List<String> get allergenAlerts; List<String> get dietaryFlags; List<String> get whenRecommended; List<String> get whenNotRecommended; List<String> get imagePaths;
-/// Create a copy of ProductRecord
+/// Create a copy of ProductLensRecord
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$ProductRecordCopyWith<ProductRecord> get copyWith => _$ProductRecordCopyWithImpl<ProductRecord>(this as ProductRecord, _$identity);
+$ProductLensRecordCopyWith<ProductLensRecord> get copyWith => _$ProductLensRecordCopyWithImpl<ProductLensRecord>(this as ProductLensRecord, _$identity);
 
-  /// Serializes this ProductRecord to a JSON map.
+  /// Serializes this ProductLensRecord to a JSON map.
   Map<String, dynamic> toJson();
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.origin, origin) || other.origin == origin)&&(identical(other.summary, summary) || other.summary == summary)&&const DeepCollectionEquality().equals(other.ingredients, ingredients)&&const DeepCollectionEquality().equals(other.allergenAlerts, allergenAlerts)&&const DeepCollectionEquality().equals(other.dietaryFlags, dietaryFlags)&&const DeepCollectionEquality().equals(other.whenRecommended, whenRecommended)&&const DeepCollectionEquality().equals(other.whenNotRecommended, whenNotRecommended)&&const DeepCollectionEquality().equals(other.imagePaths, imagePaths));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductLensRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.origin, origin) || other.origin == origin)&&(identical(other.summary, summary) || other.summary == summary)&&const DeepCollectionEquality().equals(other.ingredients, ingredients)&&const DeepCollectionEquality().equals(other.allergenAlerts, allergenAlerts)&&const DeepCollectionEquality().equals(other.dietaryFlags, dietaryFlags)&&const DeepCollectionEquality().equals(other.whenRecommended, whenRecommended)&&const DeepCollectionEquality().equals(other.whenNotRecommended, whenNotRecommended)&&const DeepCollectionEquality().equals(other.imagePaths, imagePaths));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -37,15 +37,15 @@ int get hashCode => Object.hash(runtimeType,id,timestamp,productName,originalNam
 
 @override
 String toString() {
-  return 'ProductRecord(id: $id, timestamp: $timestamp, productName: $productName, originalName: $originalName, brand: $brand, origin: $origin, summary: $summary, ingredients: $ingredients, allergenAlerts: $allergenAlerts, dietaryFlags: $dietaryFlags, whenRecommended: $whenRecommended, whenNotRecommended: $whenNotRecommended, imagePaths: $imagePaths)';
+  return 'ProductLensRecord(id: $id, timestamp: $timestamp, productName: $productName, originalName: $originalName, brand: $brand, origin: $origin, summary: $summary, ingredients: $ingredients, allergenAlerts: $allergenAlerts, dietaryFlags: $dietaryFlags, whenRecommended: $whenRecommended, whenNotRecommended: $whenNotRecommended, imagePaths: $imagePaths)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $ProductRecordCopyWith<$Res>  {
-  factory $ProductRecordCopyWith(ProductRecord value, $Res Function(ProductRecord) _then) = _$ProductRecordCopyWithImpl;
+abstract mixin class $ProductLensRecordCopyWith<$Res>  {
+  factory $ProductLensRecordCopyWith(ProductLensRecord value, $Res Function(ProductLensRecord) _then) = _$ProductLensRecordCopyWithImpl;
 @useResult
 $Res call({
  String id, DateTime timestamp, String productName, String originalName, String brand, String origin, String summary, List<String> ingredients, List<String> allergenAlerts, List<String> dietaryFlags, List<String> whenRecommended, List<String> whenNotRecommended, List<String> imagePaths
@@ -56,14 +56,14 @@ $Res call({
 
 }
 /// @nodoc
-class _$ProductRecordCopyWithImpl<$Res>
-    implements $ProductRecordCopyWith<$Res> {
-  _$ProductRecordCopyWithImpl(this._self, this._then);
+class _$ProductLensRecordCopyWithImpl<$Res>
+    implements $ProductLensRecordCopyWith<$Res> {
+  _$ProductLensRecordCopyWithImpl(this._self, this._then);
 
-  final ProductRecord _self;
-  final $Res Function(ProductRecord) _then;
+  final ProductLensRecord _self;
+  final $Res Function(ProductLensRecord) _then;
 
-/// Create a copy of ProductRecord
+/// Create a copy of ProductLensRecord
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? timestamp = null,Object? productName = null,Object? originalName = null,Object? brand = null,Object? origin = null,Object? summary = null,Object? ingredients = null,Object? allergenAlerts = null,Object? dietaryFlags = null,Object? whenRecommended = null,Object? whenNotRecommended = null,Object? imagePaths = null,}) {
   return _then(_self.copyWith(
@@ -87,8 +87,8 @@ as List<String>,
 }
 
 
-/// Adds pattern-matching-related methods to [ProductRecord].
-extension ProductRecordPatterns on ProductRecord {
+/// Adds pattern-matching-related methods to [ProductLensRecord].
+extension ProductLensRecordPatterns on ProductLensRecord {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -101,10 +101,10 @@ extension ProductRecordPatterns on ProductRecord {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ProductRecord value)?  $default,{required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ProductLensRecord value)?  $default,{required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case _ProductRecord() when $default != null:
+case _ProductLensRecord() when $default != null:
 return $default(_that);case _:
   return orElse();
 
@@ -123,10 +123,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ProductRecord value)  $default,){
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ProductLensRecord value)  $default,){
 final _that = this;
 switch (_that) {
-case _ProductRecord():
+case _ProductLensRecord():
 return $default(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -144,10 +144,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ProductRecord value)?  $default,){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ProductLensRecord value)?  $default,){
 final _that = this;
 switch (_that) {
-case _ProductRecord() when $default != null:
+case _ProductLensRecord() when $default != null:
 return $default(_that);case _:
   return null;
 
@@ -167,7 +167,7 @@ return $default(_that);case _:
 
 @optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String productName,  String originalName,  String brand,  String origin,  String summary,  List<String> ingredients,  List<String> allergenAlerts,  List<String> dietaryFlags,  List<String> whenRecommended,  List<String> whenNotRecommended,  List<String> imagePaths)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case _ProductRecord() when $default != null:
+case _ProductLensRecord() when $default != null:
 return $default(_that.id,_that.timestamp,_that.productName,_that.originalName,_that.brand,_that.origin,_that.summary,_that.ingredients,_that.allergenAlerts,_that.dietaryFlags,_that.whenRecommended,_that.whenNotRecommended,_that.imagePaths);case _:
   return orElse();
 
@@ -188,7 +188,7 @@ return $default(_that.id,_that.timestamp,_that.productName,_that.originalName,_t
 
 @optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String productName,  String originalName,  String brand,  String origin,  String summary,  List<String> ingredients,  List<String> allergenAlerts,  List<String> dietaryFlags,  List<String> whenRecommended,  List<String> whenNotRecommended,  List<String> imagePaths)  $default,) {final _that = this;
 switch (_that) {
-case _ProductRecord():
+case _ProductLensRecord():
 return $default(_that.id,_that.timestamp,_that.productName,_that.originalName,_that.brand,_that.origin,_that.summary,_that.ingredients,_that.allergenAlerts,_that.dietaryFlags,_that.whenRecommended,_that.whenNotRecommended,_that.imagePaths);case _:
   throw StateError('Unexpected subclass');
 
@@ -208,7 +208,7 @@ return $default(_that.id,_that.timestamp,_that.productName,_that.originalName,_t
 
 @optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DateTime timestamp,  String productName,  String originalName,  String brand,  String origin,  String summary,  List<String> ingredients,  List<String> allergenAlerts,  List<String> dietaryFlags,  List<String> whenRecommended,  List<String> whenNotRecommended,  List<String> imagePaths)?  $default,) {final _that = this;
 switch (_that) {
-case _ProductRecord() when $default != null:
+case _ProductLensRecord() when $default != null:
 return $default(_that.id,_that.timestamp,_that.productName,_that.originalName,_that.brand,_that.origin,_that.summary,_that.ingredients,_that.allergenAlerts,_that.dietaryFlags,_that.whenRecommended,_that.whenNotRecommended,_that.imagePaths);case _:
   return null;
 
@@ -220,9 +220,9 @@ return $default(_that.id,_that.timestamp,_that.productName,_that.originalName,_t
 /// @nodoc
 @JsonSerializable()
 
-class _ProductRecord extends ProductRecord {
-  const _ProductRecord({required this.id, required this.timestamp, required this.productName, required this.originalName, required this.brand, required this.origin, required this.summary, required final  List<String> ingredients, required final  List<String> allergenAlerts, required final  List<String> dietaryFlags, required final  List<String> whenRecommended, required final  List<String> whenNotRecommended, final  List<String> imagePaths = const []}): _ingredients = ingredients,_allergenAlerts = allergenAlerts,_dietaryFlags = dietaryFlags,_whenRecommended = whenRecommended,_whenNotRecommended = whenNotRecommended,_imagePaths = imagePaths,super._();
-  factory _ProductRecord.fromJson(Map<String, dynamic> json) => _$ProductRecordFromJson(json);
+class _ProductLensRecord extends ProductLensRecord {
+  const _ProductLensRecord({required this.id, required this.timestamp, required this.productName, required this.originalName, required this.brand, required this.origin, required this.summary, required final  List<String> ingredients, required final  List<String> allergenAlerts, required final  List<String> dietaryFlags, required final  List<String> whenRecommended, required final  List<String> whenNotRecommended, final  List<String> imagePaths = const []}): _ingredients = ingredients,_allergenAlerts = allergenAlerts,_dietaryFlags = dietaryFlags,_whenRecommended = whenRecommended,_whenNotRecommended = whenNotRecommended,_imagePaths = imagePaths,super._();
+  factory _ProductLensRecord.fromJson(Map<String, dynamic> json) => _$ProductLensRecordFromJson(json);
 
 @override final  String id;
 @override final  DateTime timestamp;
@@ -274,20 +274,20 @@ class _ProductRecord extends ProductRecord {
 }
 
 
-/// Create a copy of ProductRecord
+/// Create a copy of ProductLensRecord
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-_$ProductRecordCopyWith<_ProductRecord> get copyWith => __$ProductRecordCopyWithImpl<_ProductRecord>(this, _$identity);
+_$ProductLensRecordCopyWith<_ProductLensRecord> get copyWith => __$ProductLensRecordCopyWithImpl<_ProductLensRecord>(this, _$identity);
 
 @override
 Map<String, dynamic> toJson() {
-  return _$ProductRecordToJson(this, );
+  return _$ProductLensRecordToJson(this, );
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.origin, origin) || other.origin == origin)&&(identical(other.summary, summary) || other.summary == summary)&&const DeepCollectionEquality().equals(other._ingredients, _ingredients)&&const DeepCollectionEquality().equals(other._allergenAlerts, _allergenAlerts)&&const DeepCollectionEquality().equals(other._dietaryFlags, _dietaryFlags)&&const DeepCollectionEquality().equals(other._whenRecommended, _whenRecommended)&&const DeepCollectionEquality().equals(other._whenNotRecommended, _whenNotRecommended)&&const DeepCollectionEquality().equals(other._imagePaths, _imagePaths));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductLensRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.origin, origin) || other.origin == origin)&&(identical(other.summary, summary) || other.summary == summary)&&const DeepCollectionEquality().equals(other._ingredients, _ingredients)&&const DeepCollectionEquality().equals(other._allergenAlerts, _allergenAlerts)&&const DeepCollectionEquality().equals(other._dietaryFlags, _dietaryFlags)&&const DeepCollectionEquality().equals(other._whenRecommended, _whenRecommended)&&const DeepCollectionEquality().equals(other._whenNotRecommended, _whenNotRecommended)&&const DeepCollectionEquality().equals(other._imagePaths, _imagePaths));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -296,15 +296,15 @@ int get hashCode => Object.hash(runtimeType,id,timestamp,productName,originalNam
 
 @override
 String toString() {
-  return 'ProductRecord(id: $id, timestamp: $timestamp, productName: $productName, originalName: $originalName, brand: $brand, origin: $origin, summary: $summary, ingredients: $ingredients, allergenAlerts: $allergenAlerts, dietaryFlags: $dietaryFlags, whenRecommended: $whenRecommended, whenNotRecommended: $whenNotRecommended, imagePaths: $imagePaths)';
+  return 'ProductLensRecord(id: $id, timestamp: $timestamp, productName: $productName, originalName: $originalName, brand: $brand, origin: $origin, summary: $summary, ingredients: $ingredients, allergenAlerts: $allergenAlerts, dietaryFlags: $dietaryFlags, whenRecommended: $whenRecommended, whenNotRecommended: $whenNotRecommended, imagePaths: $imagePaths)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$ProductRecordCopyWith<$Res> implements $ProductRecordCopyWith<$Res> {
-  factory _$ProductRecordCopyWith(_ProductRecord value, $Res Function(_ProductRecord) _then) = __$ProductRecordCopyWithImpl;
+abstract mixin class _$ProductLensRecordCopyWith<$Res> implements $ProductLensRecordCopyWith<$Res> {
+  factory _$ProductLensRecordCopyWith(_ProductLensRecord value, $Res Function(_ProductLensRecord) _then) = __$ProductLensRecordCopyWithImpl;
 @override @useResult
 $Res call({
  String id, DateTime timestamp, String productName, String originalName, String brand, String origin, String summary, List<String> ingredients, List<String> allergenAlerts, List<String> dietaryFlags, List<String> whenRecommended, List<String> whenNotRecommended, List<String> imagePaths
@@ -315,17 +315,17 @@ $Res call({
 
 }
 /// @nodoc
-class __$ProductRecordCopyWithImpl<$Res>
-    implements _$ProductRecordCopyWith<$Res> {
-  __$ProductRecordCopyWithImpl(this._self, this._then);
+class __$ProductLensRecordCopyWithImpl<$Res>
+    implements _$ProductLensRecordCopyWith<$Res> {
+  __$ProductLensRecordCopyWithImpl(this._self, this._then);
 
-  final _ProductRecord _self;
-  final $Res Function(_ProductRecord) _then;
+  final _ProductLensRecord _self;
+  final $Res Function(_ProductLensRecord) _then;
 
-/// Create a copy of ProductRecord
+/// Create a copy of ProductLensRecord
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? timestamp = null,Object? productName = null,Object? originalName = null,Object? brand = null,Object? origin = null,Object? summary = null,Object? ingredients = null,Object? allergenAlerts = null,Object? dietaryFlags = null,Object? whenRecommended = null,Object? whenNotRecommended = null,Object? imagePaths = null,}) {
-  return _then(_ProductRecord(
+  return _then(_ProductLensRecord(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
 as DateTime,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable

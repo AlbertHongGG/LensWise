@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/receipt_scanner/application/receipt_scanner_service.dart';
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/core/router/navigation_service.dart';
@@ -10,7 +10,7 @@ class ReceiptScannerState {
   final List<Uint8List> capturedImages;
   final String? errorMessage;
   final bool isScanning;
-  final ReceiptRecord? receiptRecord;
+  final ReceiptScannerRecord? receiptRecord;
   final bool isAnalyzing;
   final bool isProcessing;
 
@@ -27,7 +27,7 @@ class ReceiptScannerState {
     List<Uint8List>? capturedImages,
     String? errorMessage,
     bool? isScanning,
-    ReceiptRecord? receiptRecord,
+    ReceiptScannerRecord? receiptRecord,
     bool? isAnalyzing,
     bool? isProcessing,
   }) {
@@ -103,10 +103,10 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     }
   }
 
-  Future<void> updateReceiptRecord(ReceiptRecord updatedRecord) async {
+  Future<void> updateReceiptScannerRecord(ReceiptScannerRecord updatedRecord) async {
     state = state.copyWith(receiptRecord: updatedRecord);
     try {
-      final repository = ref.read(receiptRepositoryProvider);
+      final repository = ref.read(receiptScannerRepositoryProvider);
       await repository.save(updatedRecord.id, updatedRecord);
       ref.invalidate(receiptHistoryProvider);
     } catch (e) {

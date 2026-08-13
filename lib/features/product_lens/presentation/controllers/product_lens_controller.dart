@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/features/product_lens/application/product_analysis_service.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
+import 'package:lens_wise/features/product_lens/application/product_lens_service.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 
@@ -9,7 +9,7 @@ enum ProductLensStatus { idle, loading, success, error }
 
 class ProductLensState {
   final ProductLensStatus status;
-  final ProductRecord? result;
+  final ProductLensRecord? result;
   final String? errorMessage;
   final List<Uint8List>? imageBytesList;
 
@@ -22,7 +22,7 @@ class ProductLensState {
 
   ProductLensState copyWith({
     ProductLensStatus? status,
-    ProductRecord? result,
+    ProductLensRecord? result,
     String? errorMessage,
     List<Uint8List>? imageBytesList,
   }) {
@@ -56,7 +56,7 @@ class ProductLensController extends Notifier<ProductLensState> {
       imageBytesList: imageBytesList,
     );
     try {
-      final service = ref.read(productAnalysisServiceProvider);
+      final service = ref.read(productLensServiceProvider);
       final result = await service.analyzeAndSave(imageBytesList);
       ref.invalidate(productHistoryProvider);
 

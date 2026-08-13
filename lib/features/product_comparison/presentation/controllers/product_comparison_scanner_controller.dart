@@ -1,16 +1,16 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/features/product_comparison/application/comparison_analysis_service.dart';
+import 'package:lens_wise/features/product_comparison/application/product_comparison_service.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
 import 'package:lens_wise/core/router/navigation_service.dart';
 
 class ProductComparisonScannerState {
   final List<Uint8List> capturedImages;
   final bool isAnalyzing;
   final String? errorMessage;
-  final ComparisonResult? parsingResult;
+  final ProductComparisonResult? parsingResult;
 
   ProductComparisonScannerState({
     this.capturedImages = const [],
@@ -23,7 +23,7 @@ class ProductComparisonScannerState {
     List<Uint8List>? capturedImages,
     bool? isAnalyzing,
     String? errorMessage,
-    ComparisonResult? parsingResult,
+    ProductComparisonResult? parsingResult,
   }) {
     return ProductComparisonScannerState(
       capturedImages: capturedImages ?? this.capturedImages,
@@ -70,7 +70,7 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
     
     state = state.copyWith(capturedImages: images, isAnalyzing: true, errorMessage: null);
     try {
-      final service = ref.read(comparisonAnalysisServiceProvider);
+      final service = ref.read(productComparisonServiceProvider);
       final navService = ref.read(navigationServiceProvider);
       
       final result = await service.analyzeAndSave(images);
@@ -79,7 +79,7 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
       state = state.copyWith(parsingResult: result, isAnalyzing: false);
       
       // Decoupled Navigation: Controller dictates routing upon success
-      navService.navigateToComparisonResult(result, images);
+      navService.navigateToProductComparisonResult(result, images);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false);
     }

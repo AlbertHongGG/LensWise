@@ -1,24 +1,24 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/features/product_comparison/domain/interfaces/i_comparison_agent.dart';
+import 'package:lens_wise/features/product_comparison/domain/interfaces/i_product_comparison_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/product_comparison_agent/product_comparison_agent.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/core/storage/local_media_service.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_record.dart';
-import 'package:lens_wise/features/product_comparison/domain/repositories/i_comparison_repository.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
+import 'package:lens_wise/features/product_comparison/domain/repositories/i_product_comparison_repository.dart';
 import 'package:uuid/uuid.dart';
 
-class ComparisonAnalysisService {
-  final IComparisonAgent _agent;
-  final IComparisonRepository _repository;
+class ProductComparisonService {
+  final IProductComparisonAgent _agent;
+  final IProductComparisonRepository _repository;
   final LocalMediaService _mediaService;
 
-  ComparisonAnalysisService(this._agent, this._repository, this._mediaService);
+  ProductComparisonService(this._agent, this._repository, this._mediaService);
 
   /// 執行比對解析並自動將成功的結果存入歷史紀錄 (Application Layer Orchestration)
-  Future<ComparisonResult> analyzeAndSave(List<Uint8List> imageBytes) async {
+  Future<ProductComparisonResult> analyzeAndSave(List<Uint8List> imageBytes) async {
     // 1. Call Port (Interface) to get Domain Entity (Parsed Data)
     final comparisonResult = await _agent.execute(imageBytes);
 
@@ -31,7 +31,7 @@ class ComparisonAnalysisService {
       final imagePath = paths.join(',');
       
       // 3. Hydrate the Domain Entity wrapper with Application Context
-      final record = ComparisonRecord(
+      final record = ProductComparisonRecord(
         id: const Uuid().v4(),
         timestamp: DateTime.now(),
         rawJsonResult: jsonEncode(comparisonResult.toJson()),
@@ -48,10 +48,10 @@ class ComparisonAnalysisService {
   }
 }
 
-final comparisonAnalysisServiceProvider = Provider<ComparisonAnalysisService>((ref) {
-  return ComparisonAnalysisService(
+final productComparisonServiceProvider = Provider<ProductComparisonService>((ref) {
+  return ProductComparisonService(
     ref.watch(productComparisonAgentProvider),
-    ref.watch(comparisonRepositoryProvider),
+    ref.watch(productComparisonRepositoryProvider),
     ref.watch(localMediaServiceProvider),
   );
 });

@@ -1,6 +1,6 @@
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 
-String buildProductChatContextPrompt(ProductRecord record) {
+String buildProductChatContextPrompt(ProductLensRecord record) {
   final ingredientsText = record.ingredients.isNotEmpty 
       ? '成分: ${record.ingredients.join(', ')}\n' 
       : '';

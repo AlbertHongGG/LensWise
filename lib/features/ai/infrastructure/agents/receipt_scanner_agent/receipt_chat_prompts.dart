@@ -1,6 +1,6 @@
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 
-String buildReceiptChatSystemPrompt(ReceiptRecord record) {
+String buildReceiptChatSystemPrompt(ReceiptScannerRecord record) {
   final itemsStr = record.items.map((e) => '- ${e.originalName} (${e.translatedName}): ${e.price}').join('\n');
   final discountsStr = record.discounts.map((e) => '- ${e.name}: ${e.amount}').join('\n');
   final taxesStr = record.taxes.map((e) => '- ${e.name}: ${e.amount}').join('\n');

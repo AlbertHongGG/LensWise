@@ -7,26 +7,26 @@ import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
-import 'package:lens_wise/features/receipt_scanner/domain/interfaces/i_receipt_parsing_agent.dart';
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/interfaces/i_receipt_scanner_agent.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 
-class _ReceiptResponseDto {
+class _ReceiptScannerResponseDto {
   final String status;
   final String? message;
-  final _ReceiptDataDto? data;
+  final _ReceiptScannerDataDto? data;
 
-  _ReceiptResponseDto({required this.status, this.message, this.data});
+  _ReceiptScannerResponseDto({required this.status, this.message, this.data});
 
-  factory _ReceiptResponseDto.fromJson(Map<String, dynamic> json) {
-    return _ReceiptResponseDto(
+  factory _ReceiptScannerResponseDto.fromJson(Map<String, dynamic> json) {
+    return _ReceiptScannerResponseDto(
       status: json['status'] as String? ?? 'error',
       message: json['message'] as String?,
-      data: json['data'] != null ? _ReceiptDataDto.fromJson(json['data']) : null,
+      data: json['data'] != null ? _ReceiptScannerDataDto.fromJson(json['data']) : null,
     );
   }
 }
 
-class _ReceiptDataDto {
+class _ReceiptScannerDataDto {
   final String? receiptDate;
   final String? storeName;
   final String? currency;
@@ -36,7 +36,7 @@ class _ReceiptDataDto {
   final List<ReceiptFeeItem> taxes;
   final double totalAmount;
 
-  _ReceiptDataDto.fromJson(Map<String, dynamic> json)
+  _ReceiptScannerDataDto.fromJson(Map<String, dynamic> json)
       : receiptDate = json['receiptDate'] as String?,
         storeName = json['storeName'] as String?,
         currency = json['currency'] as String?,
@@ -55,10 +55,10 @@ class _ReceiptDataDto {
   }
 }
 
-class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptRecord> implements IReceiptParsingAgent {
+class ReceiptScannerAgent extends BaseAgent<List<Uint8List>, ReceiptScannerRecord> implements IReceiptScannerAgent {
   final String targetLanguage;
 
-  ReceiptParsingAgent(
+  ReceiptScannerAgent(
     super.agentName,
     super.provider,
     super.logger, {
@@ -66,9 +66,9 @@ class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptRecord> impl
   });
 
   @override
-  Future<ReceiptRecord> execute(List<Uint8List> input) async {
+  Future<ReceiptScannerRecord> execute(List<Uint8List> input) async {
     final request = GenerateRequest(
-      systemPrompt: buildReceiptParsingSystemPrompt(targetLanguage),
+      systemPrompt: buildReceiptParsingSystemPrompt(targetLanguage), // Will leave prompts intact
       prompt: buildReceiptParsingUserPrompt(),
       images: input,
     );
@@ -77,18 +77,18 @@ class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptRecord> impl
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
-      final dto = _ReceiptResponseDto.fromJson(jsonMap);
+      final dto = _ReceiptScannerResponseDto.fromJson(jsonMap);
 
       if (dto.status != 'success' || dto.data == null) {
         throw Exception(dto.message ?? '解析過程發生錯誤');
       }
 
       final data = dto.data!;
-      return ReceiptRecord(
+      return ReceiptScannerRecord(
         id: '', // Placeholder, populated by Service
         timestamp: DateTime.now(), // Placeholder, populated by Service
         receiptDate: data.receiptDate,
-        storeName: data.storeName,
+        storeName: data.storeName ?? '',
         currency: data.currency,
         subtotal: data.subtotal,
         items: data.items,
@@ -103,12 +103,12 @@ class ReceiptParsingAgent extends BaseAgent<List<Uint8List>, ReceiptRecord> impl
   }
 }
 
-final receiptParsingAgentProvider = Provider.autoDispose<IReceiptParsingAgent>((ref) {
+final receiptScannerAgentProvider = Provider.autoDispose<IReceiptScannerAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
-  return ReceiptParsingAgent(
-    'ReceiptParsing',
+  return ReceiptScannerAgent(
+    'ReceiptScanner',
     ref.watch(aiProviderProvider),
-    AIAgentLogger('ReceiptParsing'),
+    AIAgentLogger('ReceiptScanner'),
     targetLanguage: language,
   );
 });

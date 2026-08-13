@@ -6,8 +6,8 @@ import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/core/storage/record_manager_service.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_record.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 
@@ -30,7 +30,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
             description: '所有雙物件的規格比對與推薦，\n都會儲存為獨立的情報檔案。',
           );
         }
-        return AnimatedHistoryList<ComparisonRecord>(
+        return AnimatedHistoryList<ProductComparisonRecord>(
           records: records,
           areItemsTheSame: (a, b) => a.id == b.id,
           itemBuilder: (context, record) {
@@ -43,7 +43,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildComparisonCard(BuildContext context, WidgetRef ref, ComparisonRecord record, bool isDark) {
+  Widget _buildComparisonCard(BuildContext context, WidgetRef ref, ProductComparisonRecord record, bool isDark) {
     final cardWidget = GlassContainer(
       borderRadius: BorderRadius.circular(20),
       color: Colors.white,
@@ -52,7 +52,7 @@ class ComparisonHistoryTab extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         onTap: () {
           final result = record.result;
-          final args = ComparisonResultArgs(
+          final args = ProductComparisonResultArgs(
             result: result,
             imagePath: record.imagePath,
           );

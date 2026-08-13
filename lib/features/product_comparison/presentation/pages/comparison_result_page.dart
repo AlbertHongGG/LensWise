@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_result.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_hero_section.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_unified_board.dart';
@@ -11,19 +11,19 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_roster_bar.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_chat_adapter.dart';
 
-class ComparisonResultPage extends StatefulWidget {
-  final ComparisonResultArgs args;
+class ProductComparisonResultPage extends StatefulWidget {
+  final ProductComparisonResultArgs args;
   
-  const ComparisonResultPage({
+  const ProductComparisonResultPage({
     super.key,
     required this.args,
   });
 
   @override
-  State<ComparisonResultPage> createState() => _ComparisonResultPageState();
+  State<ProductComparisonResultPage> createState() => _ProductComparisonResultPageState();
 }
 
-class _ComparisonResultPageState extends State<ComparisonResultPage> {
+class _ProductComparisonResultPageState extends State<ProductComparisonResultPage> {
   int _leftIndex = 0;
   int _rightIndex = 1;
 
@@ -338,7 +338,7 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
     );
   }
 
-  Widget _buildAiVerdictContent(BuildContext context, ScrollController scrollController, ComparisonResult result, bool isDark) {
+  Widget _buildAiVerdictContent(BuildContext context, ScrollController scrollController, ProductComparisonResult result, bool isDark) {
     return ListView(
       controller: scrollController,
       padding: EdgeInsets.zero,
@@ -419,7 +419,7 @@ class _ComparisonResultPageState extends State<ComparisonResultPage> {
     );
   }
 
-  Widget _buildContendersContent(BuildContext context, ScrollController scrollController, ComparisonResult result, bool isDark) {
+  Widget _buildContendersContent(BuildContext context, ScrollController scrollController, ProductComparisonResult result, bool isDark) {
     return ComparisonContendersDrawer(
       result: result,
       leftIndex: _leftIndex,

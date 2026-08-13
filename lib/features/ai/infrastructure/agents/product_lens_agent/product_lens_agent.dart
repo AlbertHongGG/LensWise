@@ -7,26 +7,26 @@ import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
-import 'package:lens_wise/features/product_lens/domain/interfaces/i_product_analysis_agent.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
+import 'package:lens_wise/features/product_lens/domain/interfaces/i_product_lens_agent.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 
-class _ProductAnalysisResponseDto {
+class _ProductLensResponseDto {
   final String status;
   final String? message;
-  final _ProductAnalysisDataDto? data;
+  final _ProductLensDataDto? data;
 
-  _ProductAnalysisResponseDto({required this.status, this.message, this.data});
+  _ProductLensResponseDto({required this.status, this.message, this.data});
 
-  factory _ProductAnalysisResponseDto.fromJson(Map<String, dynamic> json) {
-    return _ProductAnalysisResponseDto(
+  factory _ProductLensResponseDto.fromJson(Map<String, dynamic> json) {
+    return _ProductLensResponseDto(
       status: json['status'] as String? ?? 'error',
       message: json['message'] as String?,
-      data: json['data'] != null ? _ProductAnalysisDataDto.fromJson(json['data']) : null,
+      data: json['data'] != null ? _ProductLensDataDto.fromJson(json['data']) : null,
     );
   }
 }
 
-class _ProductAnalysisDataDto {
+class _ProductLensDataDto {
   final String productName;
   final String originalName;
   final String brand;
@@ -38,7 +38,7 @@ class _ProductAnalysisDataDto {
   final List<String> recommendedFor;
   final List<String> notRecommendedFor;
 
-  _ProductAnalysisDataDto.fromJson(Map<String, dynamic> json)
+  _ProductLensDataDto.fromJson(Map<String, dynamic> json)
       : productName = json['productName'] as String? ?? '',
         originalName = json['originalName'] as String? ?? '',
         brand = json['brand'] as String? ?? '',
@@ -51,10 +51,10 @@ class _ProductAnalysisDataDto {
         notRecommendedFor = (json['notRecommendedFor'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
 }
 
-class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductRecord> implements IProductAnalysisAgent {
+class ProductLensAgent extends BaseAgent<List<Uint8List>, ProductLensRecord> implements IProductLensAgent {
   final String targetLanguage;
 
-  ProductAnalysisAgent(
+  ProductLensAgent(
     super.agentName,
     super.provider,
     super.logger, {
@@ -62,7 +62,7 @@ class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductRecord> imp
   });
 
   @override
-  Future<ProductRecord> execute(List<Uint8List> input) async {
+  Future<ProductLensRecord> execute(List<Uint8List> input) async {
     final request = GenerateRequest(
       systemPrompt: buildProductAnalysisSystemPrompt(targetLanguage),
       prompt: buildProductAnalysisUserPrompt(),
@@ -73,14 +73,14 @@ class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductRecord> imp
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
-      final dto = _ProductAnalysisResponseDto.fromJson(jsonMap);
+      final dto = _ProductLensResponseDto.fromJson(jsonMap);
 
       if (dto.status != 'success' || dto.data == null) {
         throw Exception(dto.message ?? '解析過程發生錯誤');
       }
 
       final data = dto.data!;
-      return ProductRecord(
+      return ProductLensRecord(
         id: '', // Placeholder, populated by Service
         timestamp: DateTime.now(), // Placeholder, populated by Service
         productName: data.productName,
@@ -101,12 +101,12 @@ class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductRecord> imp
   }
 }
 
-final productAnalysisAgentProvider = Provider.autoDispose<IProductAnalysisAgent>((ref) {
+final productLensAgentProvider = Provider.autoDispose<IProductLensAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
-  return ProductAnalysisAgent(
-    'ProductAnalysis',
+  return ProductLensAgent(
+    'ProductLens',
     ref.watch(aiProviderProvider),
-    AIAgentLogger('ProductAnalysis'),
+    AIAgentLogger('ProductLens'),
     targetLanguage: language,
   );
 });

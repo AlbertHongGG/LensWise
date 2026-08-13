@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:hive/hive.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 
 @HiveType(typeId: 12)
-class ProductHiveModel extends HiveObject {
+class ProductLensHiveModel extends HiveObject {
   @HiveField(0)
   final String id;
 
@@ -13,33 +13,33 @@ class ProductHiveModel extends HiveObject {
   @HiveField(2)
   final String rawJsonData;
 
-  ProductHiveModel({
+  ProductLensHiveModel({
     required this.id,
     required this.timestampMs,
     required this.rawJsonData,
   });
 
-  factory ProductHiveModel.fromDomain(ProductRecord record) {
-    return ProductHiveModel(
+  factory ProductLensHiveModel.fromDomain(ProductLensRecord record) {
+    return ProductLensHiveModel(
       id: record.id,
       timestampMs: record.timestamp.millisecondsSinceEpoch,
       rawJsonData: jsonEncode(record.toJson()),
     );
   }
 
-  ProductRecord toDomain() {
+  ProductLensRecord toDomain() {
     final map = jsonDecode(rawJsonData) as Map<String, dynamic>;
-    return ProductRecord.fromJson(map);
+    return ProductLensRecord.fromJson(map);
   }
 }
 
-class ProductHiveModelAdapter extends TypeAdapter<ProductHiveModel> {
+class ProductLensHiveModelAdapter extends TypeAdapter<ProductLensHiveModel> {
   @override
   final int typeId = 12;
 
   @override
-  ProductHiveModel read(BinaryReader reader) {
-    return ProductHiveModel(
+  ProductLensHiveModel read(BinaryReader reader) {
+    return ProductLensHiveModel(
       id: reader.readString(),
       timestampMs: reader.readInt(),
       rawJsonData: reader.readString(),
@@ -47,7 +47,7 @@ class ProductHiveModelAdapter extends TypeAdapter<ProductHiveModel> {
   }
 
   @override
-  void write(BinaryWriter writer, ProductHiveModel obj) {
+  void write(BinaryWriter writer, ProductLensHiveModel obj) {
     writer.writeString(obj.id);
     writer.writeInt(obj.timestampMs);
     writer.writeString(obj.rawJsonData);

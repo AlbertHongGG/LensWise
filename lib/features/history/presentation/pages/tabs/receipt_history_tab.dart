@@ -6,7 +6,7 @@ import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 
 import 'package:lens_wise/features/history/presentation/widgets/animated_history_list.dart';
 
@@ -27,7 +27,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
             description: '所有透過相機掃描的發票資訊，\n都會有條理地整理在此。',
           );
         }
-        return AnimatedHistoryList<ReceiptRecord>(
+        return AnimatedHistoryList<ReceiptScannerRecord>(
           records: records,
           areItemsTheSame: (a, b) => a.id == b.id,
           itemBuilder: (context, record) {
@@ -40,7 +40,7 @@ class ReceiptHistoryTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildReceiptCard(BuildContext context, WidgetRef ref, ReceiptRecord record, bool isDark) {
+  Widget _buildReceiptCard(BuildContext context, WidgetRef ref, ReceiptScannerRecord record, bool isDark) {
     final cardWidget = GlassContainer(
       borderRadius: BorderRadius.circular(20),
       color: Colors.white,

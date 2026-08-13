@@ -5,7 +5,7 @@ import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/widgets/glass_container.dart';
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 import 'package:lens_wise/features/history/presentation/widgets/premium_empty_state.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 import 'package:lens_wise/features/history/presentation/widgets/animated_history_list.dart';
 
 class ProductHistoryTab extends ConsumerWidget {
@@ -25,7 +25,7 @@ class ProductHistoryTab extends ConsumerWidget {
             description: '所有透過相機掃描的商品特徵與解析，\n都會有條理地整理在此。',
           );
         }
-        return AnimatedHistoryList<ProductRecord>(
+        return AnimatedHistoryList<ProductLensRecord>(
           records: records,
           areItemsTheSame: (a, b) => a.id == b.id,
           itemBuilder: (context, record) {
@@ -38,7 +38,7 @@ class ProductHistoryTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, WidgetRef ref, ProductRecord record, bool isDark) {
+  Widget _buildProductCard(BuildContext context, WidgetRef ref, ProductLensRecord record, bool isDark) {
     final cardWidget = GlassContainer(
       borderRadius: BorderRadius.circular(20),
       color: Colors.white,

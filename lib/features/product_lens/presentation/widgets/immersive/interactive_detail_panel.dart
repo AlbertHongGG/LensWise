@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/glass_action_button.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/product_chat_adapter.dart';
 
 class InteractiveDetailPanel extends StatelessWidget {
-  final ProductRecord record;
+  final ProductLensRecord record;
 
   const InteractiveDetailPanel({super.key, required this.record});
 
