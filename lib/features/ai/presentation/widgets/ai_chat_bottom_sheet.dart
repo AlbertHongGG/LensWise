@@ -8,6 +8,7 @@ import 'package:lens_wise/core/voice/presentation/controllers/voice_controller.d
 import 'package:lens_wise/core/voice/domain/models/voice_state.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:lens_wise/core/utils/markdown_utils.dart';
 
 void showAiChatBottomSheet(
   BuildContext context, {
@@ -435,7 +436,7 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
                     ),
                   )
                 : MarkdownBody(
-                    data: message.text,
+                    data: MarkdownUtils.fixCjkBold(message.text),
                     selectable: true, // Allow user to copy AI text!
                     styleSheet: _buildPremiumMarkdownStyleSheet(context, isDark, isError),
                     onTapLink: (text, href, title) {

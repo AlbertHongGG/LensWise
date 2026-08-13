@@ -8,6 +8,7 @@ import 'package:lens_wise/features/product_comparison/presentation/widgets/immer
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_unified_board.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_contenders_drawer.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:lens_wise/core/utils/markdown_utils.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_roster_bar.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_chat_adapter.dart';
 
@@ -387,7 +388,7 @@ class _ProductComparisonRecordPageState extends State<ProductComparisonRecordPag
               ),
               const SizedBox(height: 24),
               MarkdownBody(
-                data: result.summary,
+                data: MarkdownUtils.fixCjkBold(result.summary),
                 styleSheet: MarkdownStyleSheet(
                   h2: TextStyle(
                     fontSize: 20,
