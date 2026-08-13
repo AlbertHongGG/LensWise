@@ -1,28 +1,28 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/features/ai/infrastructure/agents/translated_menu_image_agent/translated_menu_image_agent.dart';
+import 'package:lens_wise/features/ai/infrastructure/agents/menu_translation_agent/menu_translation_agent.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
 import 'package:lens_wise/core/notifications/services/in_app_notification_service.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 
-class TranslatedMenuImageState {
+class MenuTranslationState {
   final bool isGenerating;
   final String? error;
   final List<AIImageResponse>? generatedImages;
 
-  TranslatedMenuImageState({
+  MenuTranslationState({
     this.isGenerating = false,
     this.error,
     this.generatedImages,
   });
 
-  TranslatedMenuImageState copyWith({
+  MenuTranslationState copyWith({
     bool? isGenerating,
     String? error,
     List<Uint8List>? generatedImages,
   }) {
-    return TranslatedMenuImageState(
+    return MenuTranslationState(
       isGenerating: isGenerating ?? this.isGenerating,
       // Error should be able to be reset to null, but in dart we usually do it like this:
       // if error is not passed, keep current error. But if we want to clear it, we pass null.
@@ -30,24 +30,24 @@ class TranslatedMenuImageState {
     );
   }
   
-  TranslatedMenuImageState setGenerating() {
-    return TranslatedMenuImageState(
+  MenuTranslationState setGenerating() {
+    return MenuTranslationState(
        isGenerating: true,
        error: null,
        generatedImages: generatedImages,
     );
   }
   
-  TranslatedMenuImageState setError(String e) {
-    return TranslatedMenuImageState(
+  MenuTranslationState setError(String e) {
+    return MenuTranslationState(
        isGenerating: false,
        error: e,
        generatedImages: generatedImages,
     );
   }
   
-  TranslatedMenuImageState setSuccess(List<AIImageResponse> images) {
-    return TranslatedMenuImageState(
+  MenuTranslationState setSuccess(List<AIImageResponse> images) {
+    return MenuTranslationState(
       isGenerating: false,
        error: null,
        generatedImages: images,
@@ -55,10 +55,10 @@ class TranslatedMenuImageState {
   }
 }
 
-class TranslatedMenuImageController extends Notifier<TranslatedMenuImageState> {
+class MenuTranslationController extends Notifier<MenuTranslationState> {
   @override
-  TranslatedMenuImageState build() {
-    return TranslatedMenuImageState();
+  MenuTranslationState build() {
+    return MenuTranslationState();
   }
 
   Future<MenuScannerRecord?> generateTranslatedImage({
@@ -70,8 +70,8 @@ class TranslatedMenuImageController extends Notifier<TranslatedMenuImageState> {
     state = state.setGenerating();
 
     try {
-      final agent = ref.read(translatedMenuImageAgentProvider);
-      final request = TranslatedMenuImageRequest(
+      final agent = ref.read(menuTranslationAgentProvider);
+      final request = MenuTranslationRequest(
         images: [originalImage],
         targetLanguage: targetLanguage,
         record: record,
@@ -108,10 +108,10 @@ class TranslatedMenuImageController extends Notifier<TranslatedMenuImageState> {
   }
 
   void clearGeneratedImages() {
-    state = TranslatedMenuImageState();
+    state = MenuTranslationState();
   }
 }
 
-final translatedMenuImageControllerProvider = NotifierProvider.autoDispose<TranslatedMenuImageController, TranslatedMenuImageState>(() {
-  return TranslatedMenuImageController();
+final menuTranslationControllerProvider = NotifierProvider.autoDispose<MenuTranslationController, MenuTranslationState>(() {
+  return MenuTranslationController();
 });

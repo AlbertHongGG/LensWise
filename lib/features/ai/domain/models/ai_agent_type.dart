@@ -1,7 +1,7 @@
 enum AiAgentType {
   aiChat('AiChat', 'AI 深度探討'),
   menuScanner('MenuScanner', '菜單掃描'),
-  translatedMenuImage('TranslatedMenuImage', '菜單翻譯'),
+  menuTranslation('MenuTranslation', '菜單翻譯'),
   productComparison('ProductComparison', '商品比對'),
   productLens('ProductLens', '商品分析'),
   receiptScanner('ReceiptScanner', '發票掃描'),

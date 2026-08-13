@@ -1,6 +1,6 @@
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 
-String buildTranslatedMenuImageSystemPrompt() {
+String buildMenuTranslationSystemPrompt() {
   return '''
 你是一位頂尖的影像修復與平面設計多模態 AI。你的任務是進行「完美的菜單語系轉換」。
 你必須**絕對保留**使用者提供之原圖的視覺風格、背景顏色、排版佈局、字體設計與裝飾元素。
@@ -10,7 +10,7 @@ String buildTranslatedMenuImageSystemPrompt() {
 ''';
 }
 
-String buildTranslatedMenuImageUserPrompt(String targetLanguage, MenuScannerRecord record) {
+String buildMenuTranslationUserPrompt(String targetLanguage, MenuScannerRecord record) {
   final buffer = StringBuffer();
   buffer.writeln('請將這張菜單轉換為 $targetLanguage。');
   buffer.writeln('為了確保翻譯的絕對精準，請**嚴格遵守**以下我為你準備好的「翻譯對照字典」。');

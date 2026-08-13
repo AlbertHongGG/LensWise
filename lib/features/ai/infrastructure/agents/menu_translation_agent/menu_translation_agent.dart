@@ -9,26 +9,26 @@ import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'prompts.dart';
 
-class TranslatedMenuImageRequest {
+class MenuTranslationRequest {
   final List<Uint8List> images;
   final String targetLanguage;
   final MenuScannerRecord record;
 
-  TranslatedMenuImageRequest({
+  MenuTranslationRequest({
     required this.images,
     required this.targetLanguage,
     required this.record,
   });
 }
 
-class TranslatedMenuImageAgent extends BaseAgent<TranslatedMenuImageRequest, GenerateResponse> {
-  TranslatedMenuImageAgent(super.agentType, super.provider, super.logger);
+class MenuTranslationAgent extends BaseAgent<MenuTranslationRequest, GenerateResponse> {
+  MenuTranslationAgent(super.agentType, super.provider, super.logger);
 
   @override
-  Future<GenerateResponse> execute(TranslatedMenuImageRequest input) async {
+  Future<GenerateResponse> execute(MenuTranslationRequest input) async {
     final request = GenerateRequest(
-      systemPrompt: buildTranslatedMenuImageSystemPrompt(),
-      prompt: buildTranslatedMenuImageUserPrompt(input.targetLanguage, input.record),
+      systemPrompt: buildMenuTranslationSystemPrompt(),
+      prompt: buildMenuTranslationUserPrompt(input.targetLanguage, input.record),
       images: input.images,
     );
 
@@ -42,10 +42,10 @@ class TranslatedMenuImageAgent extends BaseAgent<TranslatedMenuImageRequest, Gen
   }
 }
 
-final translatedMenuImageAgentProvider = Provider.autoDispose<TranslatedMenuImageAgent>((ref) {
-  return TranslatedMenuImageAgent(
-    AiAgentType.translatedMenuImage,
+final menuTranslationAgentProvider = Provider.autoDispose<MenuTranslationAgent>((ref) {
+  return MenuTranslationAgent(
+    AiAgentType.menuTranslation,
     ref.watch(aiProviderProvider),
-    AIAgentLogger(AiAgentType.translatedMenuImage),
+    AIAgentLogger(AiAgentType.menuTranslation),
   );
 });

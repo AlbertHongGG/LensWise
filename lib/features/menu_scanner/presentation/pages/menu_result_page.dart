@@ -7,7 +7,7 @@ import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_chat_a
 import 'dart:ui';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
-import 'package:lens_wise/features/menu_scanner/presentation/controllers/translated_menu_image_controller.dart';
+import 'package:lens_wise/features/menu_scanner/presentation/controllers/menu_translation_controller.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_list_item_tile.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 
@@ -266,7 +266,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
               Expanded(
                 child: Consumer(
                   builder: (context, ref, child) {
-                    final aiState = ref.watch(translatedMenuImageControllerProvider);
+                    final aiState = ref.watch(menuTranslationControllerProvider);
                     
                     // Build Carousel Items
                     final items = _buildCarouselItems(_currentRecord);
@@ -308,7 +308,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                                         final originalBytes = await _getImageBytes(currentItem.originalPath!);
                                         if (originalBytes == null) return;
 
-                                        final updatedRecord = await ref.read(translatedMenuImageControllerProvider.notifier)
+                                        final updatedRecord = await ref.read(menuTranslationControllerProvider.notifier)
                                             .generateTranslatedImage(
                                               originalImage: originalBytes,
                                               originalImagePath: currentItem.originalPath!,
