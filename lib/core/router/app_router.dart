@@ -123,9 +123,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/result/comparison',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
-          final args = state.extra as ProductComparisonResultArgs;
+          final args = state.extra as ProductComparisonRecordArgs;
           return CupertinoPage(
-            child: ProductComparisonResultPage(args: args),
+            child: ProductComparisonRecordPage(args: args),
           );
         },
       ),
