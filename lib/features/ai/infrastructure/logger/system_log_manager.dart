@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
+import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 
 class SystemLogManager {
   Future<void> clearAllLogs() async {
@@ -23,7 +24,7 @@ final systemLogManagerProvider = Provider<SystemLogManager>((ref) {
 });
 
 final agentLoggerProvider = Provider<AIAgentLogger>((ref) {
-  return AIAgentLogger('SystemViewer');
+  return AIAgentLogger(AiAgentType.systemViewer);
 });
 
 final agentLogListProvider = FutureProvider.autoDispose<List<FileSystemEntity>>(

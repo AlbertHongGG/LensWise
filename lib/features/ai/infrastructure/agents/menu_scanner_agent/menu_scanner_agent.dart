@@ -4,6 +4,7 @@ import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
+import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'prompts.dart';
@@ -32,7 +33,7 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
   final String targetLanguage;
 
   MenuScannerAgent(
-    super.agentName,
+    super.agentType,
     super.provider,
     super.logger, {
     required this.targetLanguage,
@@ -77,9 +78,9 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
 final menuScannerAgentProvider = Provider.autoDispose<IMenuScannerAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return MenuScannerAgent(
-    'MenuScanner',
+    AiAgentType.menuScanner,
     ref.watch(aiProviderProvider),
-    AIAgentLogger('MenuScanner'),
+    AIAgentLogger(AiAgentType.menuScanner),
     targetLanguage: language,
   );
 });

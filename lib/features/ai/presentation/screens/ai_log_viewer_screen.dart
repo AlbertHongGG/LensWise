@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_log_model.dart';
+import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/system_log_manager.dart';
 import 'package:lens_wise/features/ai/presentation/screens/agent_log_detail_screen.dart';
 import 'package:lens_wise/core/widgets/swipe_to_obliterate_button.dart';
@@ -127,8 +128,8 @@ class AiLogViewerScreen extends ConsumerStatefulWidget {
 class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
-  List<String> _tabs = [];
-  Map<String, List<AiLogModel>> _cachedFilteredLogs = {};
+  List<AiAgentType?> _tabs = [];
+  Map<AiAgentType?, List<AiLogModel>> _cachedFilteredLogs = {};
 
   @override
   void dispose() {
@@ -136,35 +137,24 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen>
     super.dispose();
   }
 
-  String _translateAgentName(String name) {
-    switch (name) {
-      case 'All':
-        return '全部';
-      case 'ProductComparison':
-        return '商品比對';
-      case 'ProductAnalysis':
-        return '商品分析';
-      case 'ReceiptParsing':
-        return '發票掃描';
-      default:
-        return name;
-    }
-  }
-
   void _initializeTabs(List<FileSystemEntity> logFiles) {
-    final allLogs = logFiles.map((f) => AiLogModel.fromFile(f)).toList();
+    final allLogs = logFiles
+        .map((f) => AiLogModel.fromFile(f))
+        .where((l) => l.type != null)
+        .toList();
     allLogs.sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
-    final agentCategories = allLogs.map((l) => l.agentName).toSet().toList();
-    final newTabs = ['All', ...agentCategories];
+    final agentCategories = allLogs.map((l) => l.type!).toSet().toList();
+    agentCategories.sort((a, b) => a.index.compareTo(b.index));
+    final newTabs = <AiAgentType?>[null, ...agentCategories];
 
     // Data Pre-computation: Pre-filter logs to avoid Rebuild overhead
-    final newCachedLogs = <String, List<AiLogModel>>{};
+    final newCachedLogs = <AiAgentType?, List<AiLogModel>>{};
     for (final tab in newTabs) {
-      if (tab == 'All') {
+      if (tab == null) {
         newCachedLogs[tab] = allLogs;
       } else {
-        newCachedLogs[tab] = allLogs.where((l) => l.agentName == tab).toList();
+        newCachedLogs[tab] = allLogs.where((l) => l.type == tab).toList();
       }
     }
     _cachedFilteredLogs = newCachedLogs;
@@ -355,7 +345,7 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen>
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8.0,
                                 ),
-                                child: Tab(text: _translateAgentName(tab)),
+                                child: Tab(text: tab == null ? '全部' : tab.displayName),
                               ),
                             )
                             .toList(),
@@ -370,7 +360,7 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen>
                         children: _tabs.map((tab) {
                           final filteredLogs = _cachedFilteredLogs[tab] ?? [];
                           return AiLogListTab(
-                            key: ValueKey(tab), // Crucial for state matching
+                            key: ValueKey(tab?.id ?? 'all'), // Crucial for state matching
                             logs: filteredLogs,
                             isDark: isDark,
                             onLogTap: _openLogDetail,

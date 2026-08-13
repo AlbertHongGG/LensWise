@@ -1,15 +1,16 @@
 import 'dart:convert';
 import 'package:lens_wise/features/ai/infrastructure/providers/ai_provider.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
+import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 
 abstract class BaseAgent<T_IN, T_OUT> {
-  final String agentName;
+  final AiAgentType agentType;
   final AIProvider provider;
   final AIAgentLogger logger;
 
-  BaseAgent(this.agentName, this.provider, this.logger);
+  BaseAgent(this.agentType, this.provider, this.logger);
 
   Future<T_OUT> execute(T_IN input);
 

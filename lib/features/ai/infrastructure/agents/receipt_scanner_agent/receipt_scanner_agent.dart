@@ -4,6 +4,7 @@ import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
+import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
@@ -59,7 +60,7 @@ class ReceiptScannerAgent extends BaseAgent<List<Uint8List>, ReceiptScannerRecor
   final String targetLanguage;
 
   ReceiptScannerAgent(
-    super.agentName,
+    super.agentType,
     super.provider,
     super.logger, {
     required this.targetLanguage,
@@ -107,9 +108,9 @@ class ReceiptScannerAgent extends BaseAgent<List<Uint8List>, ReceiptScannerRecor
 final receiptScannerAgentProvider = Provider.autoDispose<IReceiptScannerAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return ReceiptScannerAgent(
-    'ReceiptScanner',
+    AiAgentType.receiptScanner,
     ref.watch(aiProviderProvider),
-    AIAgentLogger('ReceiptScanner'),
+    AIAgentLogger(AiAgentType.receiptScanner),
     targetLanguage: language,
   );
 });

@@ -5,6 +5,7 @@ import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
+import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'prompts.dart';
 
@@ -21,7 +22,7 @@ class TranslatedMenuImageRequest {
 }
 
 class TranslatedMenuImageAgent extends BaseAgent<TranslatedMenuImageRequest, GenerateResponse> {
-  TranslatedMenuImageAgent(super.agentName, super.provider, super.logger);
+  TranslatedMenuImageAgent(super.agentType, super.provider, super.logger);
 
   @override
   Future<GenerateResponse> execute(TranslatedMenuImageRequest input) async {
@@ -43,8 +44,8 @@ class TranslatedMenuImageAgent extends BaseAgent<TranslatedMenuImageRequest, Gen
 
 final translatedMenuImageAgentProvider = Provider.autoDispose<TranslatedMenuImageAgent>((ref) {
   return TranslatedMenuImageAgent(
-    'TranslatedMenuImage',
+    AiAgentType.translatedMenuImage,
     ref.watch(aiProviderProvider),
-    AIAgentLogger('TranslatedMenuImage'),
+    AIAgentLogger(AiAgentType.translatedMenuImage),
   );
 });

@@ -1,15 +1,16 @@
 import 'dart:io';
+import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 
 class AiLogModel {
   final FileSystemEntity file;
   final String title;
-  final String agentName;
+  final AiAgentType? type;
   final DateTime dateTime;
 
   AiLogModel({
     required this.file,
     required this.title,
-    required this.agentName,
+    required this.type,
     required this.dateTime,
   });
 
@@ -18,7 +19,7 @@ class AiLogModel {
     final parts = fileName.split('_');
 
     String title = fileName;
-    String agentName = 'Unknown';
+    AiAgentType? type;
     DateTime dt = DateTime.fromMillisecondsSinceEpoch(0);
 
     if (parts.length >= 2) {
@@ -39,7 +40,7 @@ class AiLogModel {
 
         if (parts.length >= 4) {
           title = parts[2];
-          agentName = parts[2];
+          type = AiAgentType.fromId(parts[2]);
         }
       } catch (_) {
         dt = file.statSync().modified;
@@ -51,7 +52,7 @@ class AiLogModel {
     return AiLogModel(
       file: file,
       title: title,
-      agentName: agentName,
+      type: type,
       dateTime: dt,
     );
   }

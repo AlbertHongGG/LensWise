@@ -4,6 +4,7 @@ import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
+import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/ai/domain/models/chat_message.dart';
 import 'prompts.dart';
 
@@ -20,7 +21,7 @@ class AiChatRequest {
 }
 
 class AiChatAgent extends BaseAgent<AiChatRequest, GenerateResponse> {
-  AiChatAgent(super.agentName, super.provider, super.logger);
+  AiChatAgent(super.agentType, super.provider, super.logger);
 
   @override
   Future<GenerateResponse> execute(AiChatRequest input) async {
@@ -78,8 +79,8 @@ class AiChatAgent extends BaseAgent<AiChatRequest, GenerateResponse> {
 
 final aiChatAgentProvider = Provider.autoDispose<AiChatAgent>((ref) {
   return AiChatAgent(
-    'AiChat',
+    AiAgentType.aiChat,
     ref.watch(aiProviderProvider),
-    AIAgentLogger('AiChat'),
+    AIAgentLogger(AiAgentType.aiChat),
   );
 });
