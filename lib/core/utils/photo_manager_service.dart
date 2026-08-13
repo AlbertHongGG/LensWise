@@ -1,12 +1,40 @@
-import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
-final photoManagerServiceProvider = Provider<PhotoManagerService>((ref) {
-  return PhotoManagerService();
+import 'package:lens_wise/features/scanner/domain/interfaces/i_gallery_service.dart';
+import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
+
+final galleryServiceProvider = Provider<IGalleryService>((ref) {
+  return PhotoManagerGalleryService();
 });
 
-class PhotoManagerService {
+class PhotoManagerGalleryAsset implements GalleryAsset {
+  final AssetEntity entity;
+
+  PhotoManagerGalleryAsset(this.entity);
+
+  @override
+  String get id => entity.id;
+
+  @override
+  DateTime get createDateTime => entity.createDateTime;
+
+  @override
+  Future<Uint8List?> get originBytes => entity.originBytes;
+
+  @override
+  ImageProvider getThumbnailProvider({int size = 250}) {
+    return AssetEntityImageProvider(
+      entity,
+      isOriginal: false,
+      thumbnailSize: ThumbnailSize.square(size),
+    );
+  }
+}
+
+class PhotoManagerGalleryService implements IGalleryService {
   /// Requests permission to access the gallery.
   Future<bool> requestPermission() async {
     final PermissionState ps = await PhotoManager.requestPermissionExtend(
@@ -18,8 +46,8 @@ class PhotoManagerService {
     return ps.isAuth;
   }
 
-  /// Gets the "Recent" or "All" album.
-  Future<AssetPathEntity?> getRecentAlbum() async {
+  @override
+  Future<List<GalleryAsset>> getRecentAssets(int page, int size) async {
     final albums = await PhotoManager.getAssetPathList(
       onlyAll: true,
       type: RequestType.image,
@@ -27,15 +55,11 @@ class PhotoManagerService {
         orders: [const OrderOption(type: OrderOptionType.createDate, asc: false)],
       ),
     );
-    if (albums.isNotEmpty) {
-      return albums.first;
-    }
-    return null;
-  }
+    if (albums.isEmpty) return [];
 
-  /// Gets a paginated list of assets from the given album.
-  Future<List<AssetEntity>> getAssetsFromAlbum(
-      AssetPathEntity album, int page, int size) async {
-    return await album.getAssetListPaged(page: page, size: size);
+    final album = albums.first;
+    final assets = await album.getAssetListPaged(page: page, size: size);
+    
+    return assets.map((e) => PhotoManagerGalleryAsset(e)).toList();
   }
 }

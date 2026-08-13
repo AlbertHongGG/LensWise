@@ -6,6 +6,7 @@ import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
+import 'package:lens_wise/core/models/target_language.dart';
 import 'prompts.dart';
 
 import 'package:lens_wise/features/product_lens/domain/interfaces/i_product_lens_agent.dart';
@@ -53,7 +54,7 @@ class _ProductLensDataDto {
 }
 
 class ProductLensAgent extends BaseAgent<List<Uint8List>, ProductLensRecord> implements IProductLensAgent {
-  final String targetLanguage;
+  final TargetLanguage targetLanguage;
 
   ProductLensAgent(
     super.agentType,

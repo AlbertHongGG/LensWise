@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:lens_wise/features/scanner/domain/interfaces/i_gallery_service.dart';
 import 'package:lens_wise/core/utils/photo_manager_service.dart';
+import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
+import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
 import 'package:intl/intl.dart';
 
 class GalleryState {
-  final List<AssetEntity> allAssets;
-  final Map<String, List<AssetEntity>> groupedAssets;
+  final List<GalleryAsset> allAssets;
+  final Map<String, List<GalleryAsset>> groupedAssets;
   final List<String> groupKeys; // To preserve order
   final bool hasPermission;
   final bool isLoading;
@@ -21,8 +23,8 @@ class GalleryState {
   });
 
   GalleryState copyWith({
-    List<AssetEntity>? allAssets,
-    Map<String, List<AssetEntity>>? groupedAssets,
+    List<GalleryAsset>? allAssets,
+    Map<String, List<GalleryAsset>>? groupedAssets,
     List<String>? groupKeys,
     bool? hasPermission,
     bool? isLoading,
@@ -40,14 +42,13 @@ class GalleryState {
 }
 
 class GalleryStateController extends Notifier<GalleryState> {
-  late final PhotoManagerService _service;
-  AssetPathEntity? _currentAlbum;
+  late final IGalleryService _service;
   int _currentPage = 0;
   final int _pageSize = 100;
 
   @override
   GalleryState build() {
-    _service = ref.watch(photoManagerServiceProvider);
+    _service = ref.watch(galleryServiceProvider);
     
     // Auto-init
     Future.microtask(() => initGallery());
@@ -72,25 +73,19 @@ class GalleryStateController extends Notifier<GalleryState> {
       return;
     }
 
-    _currentAlbum = await _service.getRecentAlbum();
-    if (_currentAlbum == null) {
-      state = state.copyWith(isLoading: false, hasPermission: true, hasMore: false);
-      return;
-    }
-
     state = state.copyWith(hasPermission: true);
     await _loadNextPage();
   }
 
   Future<void> loadMore() async {
-    if (state.isLoading || !state.hasMore || _currentAlbum == null) return;
+    if (state.isLoading || !state.hasMore) return;
     state = state.copyWith(isLoading: true);
     await _loadNextPage();
   }
 
   Future<void> _loadNextPage() async {
     try {
-      final assets = await _service.getAssetsFromAlbum(_currentAlbum!, _currentPage, _pageSize);
+      final assets = await _service.getRecentAssets(_currentPage, _pageSize);
       
       if (assets.isEmpty) {
         state = state.copyWith(isLoading: false, hasMore: false);
@@ -98,7 +93,7 @@ class GalleryStateController extends Notifier<GalleryState> {
       }
 
       final newAllAssets = [...state.allAssets, ...assets];
-      final newGroupedAssets = Map<String, List<AssetEntity>>.from(state.groupedAssets);
+      final newGroupedAssets = Map<String, List<GalleryAsset>>.from(state.groupedAssets);
       
       for (final asset in assets) {
         final date = asset.createDateTime;

@@ -1,8 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:photo_manager/photo_manager.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
 import 'package:lens_wise/features/scanner/presentation/controllers/gallery_state_controller.dart';
 import 'package:lens_wise/features/scanner/presentation/widgets/draggable_date_scrollbar.dart';
 
@@ -24,7 +23,7 @@ class CustomGalleryBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSheet> {
-  final ValueNotifier<List<AssetEntity>> _selectedAssetsNotifier = ValueNotifier([]);
+  final ValueNotifier<List<GalleryAsset>> _selectedAssetsNotifier = ValueNotifier([]);
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -107,7 +106,7 @@ class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSh
                             color: isDark ? Colors.white54 : Colors.black54,
                           ),
                         ),
-                        ValueListenableBuilder<List<AssetEntity>>(
+                        ValueListenableBuilder<List<GalleryAsset>>(
                           valueListenable: _selectedAssetsNotifier,
                           builder: (context, selected, child) {
                             return IconButton(
@@ -201,8 +200,8 @@ class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSh
 }
 
 class GalleryItemWidget extends StatelessWidget {
-  final AssetEntity asset;
-  final ValueNotifier<List<AssetEntity>> selectedAssetsNotifier;
+  final GalleryAsset asset;
+  final ValueNotifier<List<GalleryAsset>> selectedAssetsNotifier;
   final bool isMultiSelect;
   final int maxItems;
 
@@ -215,7 +214,7 @@ class GalleryItemWidget extends StatelessWidget {
   });
 
   void _toggleSelection() {
-    final currentList = List<AssetEntity>.from(selectedAssetsNotifier.value);
+    final currentList = List<GalleryAsset>.from(selectedAssetsNotifier.value);
     
     if (!isMultiSelect) {
       selectedAssetsNotifier.value = [asset];
@@ -239,7 +238,7 @@ class GalleryItemWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: _toggleSelection,
-      child: ValueListenableBuilder<List<AssetEntity>>(
+      child: ValueListenableBuilder<List<GalleryAsset>>(
         valueListenable: selectedAssetsNotifier,
         builder: (context, selected, child) {
           final isSelected = selected.contains(asset);
@@ -248,11 +247,7 @@ class GalleryItemWidget extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               Image(
-                image: AssetEntityImageProvider(
-                  asset,
-                  isOriginal: false,
-                  thumbnailSize: const ThumbnailSize.square(250),
-                ),
+                image: asset.getThumbnailProvider(),
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),

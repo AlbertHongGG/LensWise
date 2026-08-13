@@ -18,7 +18,7 @@ class ScannerDashboardPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       body: CameraScannerView(
-        customOverlayBuilder: (cameraState) {
+        customOverlayBuilder: () {
           return Stack(
             fit: StackFit.expand,
             children: [
@@ -33,12 +33,11 @@ class ScannerDashboardPage extends ConsumerWidget {
                 child: ScannerTopBar(),
               ),
 
-              // 3. Bottom UI: Shutter, Mode Switcher, Gallery, Action
-              Positioned(
+              const Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: ScannerBottomBar(cameraState: cameraState),
+                child: ScannerBottomBar(),
               ),
             ],
           );

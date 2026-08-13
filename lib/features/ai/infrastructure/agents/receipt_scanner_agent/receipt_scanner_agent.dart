@@ -6,6 +6,7 @@ import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
+import 'package:lens_wise/core/models/target_language.dart';
 import 'prompts.dart';
 
 import 'package:lens_wise/features/receipt_scanner/domain/interfaces/i_receipt_scanner_agent.dart';
@@ -57,7 +58,7 @@ class _ReceiptScannerDataDto {
 }
 
 class ReceiptScannerAgent extends BaseAgent<List<Uint8List>, ReceiptScannerRecord> implements IReceiptScannerAgent {
-  final String targetLanguage;
+  final TargetLanguage targetLanguage;
 
   ReceiptScannerAgent(
     super.agentType,

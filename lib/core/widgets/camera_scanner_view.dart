@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:lens_wise/core/utils/camerawesome_service.dart';
 
-class CameraScannerView extends StatefulWidget {
-  final Widget Function(CameraState? state) customOverlayBuilder;
+class CameraScannerView extends ConsumerStatefulWidget {
+  final Widget Function() customOverlayBuilder;
 
   const CameraScannerView({
     super.key,
@@ -10,11 +12,10 @@ class CameraScannerView extends StatefulWidget {
   });
 
   @override
-  State<CameraScannerView> createState() => _CameraScannerViewState();
+  ConsumerState<CameraScannerView> createState() => _CameraScannerViewState();
 }
 
-class _CameraScannerViewState extends State<CameraScannerView> {
-  CameraState? _cameraState;
+class _CameraScannerViewState extends ConsumerState<CameraScannerView> {
 
   @override
   Widget build(BuildContext context) {
@@ -50,12 +51,8 @@ class _CameraScannerViewState extends State<CameraScannerView> {
                       // previewFit: CameraPreviewFit.cover,
                       // 不再強制開啟背景資料流，CameraAwesome 現在只負責 ViewFinder (預覽) 與快拍。
                       builder: (cameraState, preview) {
-                        // 狀態懸浮 (State Hoisting): 將底層硬體狀態傳遞給外層 UI，但絕不在此渲染任何 UI！
-                        if (_cameraState != cameraState) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) setState(() => _cameraState = cameraState);
-                          });
-                        }
+                        // Pass hardware state to the decoupled service instead of UI
+                        ref.read(cameraServiceProvider).setCameraState(cameraState);
                         return const SizedBox.shrink(); // 渲染淨空，交給外層
                       },
                     ),
@@ -67,7 +64,7 @@ class _CameraScannerViewState extends State<CameraScannerView> {
         ),
         
         // 2. 表層：完全不受縮放與裁切影響的全螢幕 UI 操控層
-        widget.customOverlayBuilder(_cameraState),
+        widget.customOverlayBuilder(),
       ],
     );
   }

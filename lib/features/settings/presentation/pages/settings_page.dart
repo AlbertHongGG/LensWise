@@ -10,6 +10,7 @@ import 'package:lens_wise/core/widgets/immersive_scaffold.dart';
 import 'package:lens_wise/core/widgets/premium_config_header.dart';
 import 'package:lens_wise/core/widgets/app_switch.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_log_viewer_screen.dart';
+import 'package:lens_wise/core/models/target_language.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -19,7 +20,7 @@ class SettingsPage extends ConsumerWidget {
     final settingsState = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
 
-    final languages = ['繁體中文', 'English', '日本語', '한국어'];
+    final languages = TargetLanguage.values.map((e) => e.displayName).toList();
 
     return ImmersiveScaffold(
       body: ListView(
@@ -52,9 +53,9 @@ class SettingsPage extends ConsumerWidget {
                 icon: Icons.language_rounded,
                 iconColor: AppColors.primary,
                 title: '目標翻譯語言',
-                subtitle: settingsState.targetLanguage,
+                subtitle: settingsState.targetLanguage.displayName,
                 onTap: () async {
-                  final initialIndex = languages.indexOf(settingsState.targetLanguage);
+                  final initialIndex = TargetLanguage.values.indexOf(settingsState.targetLanguage);
                   final selectedIndex = await showCustomWheelPicker(
                     context: context,
                     title: '目標翻譯語言',
@@ -62,7 +63,7 @@ class SettingsPage extends ConsumerWidget {
                     initialIndex: initialIndex != -1 ? initialIndex : 0,
                   );
                   if (selectedIndex != null) {
-                    notifier.updateTargetLanguage(languages[selectedIndex]);
+                    notifier.updateTargetLanguage(TargetLanguage.values[selectedIndex]);
                   }
                 },
               ),

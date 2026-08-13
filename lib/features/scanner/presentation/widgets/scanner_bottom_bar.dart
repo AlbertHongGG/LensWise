@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:lens_wise/core/utils/camerawesome_service.dart';
 
 import 'package:lens_wise/features/scanner/domain/models/scanner_state.dart';
 import 'package:lens_wise/features/scanner/presentation/controllers/scanner_controller.dart';
@@ -14,34 +14,20 @@ import 'package:lens_wise/features/scanner/presentation/pages/captured_image_gal
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ScannerBottomBar extends ConsumerWidget {
-  final CameraState? cameraState;
-
-  const ScannerBottomBar({super.key, required this.cameraState});
+  const ScannerBottomBar({super.key});
 
   Future<void> _takePicture(BuildContext context, WidgetRef ref) async {
     final state = ref.read(scannerControllerProvider);
     final notifier = ref.read(scannerControllerProvider.notifier);
     
-    if (state.isLocked || cameraState == null) return;
+    if (state.isLocked) return;
     
     notifier.setActionState(CameraActionState.capturing);
 
     try {
-      if (cameraState is PhotoCameraState) {
-        final photoState = cameraState as PhotoCameraState;
-        final request = await photoState.takePhoto();
-        final path = request.when(
-          single: (single) => single.file?.path,
-          multiple: (multiple) => multiple.fileBySensor.values.first?.path,
-        );
-        
-        if (path != null && context.mounted) {
-          final bytes = await File(path).readAsBytes();
-          
-          if (context.mounted) {
-            notifier.onImageCaptured(bytes);
-          }
-        }
+      final bytes = await ref.read(cameraServiceProvider).takePicture();
+      if (bytes != null && context.mounted) {
+        notifier.onImageCaptured(bytes);
       }
     } catch (e) {
       debugPrint('[ERROR] Failed to take picture: $e');

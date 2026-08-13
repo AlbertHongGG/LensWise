@@ -5,6 +5,7 @@ import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_recor
 import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
 import 'package:lens_wise/core/notifications/services/in_app_notification_service.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
+import 'package:lens_wise/core/models/target_language.dart';
 
 class MenuTranslationState {
   final bool isGenerating;
@@ -64,7 +65,7 @@ class MenuTranslationController extends Notifier<MenuTranslationState> {
   Future<MenuScannerRecord?> generateTranslatedImage({
     required Uint8List originalImage,
     required String originalImagePath,
-    required String targetLanguage,
+    required TargetLanguage targetLanguage,
     required MenuScannerRecord record,
   }) async {
     state = state.setGenerating();

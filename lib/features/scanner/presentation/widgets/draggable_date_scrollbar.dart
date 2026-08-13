@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
 
 class DraggableDateScrollbar extends StatefulWidget {
   final ScrollController controller;
   final List<String> groupKeys;
-  final Map<String, List<AssetEntity>> groupedAssets;
+  final Map<String, List<GalleryAsset>> groupedAssets;
   final Widget child;
 
   const DraggableDateScrollbar({

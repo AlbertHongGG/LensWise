@@ -6,6 +6,7 @@ import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
+import 'package:lens_wise/core/models/target_language.dart';
 import 'prompts.dart';
 
 import 'package:lens_wise/features/product_comparison/domain/interfaces/i_product_comparison_agent.dart';
@@ -28,7 +29,7 @@ class _ComparisonResponseDto {
 }
 
 class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductComparisonRecord> implements IProductComparisonAgent {
-  final String targetLanguage;
+  final TargetLanguage targetLanguage;
 
   ProductComparisonAgent(
     super.agentType,

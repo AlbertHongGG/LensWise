@@ -8,10 +8,11 @@ import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'prompts.dart';
+import 'package:lens_wise/core/models/target_language.dart';
 
 class MenuTranslationRequest {
   final List<Uint8List> images;
-  final String targetLanguage;
+  final TargetLanguage targetLanguage;
   final MenuScannerRecord record;
 
   MenuTranslationRequest({

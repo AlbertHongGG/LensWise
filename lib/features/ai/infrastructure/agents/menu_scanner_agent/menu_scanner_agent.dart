@@ -7,6 +7,7 @@ import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
+import 'package:lens_wise/core/models/target_language.dart';
 import 'prompts.dart';
 
 abstract class IMenuScannerAgent {
@@ -30,7 +31,7 @@ class _MenuResponseDto {
 }
 
 class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> implements IMenuScannerAgent {
-  final String targetLanguage;
+  final TargetLanguage targetLanguage;
 
   MenuScannerAgent(
     super.agentType,
