@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_chat_adapter.dart';
+import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_list_item_tile.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 
 class MenuResultPage extends ConsumerStatefulWidget {
@@ -32,10 +33,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // 保留使用者當前的背景色
     final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA); 
-    
-    // 卡片的顏色：亮色模式下純白，暗色模式下深灰
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1F2937); 
 
@@ -45,34 +43,29 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
         bottom: false,
         child: Stack(
           children: [
-            // 懸浮菜單卡片 (The Floating Menu Card)
-            Positioned.fill(
-              bottom: MediaQuery.of(context).padding.bottom + 100, // 預留底部按鈕空間
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                        blurRadius: 40,
-                        offset: const Offset(0, 10),
-                      )
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(32),
-                    child: CustomScrollView(
-                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                      slivers: [
-                        _buildSliverHeader(context, isDark, textColor),
-                        _buildSliverList(context, isDark, textColor),
-                        const SliverToBoxAdapter(child: SizedBox(height: 32)), // 底部留白
-                      ],
-                    ),
-                  ),
+            // 全板塊滑動 (The Scrolling Card Layout)
+            SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                      blurRadius: 40,
+                      offset: const Offset(0, 10),
+                    )
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHeader(context, isDark, textColor),
+                    _buildList(context, isDark, textColor),
+                    const SizedBox(height: 32), // 底部留白
+                  ],
                 ),
               ),
             ),
@@ -82,134 +75,73 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
             
             // 圖片抽屜
             if (_isDrawerOpen)
-              _buildImageDrawer(isDark),
+              _buildImageDrawer(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSliverHeader(BuildContext context, bool isDark, Color textColor) {
+  Widget _buildHeader(BuildContext context, bool isDark, Color textColor) {
     final title = _currentRecord.storeName.isNotEmpty ? _currentRecord.storeName : '翻譯菜單';
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                fontFamily: 'serif', // 使用古典或優雅的襯線字體風格，提升實體菜單感
-                color: textColor,
-                height: 1.2,
-                letterSpacing: 2.0,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 2,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.black12,
-                borderRadius: BorderRadius.circular(1),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '${_currentRecord.items.length} 個品項',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white54 : Colors.black54,
-                letterSpacing: 1.0,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSliverList(BuildContext context, bool isDark, Color textColor) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final item = _currentRecord.items[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: _buildMenuItem(item, isDark, textColor),
-            );
-          },
-          childCount: _currentRecord.items.length,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(MenuScannerItem item, bool isDark, Color textColor) {
-    final hasDescription = item.description != null && item.description!.isNotEmpty;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.translatedName,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                      height: 1.3,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.originalName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? Colors.white54 : Colors.black54,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              item.price > 0 ? item.price.toStringAsFixed(0) : '-',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-          ],
-        ),
-        if (hasDescription) ...[
-          const SizedBox(height: 8),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
           Text(
-            item.description!,
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'serif',
+              color: textColor,
+              height: 1.2,
+              letterSpacing: 2.0,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 2,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white24 : Colors.black12,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '${_currentRecord.items.length} 個品項',
             style: TextStyle(
               fontSize: 13,
-              fontStyle: FontStyle.italic,
-              color: isDark ? Colors.white70 : Colors.black87,
-              height: 1.4,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.white54 : Colors.black54,
+              letterSpacing: 1.0,
             ),
           ),
         ],
-      ],
+      ),
+    );
+  }
+
+  Widget _buildList(BuildContext context, bool isDark, Color textColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: List.generate(_currentRecord.items.length, (index) {
+          final item = _currentRecord.items[index];
+          final isLast = index == _currentRecord.items.length - 1;
+          
+          return MenuListItemTile(
+            item: item,
+            isDark: isDark,
+            textColor: textColor,
+            isLast: isLast,
+          );
+        }),
+      ),
     );
   }
 
@@ -281,7 +213,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
     );
   }
 
-  Widget _buildImageDrawer(bool isDark) {
+  Widget _buildImageDrawer() {
     return NotificationListener<DraggableScrollableNotification>(
       onNotification: (notification) {
         if (notification.extent <= 0.1) {
@@ -298,19 +230,13 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
         minChildSize: 0.1,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF121212) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 24,
-                offset: const Offset(0, -8),
-              )
-            ],
+          decoration: const BoxDecoration(
+            color: Colors.black, // 保持與收據頁面一致的純黑背景
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
           child: Column(
             children: [
+              // 拖拉把手區域 (與收據頁面完全一致)
               SingleChildScrollView(
                 controller: scrollController,
                 physics: const ClampingScrollPhysics(),
@@ -321,7 +247,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                       width: 48,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.grey.withValues(alpha: 0.3),
+                        color: Colors.white30,
                         borderRadius: BorderRadius.circular(2.5),
                       ),
                     ),
