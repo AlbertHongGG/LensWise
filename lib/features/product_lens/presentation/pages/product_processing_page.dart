@@ -88,8 +88,8 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
         
         WidgetsBinding.instance.addPostFrameCallback((_) {
           context.pushReplacement('/product/detail', extra: {
-            'record': record,
-            'imageBytesList': state.imageBytesList,
+            'record': state.result,
+            'appImages': state.appImages,
           });
         });
 

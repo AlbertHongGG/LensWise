@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ScannerState {
 
- ScannerMode get currentMode; List<Uint8List> get capturedImages; CameraActionState get actionState;
+ ScannerMode get currentMode; List<AppImageEntity> get capturedImages; CameraActionState get actionState;
 /// Create a copy of ScannerState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -45,7 +45,7 @@ abstract mixin class $ScannerStateCopyWith<$Res>  {
   factory $ScannerStateCopyWith(ScannerState value, $Res Function(ScannerState) _then) = _$ScannerStateCopyWithImpl;
 @useResult
 $Res call({
- ScannerMode currentMode, List<Uint8List> capturedImages, CameraActionState actionState
+ ScannerMode currentMode, List<AppImageEntity> capturedImages, CameraActionState actionState
 });
 
 
@@ -66,7 +66,7 @@ class _$ScannerStateCopyWithImpl<$Res>
   return _then(_self.copyWith(
 currentMode: null == currentMode ? _self.currentMode : currentMode // ignore: cast_nullable_to_non_nullable
 as ScannerMode,capturedImages: null == capturedImages ? _self.capturedImages : capturedImages // ignore: cast_nullable_to_non_nullable
-as List<Uint8List>,actionState: null == actionState ? _self.actionState : actionState // ignore: cast_nullable_to_non_nullable
+as List<AppImageEntity>,actionState: null == actionState ? _self.actionState : actionState // ignore: cast_nullable_to_non_nullable
 as CameraActionState,
   ));
 }
@@ -152,7 +152,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ScannerMode currentMode,  List<Uint8List> capturedImages,  CameraActionState actionState)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ScannerMode currentMode,  List<AppImageEntity> capturedImages,  CameraActionState actionState)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScannerState() when $default != null:
 return $default(_that.currentMode,_that.capturedImages,_that.actionState);case _:
@@ -173,7 +173,7 @@ return $default(_that.currentMode,_that.capturedImages,_that.actionState);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ScannerMode currentMode,  List<Uint8List> capturedImages,  CameraActionState actionState)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ScannerMode currentMode,  List<AppImageEntity> capturedImages,  CameraActionState actionState)  $default,) {final _that = this;
 switch (_that) {
 case _ScannerState():
 return $default(_that.currentMode,_that.capturedImages,_that.actionState);case _:
@@ -193,7 +193,7 @@ return $default(_that.currentMode,_that.capturedImages,_that.actionState);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ScannerMode currentMode,  List<Uint8List> capturedImages,  CameraActionState actionState)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ScannerMode currentMode,  List<AppImageEntity> capturedImages,  CameraActionState actionState)?  $default,) {final _that = this;
 switch (_that) {
 case _ScannerState() when $default != null:
 return $default(_that.currentMode,_that.capturedImages,_that.actionState);case _:
@@ -208,12 +208,12 @@ return $default(_that.currentMode,_that.capturedImages,_that.actionState);case _
 
 
 class _ScannerState extends ScannerState {
-  const _ScannerState({this.currentMode = ScannerMode.product, final  List<Uint8List> capturedImages = const [], this.actionState = CameraActionState.idle}): _capturedImages = capturedImages,super._();
+  const _ScannerState({this.currentMode = ScannerMode.product, final  List<AppImageEntity> capturedImages = const [], this.actionState = CameraActionState.idle}): _capturedImages = capturedImages,super._();
   
 
 @override@JsonKey() final  ScannerMode currentMode;
- final  List<Uint8List> _capturedImages;
-@override@JsonKey() List<Uint8List> get capturedImages {
+ final  List<AppImageEntity> _capturedImages;
+@override@JsonKey() List<AppImageEntity> get capturedImages {
   if (_capturedImages is EqualUnmodifiableListView) return _capturedImages;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_capturedImages);
@@ -251,7 +251,7 @@ abstract mixin class _$ScannerStateCopyWith<$Res> implements $ScannerStateCopyWi
   factory _$ScannerStateCopyWith(_ScannerState value, $Res Function(_ScannerState) _then) = __$ScannerStateCopyWithImpl;
 @override @useResult
 $Res call({
- ScannerMode currentMode, List<Uint8List> capturedImages, CameraActionState actionState
+ ScannerMode currentMode, List<AppImageEntity> capturedImages, CameraActionState actionState
 });
 
 
@@ -272,7 +272,7 @@ class __$ScannerStateCopyWithImpl<$Res>
   return _then(_ScannerState(
 currentMode: null == currentMode ? _self.currentMode : currentMode // ignore: cast_nullable_to_non_nullable
 as ScannerMode,capturedImages: null == capturedImages ? _self._capturedImages : capturedImages // ignore: cast_nullable_to_non_nullable
-as List<Uint8List>,actionState: null == actionState ? _self.actionState : actionState // ignore: cast_nullable_to_non_nullable
+as List<AppImageEntity>,actionState: null == actionState ? _self.actionState : actionState // ignore: cast_nullable_to_non_nullable
 as CameraActionState,
   ));
 }

@@ -2,13 +2,19 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
+class CarouselItem {
+  final ImageProvider image;
+  final BoxFit fit;
+  const CarouselItem({required this.image, this.fit = BoxFit.fitWidth});
+}
+
 class ReceiptImageCarousel extends StatefulWidget {
-  final List<ImageProvider> images;
+  final List<CarouselItem> items;
   final ValueChanged<int>? onPageChanged;
 
   const ReceiptImageCarousel({
     super.key,
-    required this.images,
+    required this.items,
     this.onPageChanged,
   });
 
@@ -30,7 +36,7 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
   }
 
   void _initControllers() {
-    final count = widget.images.length;
+    final count = widget.items.length;
     _transformControllers = List.generate(count, (_) => TransformationController());
     for (var controller in _transformControllers) {
       controller.addListener(_onScaleChanged);
@@ -52,7 +58,7 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
   @override
   void didUpdateWidget(ReceiptImageCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final count = widget.images.length;
+    final count = widget.items.length;
     if (_transformControllers.length != count) {
       if (count > _transformControllers.length) {
         // Add new controllers for newly added images
@@ -82,10 +88,10 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
     super.dispose();
   }
 
-  int get _itemCount => widget.images.length;
+  int get _itemCount => widget.items.length;
 
-  ImageProvider _getImageProvider(int index) {
-    return widget.images[index];
+  CarouselItem _getItem(int index) {
+    return widget.items[index];
   }
 
   @override
@@ -134,8 +140,8 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Image(
-                          image: _getImageProvider(index),
-                          fit: BoxFit.fitWidth,
+                          image: _getItem(index).image,
+                          fit: _getItem(index).fit,
                         ),
                       ),
                     ),

@@ -36,8 +36,8 @@ class _ProductComparisonRecordPageState extends State<ProductComparisonRecordPag
 
   ImageProvider _getImageProvider(int index) {
     if (widget.args.rawImages != null) {
-      if (index >= widget.args.rawImages!.length) return MemoryImage(widget.args.rawImages!.last);
-      return MemoryImage(widget.args.rawImages![index]);
+      if (index >= widget.args.rawImages!.length) return MemoryImage(widget.args.rawImages!.last.bytes);
+      return MemoryImage(widget.args.rawImages![index].bytes);
     }
     final paths = widget.args.imagePath!.split(',');
     if (index >= paths.length) return FileImage(File(paths.last)); // Fallback for old records with only 1 image

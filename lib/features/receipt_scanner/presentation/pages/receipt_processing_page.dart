@@ -6,11 +6,12 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/controllers/receipt_scanner_controller.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ReceiptProcessingPage extends ConsumerStatefulWidget {
-  final List<Uint8List> images;
+  final List<AppImageEntity> memoryImages;
 
-  const ReceiptProcessingPage({super.key, required this.images});
+  const ReceiptProcessingPage({super.key, required this.memoryImages});
 
   @override
   ConsumerState<ReceiptProcessingPage> createState() => _ReceiptProcessingPageState();
@@ -24,7 +25,7 @@ class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(receiptScannerControllerProvider.notifier).reset();
-      ref.read(receiptScannerControllerProvider.notifier).analyzeReceipt(widget.images);
+      ref.read(receiptScannerControllerProvider.notifier).analyzeReceipt(widget.memoryImages);
     });
   }
 

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lens_wise/features/scanner/presentation/pages/scanner_dashboard_page.dart';
 import 'package:lens_wise/features/settings/presentation/pages/settings_page.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.dart';
 
 // History Pages
@@ -49,15 +50,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final record = extra?['record'] as ProductLensRecord?;
-          final imageBytesList = extra?['imageBytesList'] as List<Uint8List>?;
+          final appImages = extra?['appImages'] as List<AppImageEntity>?;
           
           if (record == null) {
             return const Scaffold(body: Center(child: Text('查無商品資料')));
           }
           
           return ProductDetailPage(
-            record: record,
-            imageBytesList: imageBytesList,
+            record: record!,
+            appImages: appImages,
           );
         },
       ),
@@ -85,7 +86,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final record = extra?['record'] as ReceiptScannerRecord?;
-          final memoryImages = extra?['memoryImages'] as List<Uint8List>?;
+          final memoryImages = extra?['memoryImages'] as List<AppImageEntity>?;
 
           if (record == null) {
             return const CupertinoPage(
@@ -105,9 +106,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/process/receipt',
         parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
-          final images = state.extra as List<Uint8List>? ?? [];
+          final images = state.extra as List<AppImageEntity>? ?? [];
           return CupertinoPage(
-            child: ReceiptProcessingPage(images: images),
+            child: ReceiptProcessingPage(memoryImages: images),
           );
         },
       ),
@@ -115,9 +116,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/process/comparison',
         parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
-          final images = state.extra as List<Uint8List>? ?? [];
+          final images = state.extra as List<AppImageEntity>? ?? [];
           return CupertinoPage(
-            child: ComparisonProcessingPage(images: images),
+            child: ComparisonProcessingPage(memoryImages: images),
           );
         },
       ),
@@ -135,9 +136,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/process/menu',
         parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
-          final images = state.extra as List<Uint8List>? ?? [];
+          final images = state.extra as List<AppImageEntity>? ?? [];
           return CupertinoPage(
-            child: MenuProcessingPage(images: images),
+            child: MenuProcessingPage(memoryImages: images),
           );
         },
       ),
@@ -147,7 +148,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final record = extra?['record'] as MenuScannerRecord?;
-          final memoryImages = extra?['memoryImages'] as List<Uint8List>?;
+          final memoryImages = extra?['memoryImages'] as List<AppImageEntity>?;
 
           if (record == null) {
             return const CupertinoPage(

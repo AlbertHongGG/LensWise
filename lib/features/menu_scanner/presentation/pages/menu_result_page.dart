@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_chat_adapter.dart';
 import 'dart:ui';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
@@ -13,7 +14,7 @@ import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersiv
 
 class MenuResultPage extends ConsumerStatefulWidget {
   final MenuScannerRecord record;
-  final List<Uint8List>? memoryImages;
+  final List<AppImageEntity>? memoryImages;
 
   const MenuResultPage({
     super.key,
@@ -280,7 +281,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                           child: ReceiptImageCarousel(
-                            images: images,
+                            items: images,
                             onPageChanged: (index) {
                               setState(() {
                                 _currentCarouselIndex = index;
@@ -388,11 +389,19 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
     List<_MenuCarouselItem> items = [];
     for (int i = 0; i < record.imagePaths.length; i++) {
       final path = record.imagePaths[i];
+      final memoryImage = widget.memoryImages != null && widget.memoryImages!.length > i 
+          ? widget.memoryImages![i] : null;
+      
+      final fit = memoryImage?.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain;
+
       // Original
       items.add(_MenuCarouselItem(
-        image: widget.memoryImages != null && widget.memoryImages!.length > i 
-            ? MemoryImage(widget.memoryImages![i]) 
-            : FileImage(File(path)) as ImageProvider,
+        image: CarouselItem(
+          image: memoryImage != null 
+              ? MemoryImage(memoryImage.bytes) 
+              : FileImage(File(path)) as ImageProvider,
+          fit: fit,
+        ),
         originalPath: path,
         isTranslated: false,
       ));
@@ -400,7 +409,10 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
       // Translated
       if (record.translatedImagePaths.containsKey(path)) {
         items.add(_MenuCarouselItem(
-          image: FileImage(File(record.translatedImagePaths[path]!)),
+          image: CarouselItem(
+            image: FileImage(File(record.translatedImagePaths[path]!)),
+            fit: BoxFit.contain,
+          ),
           originalPath: null,
           isTranslated: true,
         ));
@@ -410,8 +422,6 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   }
 
   Future<Uint8List?> _getImageBytes(String path) async {
-    // If it's a memory image mapped directly, we can check memoryImages, 
-    // but reading from File path is safest and unified since analyzeAndSave already saved it.
     final file = File(path);
     if (await file.exists()) {
       return await file.readAsBytes();
@@ -421,7 +431,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
 }
 
 class _MenuCarouselItem {
-  final ImageProvider image;
+  final CarouselItem image;
   final String? originalPath;
   final bool isTranslated;
   

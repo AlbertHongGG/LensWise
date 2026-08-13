@@ -6,15 +6,16 @@ import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_l
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/hero_title_overlay.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/verdict_floating_card.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/interactive_detail_panel.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final ProductLensRecord record;
-  final List<Uint8List>? imageBytesList;
+  final List<AppImageEntity>? appImages;
 
   const ProductDetailPage({
     super.key,
     required this.record,
-    this.imageBytesList,
+    this.appImages,
   });
 
   @override
@@ -34,7 +35,7 @@ class ProductDetailPage extends StatelessWidget {
             // 增加圖片高度確保完全覆蓋卡片頂部的 32px 圓角，避免露出缺角
             height: MediaQuery.of(context).size.height * 0.48,
             child: ImmersiveBackground(
-              imageBytesList: imageBytesList,
+              appImages: appImages,
               imagePaths: record.imagePaths,
             ),
           ),

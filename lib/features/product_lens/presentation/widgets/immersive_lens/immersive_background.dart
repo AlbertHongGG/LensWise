@@ -2,13 +2,15 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
+import 'package:lens_wise/core/models/app_image_entity.dart';
+
 class ImmersiveBackground extends StatefulWidget {
-  final List<Uint8List>? imageBytesList;
+  final List<AppImageEntity>? appImages;
   final List<String> imagePaths;
 
   const ImmersiveBackground({
     super.key,
-    this.imageBytesList,
+    this.appImages,
     this.imagePaths = const [],
   });
 
@@ -31,10 +33,10 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final hasBytes =
-        widget.imageBytesList != null && widget.imageBytesList!.isNotEmpty;
+        widget.appImages != null && widget.appImages!.isNotEmpty;
     final hasPaths = widget.imagePaths.isNotEmpty;
     final itemCount = hasBytes
-        ? widget.imageBytesList!.length
+        ? widget.appImages!.length
         : (hasPaths ? widget.imagePaths.length : 0);
 
     if (itemCount == 0) {
@@ -54,15 +56,16 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
           itemCount: itemCount,
           itemBuilder: (context, index) {
             if (hasBytes) {
+              final imageEntity = widget.appImages![index];
               return Image.memory(
-                widget.imageBytesList![index],
-                fit: BoxFit.cover,
+                imageEntity.bytes,
+                fit: imageEntity.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
                 alignment: Alignment.center,
               );
             } else {
               return Image.file(
                 File(widget.imagePaths[index]),
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 alignment: Alignment.center,
               );
             }

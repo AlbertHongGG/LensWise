@@ -6,11 +6,12 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/controllers/menu_scanner_controller.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class MenuProcessingPage extends ConsumerStatefulWidget {
-  final List<Uint8List> images;
+  final List<AppImageEntity> memoryImages;
 
-  const MenuProcessingPage({super.key, required this.images});
+  const MenuProcessingPage({super.key, required this.memoryImages});
 
   @override
   ConsumerState<MenuProcessingPage> createState() => _MenuProcessingPageState();
@@ -22,7 +23,7 @@ class _MenuProcessingPageState extends ConsumerState<MenuProcessingPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(menuScannerControllerProvider.notifier).reset();
-      ref.read(menuScannerControllerProvider.notifier).analyzeMenu(widget.images);
+      ref.read(menuScannerControllerProvider.notifier).analyzeMenu(widget.memoryImages);
     });
   }
 

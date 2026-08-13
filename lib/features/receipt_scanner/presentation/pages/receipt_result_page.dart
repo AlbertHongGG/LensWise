@@ -8,10 +8,11 @@ import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_paper_card.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/receipt_chat_adapter.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ReceiptResultPage extends ConsumerStatefulWidget {
   final ReceiptScannerRecord record;
-  final List<Uint8List>? memoryImages;
+  final List<AppImageEntity>? memoryImages;
 
   const ReceiptResultPage({
     super.key,
@@ -137,9 +138,15 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                           child: ReceiptImageCarousel(
-                            images: [
-                              ...(_currentRecord.imagePaths.map((p) => FileImage(File(p)))),
-                              ...(widget.memoryImages?.map((m) => MemoryImage(m)) ?? []),
+                            items: [
+                              ...(_currentRecord.imagePaths.map((p) => CarouselItem(
+                                image: FileImage(File(p)),
+                                fit: BoxFit.contain,
+                              ))),
+                              ...(widget.memoryImages?.map((m) => CarouselItem(
+                                image: MemoryImage(m.bytes),
+                                fit: m.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
+                              )) ?? []),
                             ],
                           ),
                         ),

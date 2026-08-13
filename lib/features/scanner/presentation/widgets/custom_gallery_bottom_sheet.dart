@@ -7,6 +7,7 @@ import 'package:lens_wise/features/scanner/presentation/controllers/gallery_stat
 import 'package:lens_wise/features/scanner/presentation/widgets/draggable_date_scrollbar.dart';
 
 import 'package:lens_wise/core/widgets/pickers/picker_dialog_shell.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class CustomGalleryBottomSheet extends ConsumerStatefulWidget {
   final bool isMultiSelect;
@@ -48,13 +49,15 @@ class _CustomGalleryBottomSheetState extends ConsumerState<CustomGalleryBottomSh
   Future<void> _completeSelection() async {
     final selected = _selectedAssetsNotifier.value;
     if (selected.isEmpty) return; // Prevent confirming with no selection
-    final List<Uint8List> bytesList = [];
+    final List<AppImageEntity> imagesList = [];
     for (final asset in selected) {
       final bytes = await asset.originBytes;
-      if (bytes != null) bytesList.add(bytes);
+      if (bytes != null) {
+        imagesList.add(AppImageEntity(bytes: bytes, source: ImageSourceType.gallery));
+      }
     }
     if (mounted) {
-      Navigator.of(context).pop(bytesList);
+      Navigator.of(context).pop(imagesList);
     }
   }
 

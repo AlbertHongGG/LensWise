@@ -5,9 +5,10 @@ import 'package:lens_wise/core/storage/history_providers.dart';
 
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 import 'package:lens_wise/core/router/navigation_service.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ProductComparisonScannerState {
-  final List<Uint8List> capturedImages;
+  final List<AppImageEntity> capturedImages;
   final bool isAnalyzing;
   final String? errorMessage;
   final ProductComparisonRecord? parsingResult;
@@ -20,7 +21,7 @@ class ProductComparisonScannerState {
   });
 
   ProductComparisonScannerState copyWith({
-    List<Uint8List>? capturedImages,
+    List<AppImageEntity>? capturedImages,
     bool? isAnalyzing,
     String? errorMessage,
     ProductComparisonRecord? parsingResult,
@@ -40,15 +41,15 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
     return ProductComparisonScannerState();
   }
 
-  void addImage(Uint8List imageBytes) {
+  void addImage(AppImageEntity image) {
     state = state.copyWith(
-      capturedImages: [...state.capturedImages, imageBytes],
+      capturedImages: [...state.capturedImages, image],
       errorMessage: null,
     );
   }
 
   void removeImage(int index) {
-    final newList = List<Uint8List>.from(state.capturedImages);
+    final newList = List<AppImageEntity>.from(state.capturedImages);
     newList.removeAt(index);
     state = state.copyWith(capturedImages: newList);
   }
@@ -65,7 +66,7 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
     state = ProductComparisonScannerState();
   }
 
-  Future<void> analyzeComparison(List<Uint8List> images) async {
+  Future<void> analyzeComparison(List<AppImageEntity> images) async {
     if (images.isEmpty) return;
     
     state = state.copyWith(capturedImages: images, isAnalyzing: true, errorMessage: null);
@@ -73,7 +74,8 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
       final service = ref.read(productComparisonServiceProvider);
       final navService = ref.read(navigationServiceProvider);
       
-      final result = await service.analyzeAndSave(images);
+      final bytesList = images.map((e) => e.bytes).toList();
+      final result = await service.analyzeAndSave(bytesList);
       ref.invalidate(comparisonHistoryProvider);
       
       state = state.copyWith(parsingResult: result, isAnalyzing: false);

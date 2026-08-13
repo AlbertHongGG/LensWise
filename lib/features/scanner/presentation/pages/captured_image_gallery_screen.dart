@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/scanner/presentation/controllers/scanner_controller.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class CapturedImageGalleryScreen extends ConsumerStatefulWidget {
   const CapturedImageGalleryScreen({super.key});
@@ -96,6 +97,8 @@ class _CapturedImageGalleryScreenState extends ConsumerState<CapturedImageGaller
                       itemBuilder: (context, index) {
                         final screenSize = MediaQuery.of(context).size;
                         final screenRatio = screenSize.width / screenSize.height;
+                        final imageEntity = images[index];
+                        final isCamera = imageEntity.source == ImageSourceType.camera;
                         
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -105,8 +108,8 @@ class _CapturedImageGalleryScreenState extends ConsumerState<CapturedImageGaller
                               child: AspectRatio(
                                 aspectRatio: screenRatio,
                                 child: Image.memory(
-                                  images[index],
-                                  fit: BoxFit.cover,
+                                  imageEntity.bytes,
+                                  fit: isCamera ? BoxFit.cover : BoxFit.contain,
                                 ),
                               ),
                             ),
@@ -157,7 +160,7 @@ class _CapturedImageGalleryScreenState extends ConsumerState<CapturedImageGaller
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(6),
                                   child: Image.memory(
-                                    images[index],
+                                    images[index].bytes,
                                     fit: BoxFit.cover,
                                   ),
                                 ),

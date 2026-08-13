@@ -6,11 +6,12 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ComparisonProcessingPage extends ConsumerStatefulWidget {
-  final List<Uint8List> images;
+  final List<AppImageEntity> memoryImages;
 
-  const ComparisonProcessingPage({super.key, required this.images});
+  const ComparisonProcessingPage({super.key, required this.memoryImages});
 
   @override
   ConsumerState<ComparisonProcessingPage> createState() => _ComparisonProcessingPageState();
@@ -24,7 +25,7 @@ class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingP
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(productComparisonScannerControllerProvider.notifier).reset();
-      ref.read(productComparisonScannerControllerProvider.notifier).analyzeComparison(widget.images);
+      ref.read(productComparisonScannerControllerProvider.notifier).analyzeComparison(widget.memoryImages);
     });
   }
 

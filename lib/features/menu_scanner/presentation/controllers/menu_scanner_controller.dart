@@ -4,9 +4,10 @@ import 'package:lens_wise/core/router/navigation_service.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class MenuScannerState {
-  final List<Uint8List> capturedImages;
+  final List<AppImageEntity> capturedImages;
   final bool isAnalyzing;
   final String? errorMessage;
   final MenuScannerRecord? parsingResult;
@@ -19,7 +20,7 @@ class MenuScannerState {
   });
 
   MenuScannerState copyWith({
-    List<Uint8List>? capturedImages,
+    List<AppImageEntity>? capturedImages,
     bool? isAnalyzing,
     String? errorMessage,
     MenuScannerRecord? parsingResult,
@@ -39,15 +40,15 @@ class MenuScannerController extends Notifier<MenuScannerState> {
     return MenuScannerState();
   }
 
-  void addImage(Uint8List imageBytes) {
+  void addImage(AppImageEntity image) {
     state = state.copyWith(
-      capturedImages: [...state.capturedImages, imageBytes],
+      capturedImages: [...state.capturedImages, image],
       errorMessage: null,
     );
   }
 
   void removeImage(int index) {
-    final newList = List<Uint8List>.from(state.capturedImages);
+    final newList = List<AppImageEntity>.from(state.capturedImages);
     newList.removeAt(index);
     state = state.copyWith(capturedImages: newList);
   }
@@ -64,7 +65,7 @@ class MenuScannerController extends Notifier<MenuScannerState> {
     state = MenuScannerState();
   }
 
-  Future<void> analyzeMenu(List<Uint8List> images) async {
+  Future<void> analyzeMenu(List<AppImageEntity> images) async {
     if (images.isEmpty) return;
 
     state = state.copyWith(capturedImages: images, isAnalyzing: true, errorMessage: null);
@@ -72,7 +73,8 @@ class MenuScannerController extends Notifier<MenuScannerState> {
       final service = ref.read(menuScannerServiceProvider);
       final navService = ref.read(navigationServiceProvider);
 
-      final result = await service.analyzeAndSave(images);
+      final bytesList = images.map((e) => e.bytes).toList();
+      final result = await service.analyzeAndSave(bytesList);
       
       // Invalidate the history provider to trigger a rebuild
       ref.invalidate(menuHistoryProvider);

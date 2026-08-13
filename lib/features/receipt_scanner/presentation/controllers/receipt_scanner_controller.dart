@@ -5,9 +5,10 @@ import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/core/router/navigation_service.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ReceiptScannerState {
-  final List<Uint8List> capturedImages;
+  final List<AppImageEntity> capturedImages;
   final String? errorMessage;
   final bool isScanning;
   final ReceiptScannerRecord? receiptRecord;
@@ -24,7 +25,7 @@ class ReceiptScannerState {
   });
 
   ReceiptScannerState copyWith({
-    List<Uint8List>? capturedImages,
+    List<AppImageEntity>? capturedImages,
     String? errorMessage,
     bool? isScanning,
     ReceiptScannerRecord? receiptRecord,
@@ -64,15 +65,15 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     state = state.copyWith(isProcessing: processing);
   }
 
-  void addImage(Uint8List imageBytes) {
+  void addImage(AppImageEntity image) {
     state = state.copyWith(
-      capturedImages: [...state.capturedImages, imageBytes],
+      capturedImages: [...state.capturedImages, image],
       errorMessage: null,
     );
   }
 
   void removeImage(int index) {
-    final newList = List<Uint8List>.from(state.capturedImages);
+    final newList = List<AppImageEntity>.from(state.capturedImages);
     newList.removeAt(index);
     state = state.copyWith(capturedImages: newList);
   }
@@ -81,7 +82,7 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     state = ReceiptScannerState();
   }
 
-  Future<void> analyzeReceipt(List<Uint8List> images) async {
+  Future<void> analyzeReceipt(List<AppImageEntity> images) async {
     if (images.isEmpty) return;
     
     state = state.copyWith(capturedImages: images, errorMessage: null, isAnalyzing: true, isProcessing: true);
@@ -89,13 +90,16 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
       final service = ref.read(receiptScannerServiceProvider);
       final navService = ref.read(navigationServiceProvider);
       
-      final record = await service.analyzeAndSave(images);
+      final bytesList = images.map((e) => e.bytes).toList();
+      final record = await service.analyzeAndSave(bytesList);
       ref.invalidate(receiptHistoryProvider);
       
       state = state.copyWith(receiptRecord: record, isAnalyzing: false, isProcessing: false);
       
       if (record != null) {
         // Navigate using the decoupled NavigationService
+        // Assuming NavigationService uses AppImageEntity or Uint8List?
+        // We will pass AppImageEntity so UI can use it.
         navService.navigateToReceiptResult(record, images);
       }
     } catch (e) {
@@ -119,7 +123,7 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     // No-op for manual capture
   }
 
-  Future<List<Uint8List>> getCapturedImages() async {
+  Future<List<AppImageEntity>> getCapturedImages() async {
     if (state.capturedImages.isEmpty) {
       if (state.errorMessage == null) {
         state = state.copyWith(errorMessage: 'No frames captured.');

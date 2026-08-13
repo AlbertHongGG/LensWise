@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lens_wise/features/scanner/domain/models/scanner_state.dart';
 import 'package:lens_wise/features/scanner/domain/models/scanner_mode_config.dart';
-import 'package:lens_wise/core/utils/image_processing_pipeline.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/controllers/receipt_scanner_controller.dart';
@@ -23,11 +23,11 @@ class ScannerController extends Notifier<ScannerState> {
     );
   }
 
-  void onImageCaptured(Uint8List image) {
+  void onImageCaptured(Uint8List image, {ImageSourceType source = ImageSourceType.camera}) {
     if (state.hasReachedMaxShots) return;
     
     state = state.copyWith(
-      capturedImages: [...state.capturedImages, image]
+      capturedImages: [...state.capturedImages, AppImageEntity(bytes: image, source: source)]
     );
 
     if (state.config.isAutoProcess && state.hasReachedMinShots) {
@@ -37,7 +37,7 @@ class ScannerController extends Notifier<ScannerState> {
 
   void removeImage(int index) {
     if (index >= 0 && index < state.capturedImages.length) {
-      final updatedList = List<Uint8List>.from(state.capturedImages)..removeAt(index);
+      final updatedList = List<AppImageEntity>.from(state.capturedImages)..removeAt(index);
       state = state.copyWith(capturedImages: updatedList);
     }
   }
@@ -57,20 +57,13 @@ class ScannerController extends Notifier<ScannerState> {
     setActionState(CameraActionState.analyzing);
 
     try {
-      final screenSize = MediaQuery.of(context).size;
-      final screenRatio = screenSize.width / screenSize.height;
+      final processedImages = state.capturedImages.toList();
       
-      final processedImages = <Uint8List>[];
-      for (final bytes in state.capturedImages) {
-        if (state.currentMode == ScannerMode.receipt) {
-          processedImages.add(bytes);
-        } else {
-          final cropped = await ImageProcessingPipeline.cropToScreenRatio(bytes, screenRatio);
-          processedImages.add(cropped);
-        }
-      }
+      // Removed physical crop logic completely! 
+      // Images now retain their pristine 4:3 camera resolution or gallery original ratio.
       
-      state = state.copyWith(capturedImages: processedImages);
+      // We don't overwrite state.capturedImages since we aren't mutating them anymore.
+      // state = state.copyWith(capturedImages: processedImages);
 
       if (context.mounted) {
         switch (state.currentMode) {

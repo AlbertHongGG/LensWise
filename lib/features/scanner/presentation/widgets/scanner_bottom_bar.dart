@@ -11,6 +11,7 @@ import 'package:lens_wise/features/scanner/presentation/widgets/scanner_mode_swi
 import 'package:lens_wise/features/scanner/presentation/widgets/gallery_picker_button.dart';
 import 'package:lens_wise/features/scanner/presentation/widgets/custom_gallery_bottom_sheet.dart';
 import 'package:lens_wise/features/scanner/presentation/pages/captured_image_gallery_screen.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ScannerBottomBar extends ConsumerWidget {
   final CameraState? cameraState;
@@ -89,16 +90,16 @@ class ScannerBottomBar extends ConsumerWidget {
         final notifier = ref.read(scannerControllerProvider.notifier);
         notifier.setActionState(CameraActionState.pickingGallery);
         try {
-          final bytesList = await showModalBottomSheet<List<Uint8List>>(
+          final imagesList = await showModalBottomSheet<List<AppImageEntity>>(
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
             builder: (context) => CustomGalleryBottomSheet(isMultiSelect: true, maxItems: maxShots),
           );
 
-          if (bytesList != null && bytesList.isNotEmpty && context.mounted) {
-            for (final b in bytesList) {
-              notifier.onImageCaptured(b);
+          if (imagesList != null && imagesList.isNotEmpty && context.mounted) {
+            for (final b in imagesList) {
+              notifier.onImageCaptured(b.bytes, source: b.source);
             }
           }
         } finally {
@@ -168,7 +169,7 @@ class ScannerBottomBar extends ConsumerWidget {
                 ),
                 child: ClipOval(
                   child: Image.memory(
-                    images.last,
+                    images.last.bytes,
                     fit: BoxFit.cover,
                   ),
                 ),
