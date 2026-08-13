@@ -45,9 +45,17 @@ class AiChatBottomSheet extends ConsumerStatefulWidget {
 
 class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   final ScrollController _textFieldScrollController = ScrollController();
   String _baseTypedText = '';
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -73,7 +81,8 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
       }
     });
   }
-  void _scrollTextFieldToRight() {
+
+  void _scrollTextFieldToRight() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_textFieldScrollController.hasClients) {
         _textFieldScrollController.animateTo(
@@ -91,12 +100,16 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
 
     ref.read(aiChatControllerProvider.notifier).sendMessage(text);
     
+    _focusNode.unfocus();
+    
     // Stop listening to prevent late voice results from overwriting the cleared input
     ref.read(voiceControllerProvider.notifier).stopListening();
     
-    _controller.clear();
-    _baseTypedText = '';
-    ref.read(voiceControllerProvider.notifier).clearText();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.clear();
+      _baseTypedText = '';
+      ref.read(voiceControllerProvider.notifier).clearText();
+    });
   }
 
   void _handleMicToggle(bool isCurrentlyListening) {
@@ -529,6 +542,7 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
                     Expanded(
                       child: TextField(
                         controller: _controller,
+                        focusNode: _focusNode,
                         scrollController: _textFieldScrollController,
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black87,
