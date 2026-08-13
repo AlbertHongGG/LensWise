@@ -28,12 +28,11 @@ import 'package:lens_wise/features/product_comparison/presentation/pages/compari
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/pages/menu_processing_page.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/pages/menu_result_page.dart';
-
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+import 'package:lens_wise/core/router/global_navigator.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    navigatorKey: _rootNavigatorKey,
+    navigatorKey: globalNavigatorKey,
     initialLocation: '/',
     routes: [
       // The ONE AND ONLY root page: Camera
@@ -66,14 +65,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Global Settings
       GoRoute(
         path: '/settings',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) => const CupertinoPage(
           child: SettingsPage(),
         ),
       ),
       GoRoute(
         path: '/settings/ai',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) => const CupertinoPage(
           child: AiSettingsScreen(),
         ),
@@ -82,7 +81,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Result Pages
       GoRoute(
         path: '/result/receipt',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final record = extra?['record'] as ReceiptScannerRecord?;
@@ -104,7 +103,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/process/receipt',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
           final images = state.extra as List<Uint8List>? ?? [];
           return CupertinoPage(
@@ -114,7 +113,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/process/comparison',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
           final images = state.extra as List<Uint8List>? ?? [];
           return CupertinoPage(
@@ -124,7 +123,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/result/comparison',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
           final args = state.extra as ProductComparisonRecordArgs;
           return CupertinoPage(
@@ -134,7 +133,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/process/menu',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
           final images = state.extra as List<Uint8List>? ?? [];
           return CupertinoPage(
@@ -144,7 +143,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/result/menu',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final record = extra?['record'] as MenuScannerRecord?;
@@ -168,7 +167,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // History Pages
       GoRoute(
         path: '/history',
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
           final tabIndexStr = state.uri.queryParameters['tab'];
           final initialIndex = tabIndexStr != null ? int.tryParse(tabIndexStr) ?? 0 : 0;

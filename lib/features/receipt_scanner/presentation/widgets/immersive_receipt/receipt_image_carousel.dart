@@ -54,11 +54,21 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
     super.didUpdateWidget(oldWidget);
     final count = widget.images.length;
     if (_transformControllers.length != count) {
-      for (var c in _transformControllers) {
-        c.removeListener(_onScaleChanged);
-        c.dispose();
+      if (count > _transformControllers.length) {
+        // Add new controllers for newly added images
+        for (int i = _transformControllers.length; i < count; i++) {
+          final c = TransformationController();
+          c.addListener(_onScaleChanged);
+          _transformControllers.add(c);
+        }
+      } else {
+        // Remove excess controllers
+        while (_transformControllers.length > count) {
+          final c = _transformControllers.removeLast();
+          c.removeListener(_onScaleChanged);
+          c.dispose();
+        }
       }
-      _initControllers();
     }
   }
 

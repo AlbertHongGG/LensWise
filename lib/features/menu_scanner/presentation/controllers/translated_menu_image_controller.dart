@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/translated_menu_image_agent/translated_menu_image_agent.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
+import 'package:lens_wise/core/notifications/services/in_app_notification_service.dart';
 
 class TranslatedMenuImageState {
   final bool isGenerating;
@@ -90,13 +91,17 @@ class TranslatedMenuImageController extends Notifier<TranslatedMenuImageState> {
         
         
         state = state.setSuccess(response.images!);
+        final notificationService = ref.read(inAppNotificationServiceProvider);
+        notificationService.showSuccess('翻譯完成，您可向左滑動檢視新圖片。', title: '✨ 翻譯成功');
         return updatedRecord;
       } else {
         state = state.setError('AI 未能生成翻譯圖片，請稍後再試。');
+        ref.read(inAppNotificationServiceProvider).showError('AI 未能生成翻譯圖片，請稍後再試。');
         return null;
       }
     } catch (e) {
       state = state.setError(e.toString());
+      ref.read(inAppNotificationServiceProvider).showError('發生錯誤：$e');
       return null;
     }
   }
