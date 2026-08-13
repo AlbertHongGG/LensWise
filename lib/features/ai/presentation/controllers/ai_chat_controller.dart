@@ -112,7 +112,7 @@ class AiChatController extends Notifier<AiChatSessionState> {
            if (newImages == null) {
               newImages = chunk.images;
            } else {
-              newImages = [...newImages, ...chunk.images!];
+              newImages = [...newImages!, ...chunk.images!];
            }
         }
 

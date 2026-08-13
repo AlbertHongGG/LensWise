@@ -1,8 +1,13 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_chat_adapter.dart';
+import 'dart:ui';
+import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
+import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
+import 'package:lens_wise/features/menu_scanner/presentation/controllers/translated_menu_image_controller.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_list_item_tile.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 
@@ -255,12 +260,84 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                 ),
               ),
               Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                  child: ReceiptImageCarousel(
-                    memoryImages: widget.memoryImages ?? [],
-                    filePaths: _currentRecord.imagePaths,
-                  ),
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final aiState = ref.watch(translatedMenuImageControllerProvider);
+                    final combinedMemoryImages = <Uint8List>[
+                      ...(widget.memoryImages ?? []),
+                      ...(aiState.generatedImages ?? []),
+                    ];
+
+                    return Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                          child: ReceiptImageCarousel(
+                            memoryImages: combinedMemoryImages,
+                            filePaths: _currentRecord.imagePaths,
+                          ),
+                        ),
+                        
+                        // Translate Button Overlay
+                        if (!aiState.isGenerating && aiState.generatedImages == null)
+                          Positioned(
+                            bottom: MediaQuery.paddingOf(context).bottom + 24,
+                            right: 24,
+                            child: FloatingActionButton.extended(
+                              heroTag: 'translate_image_btn',
+                              backgroundColor: Theme.of(context).primaryColor,
+                              onPressed: () async {
+                                final originalImages = await _getOriginalImages();
+                                final targetLang = ref.read(settingsProvider).targetLanguage;
+                                ref.read(translatedMenuImageControllerProvider.notifier)
+                                    .generateTranslatedImage(
+                                      originalImages: originalImages,
+                                      targetLanguage: targetLang,
+                                      record: _currentRecord,
+                                    );
+                              },
+                              icon: const Icon(Icons.auto_awesome, color: Colors.white),
+                              label: const Text(
+                                '✨ 翻譯原圖', 
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                              ),
+                            ),
+                          ),
+
+                        // Loading Overlay
+                        if (aiState.isGenerating)
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const ThinkingOrb(isDark: true, size: 64),
+                                      const SizedBox(height: 24),
+                                      const Text(
+                                        'AI 正在保留風格為您替換文字...',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                        // Error Toast handling could be added here or via listener
+                      ],
+                    );
+                  }
                 ),
               ),
             ],
@@ -268,5 +345,19 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
         ),
       ),
     );
+  }
+
+  Future<List<Uint8List>> _getOriginalImages() async {
+    if (widget.memoryImages != null && widget.memoryImages!.isNotEmpty) {
+      return widget.memoryImages!;
+    }
+    List<Uint8List> bytes = [];
+    for (String path in _currentRecord.imagePaths) {
+      final file = File(path);
+      if (await file.exists()) {
+        bytes.add(await file.readAsBytes());
+      }
+    }
+    return bytes;
   }
 }
