@@ -6,7 +6,6 @@ import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_paper_card.dart';
-import 'package:lens_wise/core/widgets/glass_action_button.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/receipt_chat_adapter.dart';
 
 class ReceiptResultPage extends ConsumerStatefulWidget {
@@ -58,25 +57,39 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                 ],
               ),
             ),
-            if (_currentRecord.imagePaths.isNotEmpty || (widget.memoryImages?.isNotEmpty ?? false))
-              Positioned(
-                bottom: 16,
-                left: 0,
-                right: 0,
-                child: AnimatedOpacity(
-                  opacity: _isDrawerOpen ? 0.0 : 1.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Center(
-                    child: FloatingActionButton(
-                      onPressed: () => setState(() => _isDrawerOpen = true),
+            Positioned(
+              bottom: 16,
+              left: 0,
+              right: 0,
+              child: AnimatedOpacity(
+                opacity: _isDrawerOpen ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_currentRecord.imagePaths.isNotEmpty || (widget.memoryImages?.isNotEmpty ?? false)) ...[
+                      FloatingActionButton(
+                        heroTag: 'receipt_image_btn',
+                        onPressed: () => setState(() => _isDrawerOpen = true),
+                        backgroundColor: isDark ? Colors.white24 : Colors.black87,
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        child: const Icon(Icons.image_outlined),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    FloatingActionButton(
+                      heroTag: 'receipt_ai_btn',
+                      onPressed: () => showReceiptChat(context, _currentRecord),
                       backgroundColor: isDark ? Colors.white24 : Colors.black87,
-                      foregroundColor: isDark ? Colors.white : Colors.white,
+                      foregroundColor: Colors.white,
                       elevation: 4,
-                      child: const Icon(Icons.image_outlined),
+                      child: const Icon(Icons.auto_awesome),
                     ),
-                  ),
+                  ],
                 ),
               ),
+            ),
             if (_isDrawerOpen)
               NotificationListener<DraggableScrollableNotification>(
                 onNotification: (notification) {
@@ -133,15 +146,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                 ),
               ),
             ),
-            // AI Chat Button
-            Positioned(
-              top: 16,
-              right: 16,
-              child: GlassActionButton(
-                icon: Icons.auto_awesome,
-                onPressed: () => showReceiptChat(context, _currentRecord),
-              ),
-            ),
+
           ],
         ),
       ),

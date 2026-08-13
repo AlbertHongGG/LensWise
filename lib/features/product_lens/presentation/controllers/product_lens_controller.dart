@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/product_lens/application/product_analysis_service.dart';
-import 'package:lens_wise/features/ai/infrastructure/agents/product_analysis_agent/product_analysis_agent.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 
@@ -9,7 +9,7 @@ enum ProductLensStatus { idle, loading, success, error }
 
 class ProductLensState {
   final ProductLensStatus status;
-  final ProductAnalysisResult? result;
+  final ProductRecord? result;
   final String? errorMessage;
   final List<Uint8List>? imageBytesList;
 
@@ -22,7 +22,7 @@ class ProductLensState {
 
   ProductLensState copyWith({
     ProductLensStatus? status,
-    ProductAnalysisResult? result,
+    ProductRecord? result,
     String? errorMessage,
     List<Uint8List>? imageBytesList,
   }) {
@@ -60,17 +60,10 @@ class ProductLensController extends Notifier<ProductLensState> {
       final result = await service.analyzeAndSave(imageBytesList);
       ref.invalidate(productHistoryProvider);
 
-      if (result.status == 'success') {
-        state = state.copyWith(
-          status: ProductLensStatus.success,
-          result: result,
-        );
-      } else {
-        state = state.copyWith(
-          status: ProductLensStatus.error,
-          errorMessage: result.message ?? '解析失敗，請提供更清晰的圖片。',
-        );
-      }
+      state = state.copyWith(
+        status: ProductLensStatus.success,
+        result: result,
+      );
     } catch (e) {
       state = state.copyWith(
         status: ProductLensStatus.error,

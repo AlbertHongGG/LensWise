@@ -7,17 +7,17 @@ import 'package:lens_wise/core/providers/shared_prefs_provider.dart';
 import 'package:lens_wise/core/router/app_router.dart';
 import 'package:lens_wise/core/theme/app_theme.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_record.dart';
+import 'package:lens_wise/features/receipt_scanner/infrastructure/models/receipt_hive_model.dart';
+import 'package:lens_wise/features/product_lens/infrastructure/models/product_hive_model.dart';
+import 'package:lens_wise/features/product_comparison/infrastructure/models/comparison_hive_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   await Hive.initFlutter();
-  Hive.registerAdapter(ReceiptRecordAdapter());
-  Hive.registerAdapter(ProductRecordAdapter());
-  Hive.registerAdapter(ComparisonRecordAdapter());
+  Hive.registerAdapter(ReceiptHiveModelAdapter());
+  Hive.registerAdapter(ProductHiveModelAdapter());
+  Hive.registerAdapter(ComparisonHiveModelAdapter());
   
   await Hive.openBox('settings');
   final prefs = await SharedPreferences.getInstance();

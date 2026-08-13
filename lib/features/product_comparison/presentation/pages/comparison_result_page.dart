@@ -1,9 +1,6 @@
-import 'dart:typed_data';
 import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';

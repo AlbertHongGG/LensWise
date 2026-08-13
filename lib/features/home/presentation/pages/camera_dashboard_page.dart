@@ -3,12 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:lens_wise/core/theme/app_colors.dart';
-import 'package:lens_wise/core/utils/image_processing_pipeline.dart';
 import 'package:lens_wise/core/widgets/camera_scanner_view.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_controller.dart';
 import 'package:lens_wise/features/home/presentation/controllers/scanner_mode_strategy.dart';
-import 'package:lens_wise/features/ai/presentation/screens/ai_log_viewer_screen.dart';
 
 class CameraDashboardPage extends ConsumerStatefulWidget {
   const CameraDashboardPage({super.key});
@@ -56,7 +53,7 @@ class _CameraDashboardPageState extends ConsumerState<CameraDashboardPage> {
   @override
   Widget build(BuildContext context) {
     // 監聽模式變化，確保模式切換時整個 Dashboard 重新建置，更新 CameraScannerView 的 config
-    final mode = ref.watch(scannerModeProvider);
+    ref.watch(scannerModeProvider); // Access the value to maintain reactivity if needed, but we don't assign it to unused 'mode' variable
     final strategy = ref.read(scannerModeProvider.notifier).currentStrategy;
 
     return Scaffold(

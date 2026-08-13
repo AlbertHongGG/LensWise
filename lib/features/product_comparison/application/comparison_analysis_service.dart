@@ -5,12 +5,14 @@ import 'package:lens_wise/features/ai/infrastructure/agents/product_comparison_a
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/core/storage/local_media_service.dart';
-import 'package:lens_wise/core/storage/i_local_storage_repository.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/comparison_record.dart';
+import 'package:lens_wise/features/product_comparison/domain/repositories/i_comparison_repository.dart';
+import 'package:uuid/uuid.dart';
+import 'dart:convert';
 
 class ComparisonAnalysisService {
   final IComparisonAgent _agent;
-  final ILocalStorageRepository<ComparisonRecord> _repository;
+  final IComparisonRepository _repository;
   final LocalMediaService _mediaService;
 
   ComparisonAnalysisService(this._agent, this._repository, this._mediaService);
@@ -33,7 +35,12 @@ class ComparisonAnalysisService {
       }
       final imagePath = paths.join(',');
       
-      final record = ComparisonRecord.fromAnalysisData(result.data!, imagePath: imagePath);
+      final record = ComparisonRecord(
+        id: const Uuid().v4(),
+        timestamp: DateTime.now(),
+        rawJsonResult: jsonEncode(result.data!),
+        imagePath: imagePath,
+      );
       await _repository.save(record.id, record);
       
       return comparisonResult;

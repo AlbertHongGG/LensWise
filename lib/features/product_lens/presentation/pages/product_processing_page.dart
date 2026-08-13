@@ -6,11 +6,6 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
-import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/immersive_background.dart';
-import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/hero_title_overlay.dart';
-import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/verdict_floating_card.dart';
-import 'package:lens_wise/features/product_lens/presentation/widgets/immersive/interactive_detail_panel.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
 
 class ProductProcessingPage extends ConsumerStatefulWidget {
   const ProductProcessingPage({super.key});
@@ -78,49 +73,20 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
             child: ElevatedButton(
               onPressed: () {
                 ref.read(productLensControllerProvider.notifier).reset();
-                if (context.canPop()) context.pop();
-                else context.go('/');
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/');
+                }
               },
               child: const Text('無效的資料 (返回)'),
             ),
           );
         }
         
-        final res = state.result!;
-        if (res.status != 'success') {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.orangeAccent.withValues(alpha: 0.8)),
-                const SizedBox(height: 16),
-                Text(res.message ?? '圖片不清晰，無法識別商品。', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 18)),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    ref.read(productLensControllerProvider.notifier).reset();
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/');
-                    }
-                  },
-                  child: const Text('重新拍攝'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        final data = res.data;
-        if (data == null) {
-          return const Center(child: Text('解析成功但無資料回傳'));
-        }
-
-        // 當 AI 處理成功，且資料確認沒問題時，立刻帶著原始圖片跳轉到無狀態的 DetailPage
-        // 注意：這裡應該使用 pushReplacement 以避免在導航棧留下中繼頁面
+        final record = state.result!;
+        
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          final record = ProductRecord.fromAnalysisData(data);
           context.pushReplacement('/product/detail', extra: {
             'record': record,
             'imageBytesList': state.imageBytesList,
@@ -143,7 +109,6 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
         );
 
       case ProductLensStatus.idle:
-      default:
         // Fallback for idle state (when user just lands on page without analysis)
         return Center(
           child: ElevatedButton.icon(

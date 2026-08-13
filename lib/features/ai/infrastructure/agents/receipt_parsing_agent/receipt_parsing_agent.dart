@@ -7,24 +7,12 @@ import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
-class ReceiptParsingResult {
-  final String status;
-  final String? message;
-  final Map<String, dynamic>? data;
-
-  ReceiptParsingResult({required this.status, this.message, this.data});
-
-  factory ReceiptParsingResult.fromJson(Map<String, dynamic> json) {
-    return ReceiptParsingResult(
-      status: json['status'] as String? ?? 'error',
-      message: json['message'] as String?,
-      data: json['data'] as Map<String, dynamic>?,
-    );
-  }
-}
+import 'package:lens_wise/features/ai/domain/interfaces/i_receipt_parsing_agent.dart';
+import 'package:lens_wise/features/ai/domain/models/receipt_parsing_result.dart';
 
 class ReceiptParsingAgent
-    extends BaseAgent<List<Uint8List>, ReceiptParsingResult> {
+    extends BaseAgent<List<Uint8List>, ReceiptParsingResult>
+    implements IReceiptParsingAgent {
   final String targetLanguage;
 
   ReceiptParsingAgent(
@@ -56,7 +44,7 @@ class ReceiptParsingAgent
   }
 }
 
-final receiptParsingAgentProvider = Provider.autoDispose<ReceiptParsingAgent>((
+final receiptParsingAgentProvider = Provider.autoDispose<IReceiptParsingAgent>((
   ref,
 ) {
   final language = ref.watch(settingsProvider).targetLanguage;

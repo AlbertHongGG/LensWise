@@ -1,23 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/core/storage/hive_repository.dart';
-import 'package:lens_wise/core/storage/i_local_storage_repository.dart';
 import 'package:lens_wise/core/storage/local_media_service.dart';
-import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_record.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
-import 'package:lens_wise/features/product_comparison/domain/models/comparison_record.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/repositories/i_receipt_repository.dart';
+import 'package:lens_wise/features/receipt_scanner/infrastructure/repositories/hive_receipt_repository.dart';
+import 'package:lens_wise/features/product_lens/domain/repositories/i_product_repository.dart';
+import 'package:lens_wise/features/product_lens/infrastructure/repositories/hive_product_repository.dart';
+import 'package:lens_wise/features/product_comparison/domain/repositories/i_comparison_repository.dart';
+import 'package:lens_wise/features/product_comparison/infrastructure/repositories/hive_comparison_repository.dart';
 
 final localMediaServiceProvider = Provider<LocalMediaService>((ref) {
   return LocalMediaService();
 });
 
-final receiptRepositoryProvider = Provider<ILocalStorageRepository<ReceiptRecord>>((ref) {
-  return HiveRepository<ReceiptRecord>('receipt_records_v6');
+final receiptRepositoryProvider = Provider<IReceiptRepository>((ref) {
+  return HiveReceiptRepository();
 });
 
-final productRepositoryProvider = Provider<ILocalStorageRepository<ProductRecord>>((ref) {
-  return HiveRepository<ProductRecord>('product_records_v2');
+final productRepositoryProvider = Provider<IProductRepository>((ref) {
+  return HiveProductRepository();
 });
 
-final comparisonRepositoryProvider = Provider<ILocalStorageRepository<ComparisonRecord>>((ref) {
-  return HiveRepository<ComparisonRecord>('comparison_records_v2');
+final comparisonRepositoryProvider = Provider<IComparisonRepository>((ref) {
+  return HiveComparisonRepository();
 });
