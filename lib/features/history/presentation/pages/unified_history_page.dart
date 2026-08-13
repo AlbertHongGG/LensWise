@@ -105,6 +105,8 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final tabWidth = (screenWidth - 32) / 3;
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA),
@@ -123,7 +125,8 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
                     controller: _tabController,
                     dividerColor: Colors.transparent,
                     isScrollable: true,
-                    tabAlignment: TabAlignment.center,
+                    tabAlignment: TabAlignment.start,
+                    labelPadding: EdgeInsets.zero,
                     indicator: BoxDecoration(
                       color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.white,
                       borderRadius: BorderRadius.circular(12),
@@ -144,14 +147,17 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
                     labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     splashBorderRadius: BorderRadius.circular(12),
-                    tabs: widget.configs.map((config) => Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(config.tabIcon, size: 16),
-                          const SizedBox(width: 6),
-                          Text(config.tabName),
-                        ],
+                    tabs: widget.configs.map((config) => SizedBox(
+                      width: tabWidth,
+                      child: Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(config.tabIcon, size: 16),
+                            const SizedBox(width: 6),
+                            Text(config.tabName),
+                          ],
+                        ),
                       ),
                     )).toList(),
                   ),
