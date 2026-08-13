@@ -12,6 +12,11 @@ import 'package:lens_wise/features/product_lens/infrastructure/models/product_le
 import 'package:lens_wise/features/product_comparison/infrastructure/models/product_comparison_hive_model.dart';
 import 'package:lens_wise/features/menu_scanner/infrastructure/models/menu_scanner_hive_model.dart';
 
+import 'package:lens_wise/core/di/hardware_providers.dart';
+import 'package:lens_wise/core/services/camerawesome_service.dart';
+import 'package:lens_wise/core/services/photo_manager_gallery_service.dart';
+import 'package:lens_wise/core/services/image_picker_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -29,6 +34,9 @@ void main() async {
       observers: [AppProviderObserver()],
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        cameraServiceProvider.overrideWith((ref) => CamerawesomeService()),
+        galleryServiceProvider.overrideWith((ref) => PhotoManagerGalleryService()),
+        imagePickerServiceProvider.overrideWith((ref) => ImagePickerService()),
       ],
       child: const MyApp(),
     ),

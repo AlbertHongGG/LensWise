@@ -1,12 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:lens_wise/features/scanner/domain/interfaces/i_camera_service.dart';
-
-final cameraServiceProvider = Provider<ICameraService>((ref) {
-  return CamerawesomeService();
-});
 
 class CamerawesomeService implements ICameraService {
   CameraState? _currentState;

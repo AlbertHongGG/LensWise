@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/core/utils/camerawesome_service.dart';
+import 'package:lens_wise/core/di/hardware_providers.dart';
 
 import 'package:lens_wise/features/scanner/domain/models/scanner_state.dart';
 import 'package:lens_wise/features/scanner/presentation/controllers/scanner_controller.dart';

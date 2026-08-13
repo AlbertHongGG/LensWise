@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/scanner/domain/interfaces/i_gallery_service.dart';
-import 'package:lens_wise/core/utils/photo_manager_service.dart';
-import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
+import 'package:lens_wise/core/di/hardware_providers.dart';
 import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
 import 'package:intl/intl.dart';
 

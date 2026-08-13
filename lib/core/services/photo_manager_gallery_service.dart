@@ -1,14 +1,10 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
 import 'package:lens_wise/features/scanner/domain/interfaces/i_gallery_service.dart';
 import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
-
-final galleryServiceProvider = Provider<IGalleryService>((ref) {
-  return PhotoManagerGalleryService();
-});
 
 class PhotoManagerGalleryAsset implements GalleryAsset {
   final AssetEntity entity;
@@ -36,6 +32,7 @@ class PhotoManagerGalleryAsset implements GalleryAsset {
 
 class PhotoManagerGalleryService implements IGalleryService {
   /// Requests permission to access the gallery.
+  @override
   Future<bool> requestPermission() async {
     final PermissionState ps = await PhotoManager.requestPermissionExtend(
       requestOption: const PermissionRequestOption(

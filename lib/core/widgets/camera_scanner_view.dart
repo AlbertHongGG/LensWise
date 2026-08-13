@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:lens_wise/core/utils/camerawesome_service.dart';
+import 'package:lens_wise/core/di/hardware_providers.dart';
 
 class CameraScannerView extends ConsumerStatefulWidget {
   final Widget Function() customOverlayBuilder;
