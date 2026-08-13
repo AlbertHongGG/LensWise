@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/swipe_to_obliterate_button.dart';
-import 'package:lens_wise/features/history/domain/models/i_history_record.dart';
-import 'package:lens_wise/features/history/domain/controllers/i_history_controller.dart';
-import 'package:lens_wise/features/history/presentation/pages/tabs/product_history_tab.dart';
-import 'package:lens_wise/features/history/presentation/pages/tabs/receipt_history_tab.dart';
-import 'package:lens_wise/features/history/presentation/pages/tabs/comparison_history_tab.dart';
-import 'dart:ui';
 
-class HistoryDragData {
-  final IHistoryRecord record;
-  final IHistoryController controller;
-  const HistoryDragData({required this.record, required this.controller});
-}
+import 'package:lens_wise/features/history/domain/models/history_tab_config.dart';
+import 'package:lens_wise/features/history/presentation/widgets/generic_history_tab_view.dart';
+import 'dart:ui';
 
 class UnifiedHistoryPage extends ConsumerStatefulWidget {
   final int initialTabIndex;
+  final List<HistoryTabConfig> configs;
 
-  const UnifiedHistoryPage({super.key, this.initialTabIndex = 0});
+  const UnifiedHistoryPage({
+    super.key, 
+    this.initialTabIndex = 0,
+    required this.configs,
+  });
 
   @override
   ConsumerState<UnifiedHistoryPage> createState() => _UnifiedHistoryPageState();
@@ -32,7 +28,7 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 3,
+      length: widget.configs.length,
       vsync: this,
       initialIndex: widget.initialTabIndex,
     );
@@ -48,34 +44,12 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
     super.dispose();
   }
 
-  IHistoryController _getCurrentController() {
-    switch (_tabController.index) {
-      case 0:
-        return ref.read(receiptHistoryProvider.notifier);
-      case 1:
-        return ref.read(productHistoryProvider.notifier);
-      case 2:
-      default:
-        return ref.read(comparisonHistoryProvider.notifier);
-    }
-  }
-
-  String _getCurrentTabTitle() {
-    switch (_tabController.index) {
-      case 0:
-        return 'CLEAR RECEIPT HISTORY';
-      case 1:
-        return 'CLEAR PRODUCT HISTORY';
-      case 2:
-      default:
-        return 'CLEAR COMPARISON HISTORY';
-    }
-  }
-
   void _showClearAllDrawer() {
+    if (widget.configs.isEmpty) return;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final controller = _getCurrentController();
-    final title = _getCurrentTabTitle();
+    final config = widget.configs[_tabController.index];
+    final controller = config.readController(ref);
+    final title = 'CLEAR ${config.tabName.toUpperCase()} HISTORY';
 
     showModalBottomSheet(
       context: context,
@@ -126,6 +100,10 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
 
   @override
   Widget build(BuildContext context) {
+    if (widget.configs.isEmpty) {
+      return const Scaffold(body: Center(child: Text('No history configured.')));
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -164,49 +142,23 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
                     labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     splashBorderRadius: BorderRadius.circular(12),
-                    tabs: const [
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.receipt_long, size: 16),
-                            SizedBox(width: 6),
-                            Text('收據'),
-                          ],
-                        ),
+                    tabs: widget.configs.map((config) => Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(config.tabIcon, size: 16),
+                          const SizedBox(width: 6),
+                          Text(config.tabName),
+                        ],
                       ),
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.qr_code_scanner, size: 16),
-                            SizedBox(width: 6),
-                            Text('商品'),
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.compare_arrows, size: 16),
-                            SizedBox(width: 6),
-                            Text('比對'),
-                          ],
-                        ),
-                      ),
-                    ],
+                    )).toList(),
                   ),
                 ),
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
                     physics: const NeverScrollableScrollPhysics(),
-                    children: const [
-                      ReceiptHistoryTab(),
-                      ProductHistoryTab(),
-                      ComparisonHistoryTab(),
-                    ],
+                    children: widget.configs.map((config) => GenericHistoryTabView(config: config)).toList(),
                   ),
                 ),
               ],

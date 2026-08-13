@@ -12,6 +12,7 @@ import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.da
 
 // History Pages
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
+import 'package:lens_wise/features/history/presentation/pages/default_history_configs.dart';
 import 'package:lens_wise/features/scanner/presentation/pages/captured_image_gallery_screen.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_processing_page.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
@@ -137,7 +138,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           final tabIndexStr = state.uri.queryParameters['tab'];
           final initialIndex = tabIndexStr != null ? int.tryParse(tabIndexStr) ?? 0 : 0;
           return CupertinoPage(
-            child: UnifiedHistoryPage(initialTabIndex: initialIndex),
+            child: UnifiedHistoryPage(initialTabIndex: initialIndex, configs: defaultHistoryConfigs),
           );
         },
       ),
