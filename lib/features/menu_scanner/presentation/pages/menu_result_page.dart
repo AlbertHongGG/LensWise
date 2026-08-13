@@ -32,8 +32,12 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA); // Slight off-white
-    final textColor = isDark ? Colors.white : const Color(0xFF1F2937); // Tailored dark text
+    // 保留使用者當前的背景色
+    final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA); 
+    
+    // 卡片的顏色：亮色模式下純白，暗色模式下深灰
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1F2937); 
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -41,22 +45,42 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
         bottom: false,
         child: Stack(
           children: [
-            // Main Scrollable Content
-            CustomScrollView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              slivers: [
-                _buildSliverHeader(context, isDark, textColor),
-                _buildSliverList(context, isDark, textColor),
-                SliverToBoxAdapter(
-                  child: SizedBox(height: 120 + MediaQuery.of(context).padding.bottom),
-                ), // Space for FABs
-              ],
+            // 懸浮菜單卡片 (The Floating Menu Card)
+            Positioned.fill(
+              bottom: MediaQuery.of(context).padding.bottom + 100, // 預留底部按鈕空間
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                        blurRadius: 40,
+                        offset: const Offset(0, 10),
+                      )
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(32),
+                    child: CustomScrollView(
+                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                      slivers: [
+                        _buildSliverHeader(context, isDark, textColor),
+                        _buildSliverList(context, isDark, textColor),
+                        const SliverToBoxAdapter(child: SizedBox(height: 32)), // 底部留白
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
             
-            // Floating Buttons
+            // 底部操作按鈕
             _buildFloatingActionButtons(context, isDark),
             
-            // Image Drawer
+            // 圖片抽屜
             if (_isDrawerOpen)
               _buildImageDrawer(isDark),
           ],
@@ -69,36 +93,39 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
     final title = _currentRecord.storeName.isNotEmpty ? _currentRecord.storeName : '翻譯菜單';
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 48, 24, 48),
+        padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Icon(Icons.restaurant, color: Theme.of(context).primaryColor, size: 28),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: textColor,
-                      height: 1.2,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ),
-              ],
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                fontFamily: 'serif', // 使用古典或優雅的襯線字體風格，提升實體菜單感
+                color: textColor,
+                height: 1.2,
+                letterSpacing: 2.0,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 2,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+            const SizedBox(height: 12),
             Text(
               '${_currentRecord.items.length} 個品項',
               style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
                 color: isDark ? Colors.white54 : Colors.black54,
-                letterSpacing: 0.5,
+                letterSpacing: 1.0,
               ),
             ),
           ],
@@ -140,7 +167,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                   Text(
                     item.translatedName,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.w800,
                       color: textColor,
                       height: 1.3,
@@ -163,7 +190,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
             Text(
               item.price > 0 ? item.price.toStringAsFixed(0) : '-',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.w800,
                 color: Theme.of(context).primaryColor,
               ),
@@ -182,12 +209,6 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
             ),
           ),
         ],
-        const SizedBox(height: 24),
-        Divider(
-          height: 1, 
-          thickness: 1, 
-          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-        ),
       ],
     );
   }
