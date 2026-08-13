@@ -46,7 +46,8 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
       images: input,
     );
 
-    final responseText = await executePrompt(request);
+    final response = await executePrompt(request);
+    final responseText = response.text;
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);

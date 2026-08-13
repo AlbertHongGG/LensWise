@@ -18,11 +18,11 @@ class AiChatRequest {
   });
 }
 
-class AiChatAgent extends BaseAgent<AiChatRequest, String> {
+class AiChatAgent extends BaseAgent<AiChatRequest, GenerateResponse> {
   AiChatAgent(super.agentName, super.provider, super.logger);
 
   @override
-  Future<String> execute(AiChatRequest input) async {
+  Future<GenerateResponse> execute(AiChatRequest input) async {
     final buffer = StringBuffer();
 
     // Inject dynamic system context (e.g. Product, Receipt, Comparison details)
@@ -44,12 +44,12 @@ class AiChatAgent extends BaseAgent<AiChatRequest, String> {
       prompt: buffer.toString(),
     );
 
-    final responseText = await executePrompt(request);
-    return responseText;
+    final response = await executePrompt(request);
+    return response;
   }
 
   @override
-  Stream<String> executeStream(AiChatRequest input) async* {
+  Stream<GenerateResponse> executeStream(AiChatRequest input) async* {
     final buffer = StringBuffer();
 
     // Inject dynamic system context

@@ -73,7 +73,8 @@ class ReceiptScannerAgent extends BaseAgent<List<Uint8List>, ReceiptScannerRecor
       images: input,
     );
 
-    final responseText = await executePrompt(request);
+    final response = await executePrompt(request);
+    final responseText = response.text;
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);

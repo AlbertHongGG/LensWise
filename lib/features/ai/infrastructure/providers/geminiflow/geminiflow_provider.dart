@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:lens_wise/features/ai/infrastructure/providers/ai_provider.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/geminiflow/sdk/client.dart';
 import 'package:lens_wise/features/ai/domain/exceptions/ai_connection_error.dart';
@@ -28,7 +29,10 @@ class GeminiFlowProvider with AIImageEncoderMixin implements AIProvider {
         images: encodeImagesToBase64(request),
       );
 
-      return GenerateResponse(text: response.text);
+      return GenerateResponse(
+        text: response.text,
+        images: response.images?.map((b64) => base64Decode(b64)).toList(),
+      );
     } catch (e) {
       throw AIConnectionError(name, e.toString());
     }
@@ -47,7 +51,10 @@ class GeminiFlowProvider with AIImageEncoderMixin implements AIProvider {
       );
 
       await for (final chunk in stream) {
-        yield GenerateResponse(text: chunk.text);
+        yield GenerateResponse(
+          text: chunk.text,
+          images: chunk.images?.map((b64) => base64Decode(b64)).toList(),
+        );
       }
     } on UnimplementedError {
       rethrow;

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:lens_wise/features/ai/infrastructure/providers/ai_provider.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
+import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 
 abstract class BaseAgent<T_IN, T_OUT> {
   final String agentName;
@@ -16,7 +17,7 @@ abstract class BaseAgent<T_IN, T_OUT> {
     throw UnimplementedError('This agent does not support streaming execution.');
   }
 
-  Future<String> executePrompt(GenerateRequest request) async {
+  Future<GenerateResponse> executePrompt(GenerateRequest request) async {
     final startTime = DateTime.now().millisecondsSinceEpoch;
 
     // Convert request to a loggable Map (excluding raw images for size reasons)
@@ -30,7 +31,7 @@ abstract class BaseAgent<T_IN, T_OUT> {
     try {
       final response = await provider.generate(request);
       logger.logInteraction(requestLog, response.text, startTime);
-      return response.text;
+      return response;
     } catch (e, stackTrace) {
       logger.logInteraction(requestLog, {
         'error': e.toString(),
@@ -40,7 +41,7 @@ abstract class BaseAgent<T_IN, T_OUT> {
     }
   }
 
-  Stream<String> executePromptStream(GenerateRequest request) async* {
+  Stream<GenerateResponse> executePromptStream(GenerateRequest request) async* {
     final startTime = DateTime.now().millisecondsSinceEpoch;
 
     final requestLog = {
@@ -56,7 +57,7 @@ abstract class BaseAgent<T_IN, T_OUT> {
       final stream = provider.generateStream(request);
       await for (final response in stream) {
         buffer.write(response.text);
-        yield response.text;
+        yield response;
       }
       logger.logInteraction(requestLog, buffer.toString(), startTime);
     } catch (e, stackTrace) {

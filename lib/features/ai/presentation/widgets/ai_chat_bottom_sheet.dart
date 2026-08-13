@@ -426,30 +426,54 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
                   ),
                 ],
               ),
-              child: isUser 
-                ? Text(
-                    message.text,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Colors.white,
-                      height: 1.5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (message.images != null && message.images!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: message.images!.map((bytes) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.memory(
+                              bytes,
+                              width: 150,
+                              fit: BoxFit.contain,
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ),
-                  )
-                : MarkdownBody(
-                    data: MarkdownUtils.fixCjkBold(message.text),
-                    selectable: true, // Allow user to copy AI text!
-                    styleSheet: _buildPremiumMarkdownStyleSheet(context, isDark, isError),
-                    onTapLink: (text, href, title) {
-                      if (href != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('欲開啟外部連結：$href'),
-                            behavior: SnackBarBehavior.floating,
+                  if (message.text.isNotEmpty)
+                    isUser 
+                      ? Text(
+                          message.text,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.white,
+                            height: 1.5,
                           ),
-                        );
-                      }
-                    },
-                  ),
+                        )
+                      : MarkdownBody(
+                          data: MarkdownUtils.fixCjkBold(message.text),
+                          selectable: true, // Allow user to copy AI text!
+                          styleSheet: _buildPremiumMarkdownStyleSheet(context, isDark, isError),
+                          onTapLink: (text, href, title) {
+                            if (href != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('欲開啟外部連結：$href'),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                ],
+              ),
             ),
           ),
         ],

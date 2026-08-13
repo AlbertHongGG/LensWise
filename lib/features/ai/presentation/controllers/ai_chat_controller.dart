@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/domain/models/chat_message.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/ai_chat_agent/ai_chat_agent.dart';
@@ -106,7 +107,19 @@ class AiChatController extends Notifier<AiChatSessionState> {
       bool isFirstChunk = true;
 
       await for (final chunk in stream) {
-        aiMessage = aiMessage.copyWith(text: aiMessage.text + chunk);
+        List<Uint8List>? newImages = aiMessage.images;
+        if (chunk.images != null && chunk.images!.isNotEmpty) {
+           if (newImages == null) {
+              newImages = chunk.images;
+           } else {
+              newImages = [...newImages, ...chunk.images!];
+           }
+        }
+
+        aiMessage = aiMessage.copyWith(
+          text: aiMessage.text + chunk.text,
+          images: newImages,
+        );
 
         if (isFirstChunk) {
           isFirstChunk = false;
