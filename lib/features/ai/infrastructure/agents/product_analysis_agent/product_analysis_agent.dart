@@ -5,15 +5,53 @@ import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
-import 'product_analysis_data.dart';
 import 'prompts.dart';
 
-import 'package:lens_wise/features/ai/domain/interfaces/i_product_analysis_agent.dart';
-import 'package:lens_wise/features/ai/domain/models/product_analysis_result.dart';
+import 'package:lens_wise/features/product_lens/domain/interfaces/i_product_analysis_agent.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_record.dart';
 
-class ProductAnalysisAgent
-    extends BaseAgent<List<Uint8List>, ProductAnalysisResult>
-    implements IProductAnalysisAgent {
+class _ProductAnalysisResponseDto {
+  final String status;
+  final String? message;
+  final _ProductAnalysisDataDto? data;
+
+  _ProductAnalysisResponseDto({required this.status, this.message, this.data});
+
+  factory _ProductAnalysisResponseDto.fromJson(Map<String, dynamic> json) {
+    return _ProductAnalysisResponseDto(
+      status: json['status'] as String? ?? 'error',
+      message: json['message'] as String?,
+      data: json['data'] != null ? _ProductAnalysisDataDto.fromJson(json['data']) : null,
+    );
+  }
+}
+
+class _ProductAnalysisDataDto {
+  final String productName;
+  final String originalName;
+  final String brand;
+  final String origin;
+  final String summary;
+  final List<String> ingredients;
+  final List<String> allergens;
+  final List<String> dietaryFlags;
+  final List<String> recommendedFor;
+  final List<String> notRecommendedFor;
+
+  _ProductAnalysisDataDto.fromJson(Map<String, dynamic> json)
+      : productName = json['productName'] as String? ?? '',
+        originalName = json['originalName'] as String? ?? '',
+        brand = json['brand'] as String? ?? '',
+        origin = json['origin'] as String? ?? '',
+        summary = json['summary'] as String? ?? '',
+        ingredients = (json['ingredients'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+        allergens = (json['allergens'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+        dietaryFlags = (json['dietaryFlags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+        recommendedFor = (json['recommendedFor'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+        notRecommendedFor = (json['notRecommendedFor'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+}
+
+class ProductAnalysisAgent extends BaseAgent<List<Uint8List>, ProductRecord> implements IProductAnalysisAgent {
   final String targetLanguage;
 
   ProductAnalysisAgent(
@@ -24,7 +62,7 @@ class ProductAnalysisAgent
   });
 
   @override
-  Future<ProductAnalysisResult> execute(List<Uint8List> input) async {
+  Future<ProductRecord> execute(List<Uint8List> input) async {
     final request = GenerateRequest(
       systemPrompt: buildProductAnalysisSystemPrompt(targetLanguage),
       prompt: buildProductAnalysisUserPrompt(),
@@ -35,24 +73,40 @@ class ProductAnalysisAgent
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
-      return ProductAnalysisResult.fromJson(jsonMap);
-    } catch (e) {
-      return ProductAnalysisResult(
-        status: 'needs_more_info',
-        message: '解析過程發生錯誤，可能是照片資訊太過複雜。請換個角度拍攝。',
+      final dto = _ProductAnalysisResponseDto.fromJson(jsonMap);
+
+      if (dto.status != 'success' || dto.data == null) {
+        throw Exception(dto.message ?? '解析過程發生錯誤');
+      }
+
+      final data = dto.data!;
+      return ProductRecord(
+        id: '', // Placeholder, populated by Service
+        timestamp: DateTime.now(), // Placeholder, populated by Service
+        productName: data.productName,
+        originalName: data.originalName,
+        brand: data.brand,
+        origin: data.origin,
+        summary: data.summary,
+        ingredients: data.ingredients,
+        allergenAlerts: data.allergens,
+        dietaryFlags: data.dietaryFlags,
+        whenRecommended: data.recommendedFor,
+        whenNotRecommended: data.notRecommendedFor,
+        imagePaths: [], // Placeholder, populated by Service
       );
+    } catch (e) {
+      throw Exception('解析過程發生錯誤，可能是照片資訊太過複雜。請換個角度拍攝。');
     }
   }
 }
 
-final productAnalysisAgentProvider = Provider.autoDispose<IProductAnalysisAgent>(
-  (ref) {
-    final language = ref.watch(settingsProvider).targetLanguage;
-    return ProductAnalysisAgent(
-      'ProductAnalysis',
-      ref.watch(aiProviderProvider),
-      AIAgentLogger('ProductAnalysis'),
-      targetLanguage: language,
-    );
-  },
-);
+final productAnalysisAgentProvider = Provider.autoDispose<IProductAnalysisAgent>((ref) {
+  final language = ref.watch(settingsProvider).targetLanguage;
+  return ProductAnalysisAgent(
+    'ProductAnalysis',
+    ref.watch(aiProviderProvider),
+    AIAgentLogger('ProductAnalysis'),
+    targetLanguage: language,
+  );
+});

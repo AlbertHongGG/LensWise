@@ -7,12 +7,26 @@ import 'package:lens_wise/features/ai/infrastructure/logger/ai_agent_logger.dart
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'prompts.dart';
 
-import 'package:lens_wise/features/ai/domain/models/product_comparison_result.dart';
-import 'package:lens_wise/features/ai/domain/interfaces/i_comparison_agent.dart';
+import 'package:lens_wise/features/product_comparison/domain/interfaces/i_comparison_agent.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/comparison_result.dart';
 
-class ProductComparisonAgent
-    extends BaseAgent<List<Uint8List>, ProductComparisonResult>
-    implements IComparisonAgent {
+class _ComparisonResponseDto {
+  final String status;
+  final String? message;
+  final Map<String, dynamic>? data; // The raw JSON payload for ComparisonResult
+
+  _ComparisonResponseDto({required this.status, this.message, this.data});
+
+  factory _ComparisonResponseDto.fromJson(Map<String, dynamic> json) {
+    return _ComparisonResponseDto(
+      status: json['status'] as String? ?? 'error',
+      message: json['message'] as String?,
+      data: json['data'] as Map<String, dynamic>?,
+    );
+  }
+}
+
+class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ComparisonResult> implements IComparisonAgent {
   final String targetLanguage;
 
   ProductComparisonAgent(
@@ -23,12 +37,9 @@ class ProductComparisonAgent
   });
 
   @override
-  Future<ProductComparisonResult> execute(List<Uint8List> input) async {
+  Future<ComparisonResult> execute(List<Uint8List> input) async {
     final request = GenerateRequest(
-      systemPrompt: buildProductComparisonSystemPrompt(
-        targetLanguage,
-        input.length,
-      ),
+      systemPrompt: buildProductComparisonSystemPrompt(targetLanguage, input.length),
       prompt: buildProductComparisonUserPrompt(),
       images: input,
     );
@@ -37,19 +48,21 @@ class ProductComparisonAgent
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
-      return ProductComparisonResult.fromJson(jsonMap);
+      final dto = _ComparisonResponseDto.fromJson(jsonMap);
+
+      if (dto.status != 'success' || dto.data == null) {
+        throw Exception(dto.message ?? '解析過程發生錯誤');
+      }
+
+      // Convert the AI DTO map into the true Domain Model
+      return ComparisonResult.fromJson(dto.data!);
     } catch (e) {
-      return ProductComparisonResult(
-        status: 'needs_more_info',
-        message: '解析或比對過程發生錯誤，請確認照片是否清晰且包含多樣商品。',
-      );
+      throw Exception('解析或比對過程發生錯誤，請確認照片是否清晰且包含多樣商品。');
     }
   }
 }
 
-final productComparisonAgentProvider = Provider.autoDispose<IComparisonAgent>((
-  ref,
-) {
+final productComparisonAgentProvider = Provider.autoDispose<IComparisonAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return ProductComparisonAgent(
     'ProductComparison',

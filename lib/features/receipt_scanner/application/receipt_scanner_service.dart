@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/features/ai/domain/interfaces/i_receipt_parsing_agent.dart';
+import 'package:lens_wise/features/receipt_scanner/domain/interfaces/i_receipt_parsing_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/receipt_parsing_agent/receipt_parsing_agent.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/core/storage/local_media_service.dart';
@@ -17,84 +17,39 @@ class ReceiptScannerService {
 
   /// 執行發票解析並自動將成功的結果存入歷史紀錄 (Application Layer Orchestration)
   Future<ReceiptRecord?> analyzeAndSave(List<Uint8List> images) async {
-    final result = await _agent.execute(images);
+    // 1. Call Port (Interface) to get Domain Entity (Parsed Data)
+    final parsedRecord = await _agent.execute(images);
 
-    if (result.status == 'success' && result.data != null) {
-      try {
-        final List<String> savedImagePaths = [];
-        for (final imageBytes in images) {
-          final path = await _mediaService.saveImage(imageBytes);
-          savedImagePaths.add(path);
-        }
-        final data = result.data!;
-        
-        final List<ReceiptItem> processedItems = [];
-        if (data['items'] is List) {
-          for (final item in data['items'] as List) {
-            if (item is Map) {
-              processedItems.add(ReceiptItem.fromJson(Map<String, dynamic>.from(item)));
-            }
-          }
-        }
-
-        final List<ReceiptFeeItem> processedDiscounts = [];
-        if (data['discounts'] is List) {
-          for (final item in data['discounts'] as List) {
-            if (item is Map) {
-              processedDiscounts.add(ReceiptFeeItem.fromJson(Map<String, dynamic>.from(item)));
-            }
-          }
-        }
-
-        final List<ReceiptFeeItem> processedTaxes = [];
-        if (data['taxes'] is List) {
-          for (final item in data['taxes'] as List) {
-            if (item is Map) {
-              processedTaxes.add(ReceiptFeeItem.fromJson(Map<String, dynamic>.from(item)));
-            }
-          }
-        }
-
-        final calculatedSubtotal = processedItems.fold<double>(0.0, (sum, item) => sum + item.price);
-        final sumTaxes = processedTaxes.fold<double>(0.0, (sum, item) => sum + item.amount);
-        final sumDiscounts = processedDiscounts.fold<double>(0.0, (sum, item) => sum + item.amount);
-        final calculatedTotal = calculatedSubtotal + sumTaxes + sumDiscounts;
-
-        String? parsedReceiptDate = data['receiptDateTime']?.toString();
-        if (parsedReceiptDate != null && parsedReceiptDate.isEmpty) {
-          parsedReceiptDate = null;
-        }
-
-        String? parsedCurrency = data['currency']?.toString();
-        if (parsedCurrency != null && parsedCurrency.isEmpty) {
-          parsedCurrency = null;
-        }
-
-        final record = ReceiptRecord(
-          id: const Uuid().v4(),
-          timestamp: DateTime.now(),
-          receiptDate: parsedReceiptDate,
-          storeName: data['storeName']?.toString() ?? '',
-          currency: parsedCurrency,
-          subtotal: calculatedSubtotal,
-          items: processedItems,
-          discounts: processedDiscounts,
-          taxes: processedTaxes,
-          totalAmount: calculatedTotal,
-          imagePaths: savedImagePaths,
-        );
-        await _repository.save(record.id, record);
-        return record;
-      } catch (e) {
-        print('Error saving receipt to history: $e');
+    try {
+      // 2. Orchestrate saving images
+      final List<String> savedImagePaths = [];
+      for (final imageBytes in images) {
+        final path = await _mediaService.saveImage(imageBytes);
+        savedImagePaths.add(path);
       }
-    }
+      
+      // 3. Optional: Recalculate robust totals in application layer if needed
+      final calculatedSubtotal = parsedRecord.items.fold<double>(0.0, (sum, item) => sum + item.price);
+      final sumTaxes = parsedRecord.taxes.fold<double>(0.0, (sum, item) => sum + item.amount);
+      final sumDiscounts = parsedRecord.discounts.fold<double>(0.0, (sum, item) => sum + item.amount);
+      final calculatedTotal = calculatedSubtotal + sumTaxes + sumDiscounts;
 
-    if (result.status != 'success') {
-      throw Exception(result.message ?? '解析失敗');
+      // 4. Hydrate the Domain Entity with Application Context (ID, Timestamp, Paths, Calculations)
+      final record = parsedRecord.copyWith(
+        id: const Uuid().v4(),
+        timestamp: DateTime.now(),
+        imagePaths: savedImagePaths,
+        subtotal: calculatedSubtotal > 0 ? calculatedSubtotal : parsedRecord.subtotal,
+        totalAmount: calculatedTotal > 0 ? calculatedTotal : parsedRecord.totalAmount,
+      );
+
+      // 5. Save via Repository Port
+      await _repository.save(record.id, record);
+      
+      return record;
+    } catch (e) {
+      throw Exception('資料儲存異常，請稍後再試');
     }
-    
-    return null;
   }
 }
 
