@@ -1,11 +1,9 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_chat_adapter.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
-import 'package:lens_wise/core/widgets/glass_container.dart';
 
 class MenuResultPage extends ConsumerStatefulWidget {
   final MenuScannerRecord record;
@@ -34,202 +32,292 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : const Color(0xFFF5F5F5);
+    final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA); // Slight off-white
+    final textColor = isDark ? Colors.white : const Color(0xFF1F2937); // Tailored dark text
 
     return Scaffold(
       backgroundColor: bgColor,
-      appBar: AppBar(
-        title: Text(_currentRecord.storeName.isNotEmpty ? _currentRecord.storeName : '菜單解析結果'),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
       body: SafeArea(
+        bottom: false,
         child: Stack(
           children: [
-            SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Column(
-                children: [
-                  _buildMenuCard(context, isDark),
-                  const SizedBox(height: 100), // Space for FAB
-                ],
-              ),
+            // Main Scrollable Content
+            CustomScrollView(
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              slivers: [
+                _buildSliverHeader(context, isDark, textColor),
+                _buildSliverList(context, isDark, textColor),
+                SliverToBoxAdapter(
+                  child: SizedBox(height: 120 + MediaQuery.of(context).padding.bottom),
+                ), // Space for FABs
+              ],
             ),
-            Positioned(
-              bottom: 16,
-              left: 0,
-              right: 0,
-              child: AnimatedOpacity(
-                opacity: _isDrawerOpen ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 200),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (_currentRecord.imagePaths.isNotEmpty || (widget.memoryImages?.isNotEmpty ?? false)) ...[
-                      FloatingActionButton(
-                        heroTag: 'menu_image_btn',
-                        onPressed: () => setState(() => _isDrawerOpen = true),
-                        backgroundColor: isDark ? Colors.white24 : Colors.black87,
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        child: const Icon(Icons.image_outlined),
-                      ),
-                      const SizedBox(width: 16),
-                    ],
-                    FloatingActionButton(
-                      heroTag: 'menu_ai_btn',
-                      onPressed: () => showMenuChat(context, _currentRecord),
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
-                      elevation: 4,
-                      child: const Icon(Icons.auto_awesome),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            
+            // Floating Buttons
+            _buildFloatingActionButtons(context, isDark),
+            
+            // Image Drawer
             if (_isDrawerOpen)
-              NotificationListener<DraggableScrollableNotification>(
-                onNotification: (notification) {
-                  if (notification.extent <= 0.1) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted && _isDrawerOpen) {
-                        setState(() => _isDrawerOpen = false);
-                      }
-                    });
-                  }
-                  return false;
-                },
-                child: DraggableScrollableSheet(
-                  initialChildSize: 0.5,
-                  minChildSize: 0.1,
-                  maxChildSize: 0.95,
-                  builder: (context, scrollController) => Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[900] : Colors.white,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                    ),
-                    child: Column(
-                      children: [
-                        SingleChildScrollView(
-                          controller: scrollController,
-                          physics: const ClampingScrollPhysics(),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Center(
-                              child: Container(
-                                width: 48,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(2.5),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                            child: ReceiptImageCarousel(
-                              memoryImages: widget.memoryImages ?? [],
-                              filePaths: _currentRecord.imagePaths,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              _buildImageDrawer(isDark),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMenuCard(BuildContext context, bool isDark) {
-    return GlassContainer(
-      borderRadius: BorderRadius.circular(24),
-      color: Colors.white,
-      opacity: isDark ? 0.05 : 0.8,
+  Widget _buildSliverHeader(BuildContext context, bool isDark, Color textColor) {
+    final title = _currentRecord.storeName.isNotEmpty ? _currentRecord.storeName : '翻譯菜單';
+    return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.fromLTRB(24, 48, 24, 48),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.restaurant_menu, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                Text(
-                  '翻譯菜單',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                Icon(Icons.restaurant, color: Theme.of(context).primaryColor, size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: textColor,
+                      height: 1.2,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            ..._currentRecord.items.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.translatedName,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            item.price > 0 ? item.price.toStringAsFixed(0) : '-',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.originalName,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: isDark ? Colors.white54 : Colors.black54,
-                        ),
-                      ),
-                      if (item.description != null && item.description!.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          item.description!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                            color: isDark ? Colors.white70 : Colors.black87,
-                          ),
-                        ),
-                      ],
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Divider(height: 1, thickness: 1),
-                      ),
-                    ],
-                  ),
-                )),
+            const SizedBox(height: 8),
+            Text(
+              '${_currentRecord.items.length} 個品項',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white54 : Colors.black54,
+                letterSpacing: 0.5,
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliverList(BuildContext context, bool isDark, Color textColor) {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final item = _currentRecord.items[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: _buildMenuItem(item, isDark, textColor),
+            );
+          },
+          childCount: _currentRecord.items.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(MenuScannerItem item, bool isDark, Color textColor) {
+    final hasDescription = item.description != null && item.description!.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.translatedName,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                      height: 1.3,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.originalName,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white54 : Colors.black54,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              item.price > 0 ? item.price.toStringAsFixed(0) : '-',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ],
+        ),
+        if (hasDescription) ...[
+          const SizedBox(height: 8),
+          Text(
+            item.description!,
+            style: TextStyle(
+              fontSize: 13,
+              fontStyle: FontStyle.italic,
+              color: isDark ? Colors.white70 : Colors.black87,
+              height: 1.4,
+            ),
+          ),
+        ],
+        const SizedBox(height: 24),
+        Divider(
+          height: 1, 
+          thickness: 1, 
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFloatingActionButtons(BuildContext context, bool isDark) {
+    final buttonColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFF1F2937);
+    final iconColor = Colors.white;
+
+    return Positioned(
+      bottom: MediaQuery.of(context).padding.bottom + 24,
+      left: 0,
+      right: 0,
+      child: AnimatedOpacity(
+        opacity: _isDrawerOpen ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_currentRecord.imagePaths.isNotEmpty || (widget.memoryImages?.isNotEmpty ?? false)) ...[
+              _buildSquircleButton(
+                icon: Icons.image_outlined,
+                color: buttonColor,
+                iconColor: iconColor,
+                onTap: () => setState(() => _isDrawerOpen = true),
+              ),
+              const SizedBox(width: 16),
+            ],
+            _buildSquircleButton(
+              icon: Icons.auto_awesome,
+              color: buttonColor,
+              iconColor: iconColor,
+              onTap: () => showMenuChat(context, _currentRecord),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSquircleButton({
+    required IconData icon,
+    required Color color,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          )
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Center(
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageDrawer(bool isDark) {
+    return NotificationListener<DraggableScrollableNotification>(
+      onNotification: (notification) {
+        if (notification.extent <= 0.1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _isDrawerOpen) {
+              setState(() => _isDrawerOpen = false);
+            }
+          });
+        }
+        return false;
+      },
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.1,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF121212) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 24,
+                offset: const Offset(0, -8),
+              )
+            ],
+          ),
+          child: Column(
+            children: [
+              SingleChildScrollView(
+                controller: scrollController,
+                physics: const ClampingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                  child: ReceiptImageCarousel(
+                    memoryImages: widget.memoryImages ?? [],
+                    filePaths: _currentRecord.imagePaths,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
