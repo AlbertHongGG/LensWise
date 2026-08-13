@@ -65,13 +65,14 @@ class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductCompariso
                 ?.map((e) => ComparisonProduct.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
-        comparisonPoints: (dto.data!['comparison_points'] as List<dynamic>?)
+        comparisonPoints: (dto.data!['comparisonPoints'] as List<dynamic>?)
                 ?.map((e) => ComparisonPoint.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
       );
-    } catch (e) {
-      throw Exception('解析或比對過程發生錯誤，請確認照片是否清晰且包含多樣商品。');
+    } catch (e, stack) {
+      print('Failed to parse AI response: $e\n$stack');
+      throw Exception('解析或比對過程發生錯誤: $e\n請確認照片是否清晰且包含多樣商品。');
     }
   }
 }

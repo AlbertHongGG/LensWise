@@ -211,23 +211,6 @@ final defaultHistoryConfigs = <HistoryTabConfig>[
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      SizedBox(
-                        height: 24,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: record.products.take(3).length,
-                          separatorBuilder: (context, index) => const SizedBox(width: 4),
-                          itemBuilder: (context, idx) {
-                            final p = record.products[idx];
-                            return Chip(
-                              label: Text(p.translatedName, style: const TextStyle(fontSize: 10)),
-                              padding: EdgeInsets.zero,
-                            );
-                          },
-                        ),
-                      ),
                     ],
                   ),
                 ),

@@ -13,7 +13,7 @@ class NavigationService {
   NavigationService(this._router);
 
   void navigateToProductLensRecord(ProductLensRecord record, List<Uint8List> images) {
-    _router.push('/result', extra: record);
+    _router.pushReplacement('/result', extra: record);
   }
 
   void navigateToProductComparisonRecord(ProductComparisonRecord record, List<Uint8List> images) {
@@ -21,7 +21,7 @@ class NavigationService {
       result: record,
       rawImages: images,
     );
-    _router.push('/result/comparison', extra: args);
+    _router.pushReplacement('/result/comparison', extra: args);
   }
 
   void navigateToReceiptResult(ReceiptScannerRecord record, List<Uint8List> images) {
