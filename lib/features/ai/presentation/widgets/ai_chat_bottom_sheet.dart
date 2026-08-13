@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_chat_controller.dart';
 import 'package:lens_wise/features/ai/domain/models/chat_message.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
-import 'package:lens_wise/core/voice/controllers/voice_controller.dart';
+import 'package:lens_wise/core/voice/presentation/controllers/voice_controller.dart';
+import 'package:lens_wise/core/voice/domain/models/voice_state.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
