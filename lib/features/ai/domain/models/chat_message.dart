@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 
 enum ChatMessageType { user, ai, system, error }
 
@@ -7,7 +8,7 @@ class ChatMessage {
   final ChatMessageType type;
   final String text;
   final DateTime timestamp;
-  final List<Uint8List>? images;
+  final List<AIImageResponse>? images;
 
   const ChatMessage({
     required this.id,
@@ -22,7 +23,7 @@ class ChatMessage {
     ChatMessageType? type,
     String? text,
     DateTime? timestamp,
-    List<Uint8List>? images,
+    List<AIImageResponse>? images,
   }) {
     return ChatMessage(
       id: id ?? this.id,

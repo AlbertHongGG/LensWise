@@ -1,8 +1,10 @@
 import 'dart:math' as math;
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_chat_controller.dart';
 import 'package:lens_wise/features/ai/domain/models/chat_message.dart';
+import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/core/voice/presentation/controllers/voice_controller.dart';
 import 'package:lens_wise/core/voice/domain/models/voice_state.dart';
@@ -435,14 +437,18 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: message.images!.map((bytes) {
+                        children: message.images!.map((img) {
+                          Widget child = const SizedBox();
+                          if (img is AIUrlImageResponse) {
+                            child = Image.network(img.url, width: 150, fit: BoxFit.contain);
+                          } else if (img is AIBase64ImageResponse) {
+                            child = Image.memory(base64Decode(img.base64String), width: 150, fit: BoxFit.contain);
+                          } else if (img is AIBytesImageResponse) {
+                            child = Image.memory(img.bytes, width: 150, fit: BoxFit.contain);
+                          }
                           return ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.memory(
-                              bytes,
-                              width: 150,
-                              fit: BoxFit.contain,
-                            ),
+                            child: child,
                           );
                         }).toList(),
                       ),

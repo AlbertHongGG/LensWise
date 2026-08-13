@@ -4,11 +4,12 @@ import 'package:lens_wise/features/ai/infrastructure/agents/translated_menu_imag
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
 import 'package:lens_wise/core/notifications/services/in_app_notification_service.dart';
+import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 
 class TranslatedMenuImageState {
   final bool isGenerating;
   final String? error;
-  final List<Uint8List>? generatedImages;
+  final List<AIImageResponse>? generatedImages;
 
   TranslatedMenuImageState({
     this.isGenerating = false,
@@ -45,9 +46,9 @@ class TranslatedMenuImageState {
     );
   }
   
-  TranslatedMenuImageState setSuccess(List<Uint8List> images) {
+  TranslatedMenuImageState setSuccess(List<AIImageResponse> images) {
     return TranslatedMenuImageState(
-       isGenerating: false,
+      isGenerating: false,
        error: null,
        generatedImages: images,
     );

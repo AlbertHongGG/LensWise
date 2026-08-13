@@ -31,7 +31,10 @@ class GeminiFlowProvider with AIImageEncoderMixin implements AIProvider {
 
       return GenerateResponse(
         text: response.text,
-        images: response.images?.map((b64) => base64Decode(b64)).toList(),
+        images: response.images?.map((img) {
+          if (img.startsWith('http')) return AIUrlImageResponse(img);
+          return AIBase64ImageResponse(img);
+        }).toList(),
       );
     } catch (e) {
       throw AIConnectionError(name, e.toString());
@@ -53,7 +56,10 @@ class GeminiFlowProvider with AIImageEncoderMixin implements AIProvider {
       await for (final chunk in stream) {
         yield GenerateResponse(
           text: chunk.text,
-          images: chunk.images?.map((b64) => base64Decode(b64)).toList(),
+          images: chunk.images?.map((img) {
+            if (img.startsWith('http')) return AIUrlImageResponse(img);
+            return AIBase64ImageResponse(img);
+          }).toList(),
         );
       }
     } on UnimplementedError {
