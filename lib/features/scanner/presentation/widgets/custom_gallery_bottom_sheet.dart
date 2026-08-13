@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
-import 'package:lens_wise/features/home/presentation/controllers/gallery_state_controller.dart';
-import 'package:lens_wise/features/home/presentation/widgets/draggable_date_scrollbar.dart';
+import 'package:lens_wise/features/scanner/presentation/controllers/gallery_state_controller.dart';
+import 'package:lens_wise/features/scanner/presentation/widgets/draggable_date_scrollbar.dart';
 
 import 'package:lens_wise/core/widgets/pickers/picker_dialog_shell.dart';
 

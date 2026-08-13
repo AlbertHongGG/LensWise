@@ -6,13 +6,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:lens_wise/features/home/presentation/pages/camera_dashboard_page.dart';
+import 'package:lens_wise/features/scanner/presentation/pages/scanner_dashboard_page.dart';
 import 'package:lens_wise/features/settings/presentation/pages/settings_page.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.dart';
 
 // History Pages
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
-import 'package:lens_wise/features/home/presentation/pages/captured_image_gallery_screen.dart';
+import 'package:lens_wise/features/scanner/presentation/pages/captured_image_gallery_screen.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_processing_page.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_lens/presentation/pages/product_processing_page.dart';
@@ -35,7 +35,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // The ONE AND ONLY root page: Camera
       GoRoute(
         path: '/',
-        builder: (context, state) => const CameraDashboardPage(),
+        builder: (context, state) => const ScannerDashboardPage(),
       ),
       GoRoute(
         path: '/product/processing',
