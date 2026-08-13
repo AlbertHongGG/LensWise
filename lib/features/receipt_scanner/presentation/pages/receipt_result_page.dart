@@ -93,7 +93,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
             if (_isDrawerOpen)
               NotificationListener<DraggableScrollableNotification>(
                 onNotification: (notification) {
-                  if (notification.extent <= 0.05) {
+                  if (notification.extent <= 0.1) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted && _isDrawerOpen) {
                         setState(() => _isDrawerOpen = false);
@@ -104,7 +104,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                 },
                 child: DraggableScrollableSheet(
                   initialChildSize: 0.5,
-                  minChildSize: 0.0,
+                  minChildSize: 0.1,
                   maxChildSize: 0.95,
                   builder: (context, scrollController) => Container(
                     decoration: const BoxDecoration(

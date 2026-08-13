@@ -122,6 +122,8 @@ class _UnifiedHistoryPageState extends ConsumerState<UnifiedHistoryPage> with Si
                   child: TabBar(
                     controller: _tabController,
                     dividerColor: Colors.transparent,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.center,
                     indicator: BoxDecoration(
                       color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.white,
                       borderRadius: BorderRadius.circular(12),

@@ -6,6 +6,8 @@ import 'package:lens_wise/features/product_lens/domain/repositories/i_product_le
 import 'package:lens_wise/features/product_lens/infrastructure/repositories/hive_product_lens_repository.dart';
 import 'package:lens_wise/features/product_comparison/domain/repositories/i_product_comparison_repository.dart';
 import 'package:lens_wise/features/product_comparison/infrastructure/repositories/hive_product_comparison_repository.dart';
+import 'package:lens_wise/features/menu_scanner/domain/repositories/i_menu_scanner_repository.dart';
+import 'package:lens_wise/features/menu_scanner/infrastructure/repositories/hive_menu_scanner_repository.dart';
 
 final localMediaServiceProvider = Provider<LocalMediaService>((ref) {
   return LocalMediaService();
@@ -21,4 +23,8 @@ final productLensRepositoryProvider = Provider<IProductLensRepository>((ref) {
 
 final productComparisonRepositoryProvider = Provider<IProductComparisonRepository>((ref) {
   return HiveProductComparisonRepository();
+});
+
+final menuScannerRepositoryProvider = Provider<IMenuScannerRepository>((ref) {
+  return HiveMenuScannerRepository();
 });

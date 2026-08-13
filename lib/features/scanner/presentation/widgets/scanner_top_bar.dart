@@ -26,6 +26,7 @@ class ScannerTopBar extends ConsumerWidget {
                 case ScannerMode.receipt: context.push('/history?tab=0'); break;
                 case ScannerMode.product: context.push('/history?tab=1'); break;
                 case ScannerMode.comparison: context.push('/history?tab=2'); break;
+                case ScannerMode.menu: context.push('/history?tab=3'); break;
               }
             },
           ),

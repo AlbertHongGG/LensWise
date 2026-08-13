@@ -6,6 +6,7 @@ import 'package:lens_wise/features/product_comparison/domain/models/product_comp
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
+import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 
 class NavigationService {
   final GoRouter _router;
@@ -27,6 +28,13 @@ class NavigationService {
   void navigateToReceiptResult(ReceiptScannerRecord record, List<Uint8List> images) {
     // Navigate to receipt result page with record and raw images
     _router.pushReplacement('/result/receipt', extra: {
+      'record': record,
+      'memoryImages': images,
+    });
+  }
+
+  void navigateToMenuRecord(MenuScannerRecord record, List<Uint8List> images) {
+    _router.pushReplacement('/result/menu', extra: {
       'record': record,
       'memoryImages': images,
     });

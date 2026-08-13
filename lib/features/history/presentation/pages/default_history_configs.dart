@@ -10,6 +10,7 @@ import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
+import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 
 final defaultHistoryConfigs = <HistoryTabConfig>[
   HistoryTabConfig<ReceiptScannerRecord>(
@@ -224,6 +225,81 @@ final defaultHistoryConfigs = <HistoryTabConfig>[
       return DraggableHistoryCard<ProductComparisonRecord>(
         record: record,
         controller: ref.read(comparisonHistoryProvider.notifier),
+        child: card,
+      );
+    },
+  ),
+  HistoryTabConfig<MenuScannerRecord>(
+    tabName: '菜單',
+    tabIcon: Icons.restaurant_menu,
+    emptyStateTitle: '尚無菜單辨識紀錄',
+    emptyStateDescription: '所有辨識與翻譯過的外語菜單，\n都會儲存在這裡。',
+    emptyStateIcon: Icons.restaurant_menu_outlined,
+    watchHistory: (ref) => ref.watch(menuHistoryProvider),
+    readController: (ref) => ref.read(menuHistoryProvider.notifier),
+    cardBuilder: (context, ref, IHistoryRecord rawRecord, isDark) {
+      final record = rawRecord as MenuScannerRecord;
+      final card = GlassContainer(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        opacity: isDark ? 0.05 : 0.8,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            context.push('/result/menu', extra: {
+              'record': record,
+              'memoryImages': null,
+            });
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.restaurant_menu_outlined, color: Theme.of(context).primaryColor),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        record.displayTitle,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        record.displaySubtitle,
+                        style: TextStyle(
+                          color: isDark ? Colors.white54 : Colors.black54,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: isDark ? Colors.white30 : Colors.black26),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      return DraggableHistoryCard<MenuScannerRecord>(
+        record: record,
+        controller: ref.read(menuHistoryProvider.notifier),
         child: card,
       );
     },

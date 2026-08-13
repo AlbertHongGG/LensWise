@@ -1,4 +1,4 @@
-enum ScannerMode { receipt, product, comparison }
+enum ScannerMode { receipt, product, comparison, menu }
 
 class ScannerModeConfig {
   final ScannerMode mode;
@@ -35,6 +35,13 @@ class ScannerModeConfig {
       title: '比對',
       minShotsRequired: 2,
       maxShotsAllowed: null, // infinite
+      isAutoProcess: false,
+    ),
+    ScannerMode.menu: ScannerModeConfig(
+      mode: ScannerMode.menu,
+      title: '菜單',
+      minShotsRequired: 1,
+      maxShotsAllowed: 50,
       isAutoProcess: false,
     ),
   };

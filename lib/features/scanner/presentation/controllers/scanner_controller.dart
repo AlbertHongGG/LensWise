@@ -85,6 +85,9 @@ class ScannerController extends Notifier<ScannerState> {
             ref.read(receiptScannerControllerProvider.notifier).reset();
             context.push('/process/receipt', extra: processedImages);
             break;
+          case ScannerMode.menu:
+            context.push('/process/menu', extra: processedImages);
+            break;
         }
       }
     } finally {

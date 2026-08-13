@@ -25,6 +25,9 @@ import 'package:lens_wise/features/receipt_scanner/presentation/pages/receipt_pr
 import 'package:lens_wise/features/receipt_scanner/presentation/pages/receipt_result_page.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_page.dart';
+import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
+import 'package:lens_wise/features/menu_scanner/presentation/pages/menu_processing_page.dart';
+import 'package:lens_wise/features/menu_scanner/presentation/pages/menu_result_page.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -126,6 +129,38 @@ final routerProvider = Provider<GoRouter>((ref) {
           final args = state.extra as ProductComparisonRecordArgs;
           return CupertinoPage(
             child: ProductComparisonRecordPage(args: args),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/process/menu',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final images = state.extra as List<Uint8List>? ?? [];
+          return CupertinoPage(
+            child: MenuProcessingPage(images: images),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/result/menu',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final record = extra?['record'] as MenuScannerRecord?;
+          final memoryImages = extra?['memoryImages'] as List<Uint8List>?;
+
+          if (record == null) {
+            return const CupertinoPage(
+              child: Scaffold(body: Center(child: Text('查無菜單資料'))),
+            );
+          }
+          
+          return CupertinoPage(
+            child: MenuResultPage(
+              record: record,
+              memoryImages: memoryImages,
+            ),
           );
         },
       ),

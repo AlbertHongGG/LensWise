@@ -10,6 +10,7 @@ import 'package:lens_wise/features/settings/presentation/providers/settings_prov
 import 'package:lens_wise/features/receipt_scanner/infrastructure/models/receipt_scanner_hive_model.dart';
 import 'package:lens_wise/features/product_lens/infrastructure/models/product_lens_hive_model.dart';
 import 'package:lens_wise/features/product_comparison/infrastructure/models/product_comparison_hive_model.dart';
+import 'package:lens_wise/features/menu_scanner/infrastructure/models/menu_scanner_hive_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +19,7 @@ void main() async {
   Hive.registerAdapter(ReceiptScannerHiveModelAdapter());
   Hive.registerAdapter(ProductLensHiveModelAdapter());
   Hive.registerAdapter(ProductComparisonHiveModelAdapter());
+  Hive.registerAdapter(MenuScannerHiveModelAdapter());
   
   await Hive.openBox('settings');
   final prefs = await SharedPreferences.getInstance();

@@ -39,6 +39,11 @@ class ScannerActionButton extends ConsumerWidget {
         iconData = Icons.receipt_long;
         labelText = '開始解析';
         break;
+      case ScannerMode.menu:
+        shadowColor = Colors.orangeAccent;
+        iconData = Icons.restaurant_menu;
+        labelText = '辨識菜單';
+        break;
     }
 
     return Padding(
