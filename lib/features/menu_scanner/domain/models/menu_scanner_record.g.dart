@@ -21,6 +21,11 @@ _MenuScannerRecord _$MenuScannerRecordFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      translatedImagePaths:
+          (json['translatedImagePaths'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as String),
+          ) ??
+          const {},
     );
 
 Map<String, dynamic> _$MenuScannerRecordToJson(_MenuScannerRecord instance) =>
@@ -30,6 +35,7 @@ Map<String, dynamic> _$MenuScannerRecordToJson(_MenuScannerRecord instance) =>
       'storeName': instance.storeName,
       'items': instance.items,
       'imagePaths': instance.imagePaths,
+      'translatedImagePaths': instance.translatedImagePaths,
     };
 
 _MenuScannerItem _$MenuScannerItemFromJson(Map<String, dynamic> json) =>

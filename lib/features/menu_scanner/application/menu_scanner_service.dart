@@ -35,6 +35,25 @@ class MenuScannerService {
 
     return completeRecord;
   }
+
+  Future<MenuScannerRecord> saveTranslatedImage(MenuScannerRecord record, String originalImagePath, Uint8List translatedImageBytes) async {
+    final localMediaService = _ref.read(localMediaServiceProvider);
+    
+    // Save image
+    final savedPath = await localMediaService.saveImage(translatedImageBytes);
+    
+    // Update map
+    final newMap = Map<String, String>.from(record.translatedImagePaths);
+    newMap[originalImagePath] = savedPath;
+    
+    final updatedRecord = record.copyWith(translatedImagePaths: newMap);
+    
+    // Write back to repo
+    final repo = _ref.read(menuScannerRepositoryProvider);
+    await repo.save(updatedRecord.id, updatedRecord);
+    
+    return updatedRecord;
+  }
 }
 
 final menuScannerServiceProvider = Provider<MenuScannerService>((ref) {

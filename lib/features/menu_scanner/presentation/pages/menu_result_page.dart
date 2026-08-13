@@ -28,6 +28,7 @@ class MenuResultPage extends ConsumerStatefulWidget {
 class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   late MenuScannerRecord _currentRecord;
   bool _isDrawerOpen = false;
+  int _currentCarouselIndex = 0;
 
   @override
   void initState() {
@@ -224,7 +225,10 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
         if (notification.extent <= 0.1) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && _isDrawerOpen) {
-              setState(() => _isDrawerOpen = false);
+              setState(() {
+                 _isDrawerOpen = false;
+                 _currentCarouselIndex = 0; // reset
+              });
             }
           });
         }
@@ -241,7 +245,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
           ),
           child: Column(
             children: [
-              // 拖拉把手區域 (與收據頁面完全一致)
+              // 拖拉把手區域
               SingleChildScrollView(
                 controller: scrollController,
                 physics: const ClampingScrollPhysics(),
@@ -263,43 +267,78 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                 child: Consumer(
                   builder: (context, ref, child) {
                     final aiState = ref.watch(translatedMenuImageControllerProvider);
-                    final combinedMemoryImages = <Uint8List>[
-                      ...(widget.memoryImages ?? []),
-                      ...(aiState.generatedImages ?? []),
-                    ];
+                    
+                    // Build Carousel Items
+                    final items = _buildCarouselItems(_currentRecord);
+                    final images = items.map((e) => e.image).toList();
+                    final currentItem = items.isNotEmpty && _currentCarouselIndex < items.length 
+                        ? items[_currentCarouselIndex] 
+                        : null;
 
                     return Stack(
                       children: [
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                           child: ReceiptImageCarousel(
-                            memoryImages: combinedMemoryImages,
-                            filePaths: _currentRecord.imagePaths,
+                            images: images,
+                            onPageChanged: (index) {
+                              setState(() {
+                                _currentCarouselIndex = index;
+                              });
+                            },
                           ),
                         ),
                         
-                        // Translate Button Overlay
-                        if (!aiState.isGenerating && aiState.generatedImages == null)
+                        // Translate Button Overlay (Top Right Glassmorphism)
+                        if (!aiState.isGenerating && currentItem != null && !currentItem.isTranslated && currentItem.originalPath != null)
                           Positioned(
-                            bottom: MediaQuery.paddingOf(context).bottom + 24,
-                            right: 24,
-                            child: FloatingActionButton.extended(
-                              heroTag: 'translate_image_btn',
-                              backgroundColor: Theme.of(context).primaryColor,
-                              onPressed: () async {
-                                final originalImages = await _getOriginalImages();
-                                final targetLang = ref.read(settingsProvider).targetLanguage;
-                                ref.read(translatedMenuImageControllerProvider.notifier)
-                                    .generateTranslatedImage(
-                                      originalImages: originalImages,
-                                      targetLanguage: targetLang,
-                                      record: _currentRecord,
-                                    );
-                              },
-                              icon: const Icon(Icons.auto_awesome, color: Colors.white),
-                              label: const Text(
-                                '✨ 翻譯原圖', 
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                            top: 16,
+                            right: 16,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        final targetLang = ref.read(settingsProvider).targetLanguage;
+                                        final originalBytes = await _getImageBytes(currentItem.originalPath!);
+                                        if (originalBytes == null) return;
+
+                                        final updatedRecord = await ref.read(translatedMenuImageControllerProvider.notifier)
+                                            .generateTranslatedImage(
+                                              originalImage: originalBytes,
+                                              originalImagePath: currentItem.originalPath!,
+                                              targetLanguage: targetLang,
+                                              record: _currentRecord,
+                                            );
+                                        
+                                        if (updatedRecord != null && mounted) {
+                                           setState(() {
+                                              _currentRecord = updatedRecord;
+                                           });
+                                        }
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.auto_awesome, color: Colors.amberAccent, size: 20),
+                                            const SizedBox(width: 8),
+                                            const Text(
+                                              '翻譯原圖', 
+                                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -333,8 +372,6 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                               ),
                             ),
                           ),
-                          
-                        // Error Toast handling could be added here or via listener
                       ],
                     );
                   }
@@ -347,17 +384,46 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
     );
   }
 
-  Future<List<Uint8List>> _getOriginalImages() async {
-    if (widget.memoryImages != null && widget.memoryImages!.isNotEmpty) {
-      return widget.memoryImages!;
-    }
-    List<Uint8List> bytes = [];
-    for (String path in _currentRecord.imagePaths) {
-      final file = File(path);
-      if (await file.exists()) {
-        bytes.add(await file.readAsBytes());
+  List<_MenuCarouselItem> _buildCarouselItems(MenuScannerRecord record) {
+    List<_MenuCarouselItem> items = [];
+    for (int i = 0; i < record.imagePaths.length; i++) {
+      final path = record.imagePaths[i];
+      // Original
+      items.add(_MenuCarouselItem(
+        image: widget.memoryImages != null && widget.memoryImages!.length > i 
+            ? MemoryImage(widget.memoryImages![i]) 
+            : FileImage(File(path)) as ImageProvider,
+        originalPath: path,
+        isTranslated: false,
+      ));
+      
+      // Translated
+      if (record.translatedImagePaths.containsKey(path)) {
+        items.add(_MenuCarouselItem(
+          image: FileImage(File(record.translatedImagePaths[path]!)),
+          originalPath: null,
+          isTranslated: true,
+        ));
       }
     }
-    return bytes;
+    return items;
   }
+
+  Future<Uint8List?> _getImageBytes(String path) async {
+    // If it's a memory image mapped directly, we can check memoryImages, 
+    // but reading from File path is safest and unified since analyzeAndSave already saved it.
+    final file = File(path);
+    if (await file.exists()) {
+      return await file.readAsBytes();
+    }
+    return null;
+  }
+}
+
+class _MenuCarouselItem {
+  final ImageProvider image;
+  final String? originalPath;
+  final bool isTranslated;
+  
+  _MenuCarouselItem({required this.image, this.originalPath, this.isTranslated = false});
 }

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MenuScannerRecord {
 
- String get id; DateTime get timestamp; String get storeName; List<MenuScannerItem> get items; List<String> get imagePaths;
+ String get id; DateTime get timestamp; String get storeName; List<MenuScannerItem> get items; List<String> get imagePaths; Map<String, String> get translatedImagePaths;
 /// Create a copy of MenuScannerRecord
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $MenuScannerRecordCopyWith<MenuScannerRecord> get copyWith => _$MenuScannerRecor
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MenuScannerRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.imagePaths, imagePaths));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MenuScannerRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.imagePaths, imagePaths)&&const DeepCollectionEquality().equals(other.translatedImagePaths, translatedImagePaths));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,timestamp,storeName,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(imagePaths));
+int get hashCode => Object.hash(runtimeType,id,timestamp,storeName,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(imagePaths),const DeepCollectionEquality().hash(translatedImagePaths));
 
 @override
 String toString() {
-  return 'MenuScannerRecord(id: $id, timestamp: $timestamp, storeName: $storeName, items: $items, imagePaths: $imagePaths)';
+  return 'MenuScannerRecord(id: $id, timestamp: $timestamp, storeName: $storeName, items: $items, imagePaths: $imagePaths, translatedImagePaths: $translatedImagePaths)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $MenuScannerRecordCopyWith<$Res>  {
   factory $MenuScannerRecordCopyWith(MenuScannerRecord value, $Res Function(MenuScannerRecord) _then) = _$MenuScannerRecordCopyWithImpl;
 @useResult
 $Res call({
- String id, DateTime timestamp, String storeName, List<MenuScannerItem> items, List<String> imagePaths
+ String id, DateTime timestamp, String storeName, List<MenuScannerItem> items, List<String> imagePaths, Map<String, String> translatedImagePaths
 });
 
 
@@ -65,14 +65,15 @@ class _$MenuScannerRecordCopyWithImpl<$Res>
 
 /// Create a copy of MenuScannerRecord
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? timestamp = null,Object? storeName = null,Object? items = null,Object? imagePaths = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? timestamp = null,Object? storeName = null,Object? items = null,Object? imagePaths = null,Object? translatedImagePaths = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
 as DateTime,storeName: null == storeName ? _self.storeName : storeName // ignore: cast_nullable_to_non_nullable
 as String,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<MenuScannerItem>,imagePaths: null == imagePaths ? _self.imagePaths : imagePaths // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,translatedImagePaths: null == translatedImagePaths ? _self.translatedImagePaths : translatedImagePaths // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,
   ));
 }
 
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String storeName,  List<MenuScannerItem> items,  List<String> imagePaths)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String storeName,  List<MenuScannerItem> items,  List<String> imagePaths,  Map<String, String> translatedImagePaths)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MenuScannerRecord() when $default != null:
-return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.imagePaths);case _:
+return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.imagePaths,_that.translatedImagePaths);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.image
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String storeName,  List<MenuScannerItem> items,  List<String> imagePaths)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String storeName,  List<MenuScannerItem> items,  List<String> imagePaths,  Map<String, String> translatedImagePaths)  $default,) {final _that = this;
 switch (_that) {
 case _MenuScannerRecord():
-return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.imagePaths);case _:
+return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.imagePaths,_that.translatedImagePaths);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.image
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DateTime timestamp,  String storeName,  List<MenuScannerItem> items,  List<String> imagePaths)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DateTime timestamp,  String storeName,  List<MenuScannerItem> items,  List<String> imagePaths,  Map<String, String> translatedImagePaths)?  $default,) {final _that = this;
 switch (_that) {
 case _MenuScannerRecord() when $default != null:
-return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.imagePaths);case _:
+return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.imagePaths,_that.translatedImagePaths);case _:
   return null;
 
 }
@@ -213,7 +214,7 @@ return $default(_that.id,_that.timestamp,_that.storeName,_that.items,_that.image
 @JsonSerializable()
 
 class _MenuScannerRecord extends MenuScannerRecord {
-  const _MenuScannerRecord({required this.id, required this.timestamp, required this.storeName, final  List<MenuScannerItem> items = const [], final  List<String> imagePaths = const []}): _items = items,_imagePaths = imagePaths,super._();
+  const _MenuScannerRecord({required this.id, required this.timestamp, required this.storeName, final  List<MenuScannerItem> items = const [], final  List<String> imagePaths = const [], final  Map<String, String> translatedImagePaths = const {}}): _items = items,_imagePaths = imagePaths,_translatedImagePaths = translatedImagePaths,super._();
   factory _MenuScannerRecord.fromJson(Map<String, dynamic> json) => _$MenuScannerRecordFromJson(json);
 
 @override final  String id;
@@ -233,6 +234,13 @@ class _MenuScannerRecord extends MenuScannerRecord {
   return EqualUnmodifiableListView(_imagePaths);
 }
 
+ final  Map<String, String> _translatedImagePaths;
+@override@JsonKey() Map<String, String> get translatedImagePaths {
+  if (_translatedImagePaths is EqualUnmodifiableMapView) return _translatedImagePaths;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_translatedImagePaths);
+}
+
 
 /// Create a copy of MenuScannerRecord
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MenuScannerRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._imagePaths, _imagePaths));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MenuScannerRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._imagePaths, _imagePaths)&&const DeepCollectionEquality().equals(other._translatedImagePaths, _translatedImagePaths));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,timestamp,storeName,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_imagePaths));
+int get hashCode => Object.hash(runtimeType,id,timestamp,storeName,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_imagePaths),const DeepCollectionEquality().hash(_translatedImagePaths));
 
 @override
 String toString() {
-  return 'MenuScannerRecord(id: $id, timestamp: $timestamp, storeName: $storeName, items: $items, imagePaths: $imagePaths)';
+  return 'MenuScannerRecord(id: $id, timestamp: $timestamp, storeName: $storeName, items: $items, imagePaths: $imagePaths, translatedImagePaths: $translatedImagePaths)';
 }
 
 
@@ -267,7 +275,7 @@ abstract mixin class _$MenuScannerRecordCopyWith<$Res> implements $MenuScannerRe
   factory _$MenuScannerRecordCopyWith(_MenuScannerRecord value, $Res Function(_MenuScannerRecord) _then) = __$MenuScannerRecordCopyWithImpl;
 @override @useResult
 $Res call({
- String id, DateTime timestamp, String storeName, List<MenuScannerItem> items, List<String> imagePaths
+ String id, DateTime timestamp, String storeName, List<MenuScannerItem> items, List<String> imagePaths, Map<String, String> translatedImagePaths
 });
 
 
@@ -284,14 +292,15 @@ class __$MenuScannerRecordCopyWithImpl<$Res>
 
 /// Create a copy of MenuScannerRecord
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? timestamp = null,Object? storeName = null,Object? items = null,Object? imagePaths = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? timestamp = null,Object? storeName = null,Object? items = null,Object? imagePaths = null,Object? translatedImagePaths = null,}) {
   return _then(_MenuScannerRecord(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
 as DateTime,storeName: null == storeName ? _self.storeName : storeName // ignore: cast_nullable_to_non_nullable
 as String,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
 as List<MenuScannerItem>,imagePaths: null == imagePaths ? _self._imagePaths : imagePaths // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,translatedImagePaths: null == translatedImagePaths ? _self._translatedImagePaths : translatedImagePaths // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,
   ));
 }
 

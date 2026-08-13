@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
+import 'dart:io';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_paper_card.dart';
@@ -136,8 +137,10 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                           child: ReceiptImageCarousel(
-                            memoryImages: widget.memoryImages ?? [],
-                            filePaths: _currentRecord.imagePaths,
+                            images: [
+                              ...(_currentRecord.imagePaths.map((p) => FileImage(File(p)))),
+                              ...(widget.memoryImages?.map((m) => MemoryImage(m)) ?? []),
+                            ],
                           ),
                         ),
                       ),

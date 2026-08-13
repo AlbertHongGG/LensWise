@@ -15,6 +15,7 @@ abstract class MenuScannerRecord with _$MenuScannerRecord implements IHistoryRec
     required String storeName,
     @Default([]) List<MenuScannerItem> items,
     @Default([]) List<String> imagePaths,
+    @Default({}) Map<String, String> translatedImagePaths,
   }) = _MenuScannerRecord;
 
   factory MenuScannerRecord.fromJson(Map<String, dynamic> json) => _$MenuScannerRecordFromJson(json);

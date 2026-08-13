@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/translated_menu_image_agent/translated_menu_image_agent.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
+import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
 
 class TranslatedMenuImageState {
   final bool isGenerating;
@@ -58,22 +59,18 @@ class TranslatedMenuImageController extends Notifier<TranslatedMenuImageState> {
     return TranslatedMenuImageState();
   }
 
-  Future<void> generateTranslatedImage({
-    required List<Uint8List> originalImages,
+  Future<MenuScannerRecord?> generateTranslatedImage({
+    required Uint8List originalImage,
+    required String originalImagePath,
     required String targetLanguage,
     required MenuScannerRecord record,
   }) async {
-    if (originalImages.isEmpty) {
-      state = state.setError('沒有提供原始菜單圖片。');
-      return;
-    }
-
     state = state.setGenerating();
 
     try {
       final agent = ref.read(translatedMenuImageAgentProvider);
       final request = TranslatedMenuImageRequest(
-        images: originalImages,
+        images: [originalImage],
         targetLanguage: targetLanguage,
         record: record,
       );
@@ -81,12 +78,26 @@ class TranslatedMenuImageController extends Notifier<TranslatedMenuImageState> {
       final response = await agent.execute(request);
 
       if (response.images != null && response.images!.isNotEmpty) {
+        final generatedImage = response.images!.first;
+        
+        // Save to file system and database
+        final menuService = ref.read(menuScannerServiceProvider);
+        final updatedRecord = await menuService.saveTranslatedImage(
+          record,
+          originalImagePath,
+          generatedImage,
+        );
+        
+        
         state = state.setSuccess(response.images!);
+        return updatedRecord;
       } else {
         state = state.setError('AI 未能生成翻譯圖片，請稍後再試。');
+        return null;
       }
     } catch (e) {
       state = state.setError(e.toString());
+      return null;
     }
   }
 

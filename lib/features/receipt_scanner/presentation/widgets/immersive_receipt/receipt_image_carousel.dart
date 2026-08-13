@@ -3,13 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 class ReceiptImageCarousel extends StatefulWidget {
-  final List<Uint8List> memoryImages;
-  final List<String> filePaths;
+  final List<ImageProvider> images;
+  final ValueChanged<int>? onPageChanged;
 
   const ReceiptImageCarousel({
     super.key,
-    this.memoryImages = const [],
-    this.filePaths = const [],
+    required this.images,
+    this.onPageChanged,
   });
 
   @override
@@ -30,7 +30,7 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
   }
 
   void _initControllers() {
-    final count = (widget.memoryImages?.length ?? 0) + widget.filePaths.length;
+    final count = widget.images.length;
     _transformControllers = List.generate(count, (_) => TransformationController());
     for (var controller in _transformControllers) {
       controller.addListener(_onScaleChanged);
@@ -52,7 +52,7 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
   @override
   void didUpdateWidget(ReceiptImageCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final count = (widget.memoryImages?.length ?? 0) + widget.filePaths.length;
+    final count = widget.images.length;
     if (_transformControllers.length != count) {
       for (var c in _transformControllers) {
         c.removeListener(_onScaleChanged);
@@ -72,14 +72,10 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
     super.dispose();
   }
 
-  int get _itemCount => widget.memoryImages.isNotEmpty ? widget.memoryImages.length : widget.filePaths.length;
+  int get _itemCount => widget.images.length;
 
   ImageProvider _getImageProvider(int index) {
-    if (widget.memoryImages.isNotEmpty) {
-      return MemoryImage(widget.memoryImages[index]);
-    } else {
-      return FileImage(File(widget.filePaths[index]));
-    }
+    return widget.images[index];
   }
 
   @override
@@ -106,6 +102,7 @@ class _ReceiptImageCarouselState extends State<ReceiptImageCarousel> {
             setState(() {
               _currentIndex = index;
             });
+            widget.onPageChanged?.call(index);
           },
           itemBuilder: (context, index) {
             return LayoutBuilder(
