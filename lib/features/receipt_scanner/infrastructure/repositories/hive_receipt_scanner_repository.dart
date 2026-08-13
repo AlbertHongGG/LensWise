@@ -5,31 +5,47 @@ import 'package:lens_wise/features/receipt_scanner/infrastructure/models/receipt
 
 class HiveReceiptScannerRepository implements IReceiptScannerRepository {
   static const String boxName = 'receipt_scanner_records';
-  late Box<ReceiptScannerHiveModel> _box;
+  Future<Box<ReceiptScannerHiveModel>> get _box async {
+    if (!Hive.isBoxOpen(boxName)) {
+      try {
+        return await Hive.openBox<ReceiptScannerHiveModel>(boxName);
+      } catch (e) {
+        await Hive.deleteBoxFromDisk(boxName);
+        return await Hive.openBox<ReceiptScannerHiveModel>(boxName);
+      }
+    }
+    return Hive.box<ReceiptScannerHiveModel>(boxName);
+  }
 
+  @override
   Future<void> init() async {
-    _box = await Hive.openBox<ReceiptScannerHiveModel>(boxName);
+    await _box;
   }
 
   @override
   Future<List<ReceiptScannerRecord>> getAll() async {
-    return _box.values.map((e) => e.toDomain()).toList();
+    final box = await _box;
+    return box.values.map((e) => e.toDomain()).toList();
   }
 
+  @override
   Future<ReceiptScannerRecord?> getById(String id) async {
-    final model = _box.get(id);
+    final box = await _box;
+    final model = box.get(id);
     return model?.toDomain();
   }
 
   @override
   Future<void> save(String id, ReceiptScannerRecord item) async {
+    final box = await _box;
     final model = ReceiptScannerHiveModel.fromDomain(item);
-    await _box.put(id, model);
+    await box.put(id, model);
   }
 
   @override
   Future<void> delete(String id) async {
-    await _box.delete(id);
+    final box = await _box;
+    await box.delete(id);
   }
 
   @override
@@ -37,7 +53,9 @@ class HiveReceiptScannerRepository implements IReceiptScannerRepository {
     return getById(id);
   }
 
+  @override
   Future<void> clearAll() async {
-    await _box.clear();
+    final box = await _box;
+    await box.clear();
   }
 }

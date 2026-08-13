@@ -5,31 +5,48 @@ import 'package:lens_wise/features/product_lens/infrastructure/models/product_le
 
 class HiveProductLensRepository implements IProductLensRepository {
   static const String boxName = 'product_records';
-  late Box<ProductLensHiveModel> _box;
+  Future<Box<ProductLensHiveModel>> get _box async {
+    if (!Hive.isBoxOpen(boxName)) {
+      try {
+        return await Hive.openBox<ProductLensHiveModel>(boxName);
+      } catch (e) {
+        // Handle schema mismatch or corruption by clearing the box
+        await Hive.deleteBoxFromDisk(boxName);
+        return await Hive.openBox<ProductLensHiveModel>(boxName);
+      }
+    }
+    return Hive.box<ProductLensHiveModel>(boxName);
+  }
 
+  @override
   Future<void> init() async {
-    _box = await Hive.openBox<ProductLensHiveModel>(boxName);
+    await _box;
   }
 
   @override
   Future<List<ProductLensRecord>> getAll() async {
-    return _box.values.map((e) => e.toDomain()).toList();
+    final box = await _box;
+    return box.values.map((e) => e.toDomain()).toList();
   }
 
+  @override
   Future<ProductLensRecord?> getById(String id) async {
-    final model = _box.get(id);
+    final box = await _box;
+    final model = box.get(id);
     return model?.toDomain();
   }
 
   @override
   Future<void> save(String id, ProductLensRecord item) async {
+    final box = await _box;
     final model = ProductLensHiveModel.fromDomain(item);
-    await _box.put(id, model);
+    await box.put(id, model);
   }
 
   @override
   Future<void> delete(String id) async {
-    await _box.delete(id);
+    final box = await _box;
+    await box.delete(id);
   }
 
   @override
@@ -37,7 +54,9 @@ class HiveProductLensRepository implements IProductLensRepository {
     return getById(id);
   }
 
+  @override
   Future<void> clearAll() async {
-    await _box.clear();
+    final box = await _box;
+    await box.clear();
   }
 }

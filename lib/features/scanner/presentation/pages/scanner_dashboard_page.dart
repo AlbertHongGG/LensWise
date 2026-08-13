@@ -26,7 +26,12 @@ class ScannerDashboardPage extends ConsumerWidget {
               const SizedBox.shrink(),
 
               // 2. Top UI: Settings and History
-              const ScannerTopBar(),
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: ScannerTopBar(),
+              ),
 
               // 3. Bottom UI: Shutter, Mode Switcher, Gallery, Action
               Positioned(
