@@ -182,7 +182,7 @@ final defaultHistoryConfigs = <HistoryTabConfig>[
               result: record,
               imagePath: record.imagePath,
             );
-            context.push('/comparison_history_detail', extra: args);
+            context.push('/result/comparison', extra: args);
           },
           child: Padding(
             padding: const EdgeInsets.all(16.0),

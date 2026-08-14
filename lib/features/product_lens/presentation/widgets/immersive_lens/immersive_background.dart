@@ -59,13 +59,13 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
               final imageEntity = widget.appImages![index];
               return Image.memory(
                 imageEntity.bytes,
-                fit: imageEntity.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
+                fit: BoxFit.cover,
                 alignment: Alignment.center,
               );
             } else {
               return Image.file(
                 File(widget.imagePaths[index]),
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 alignment: Alignment.center,
               );
             }

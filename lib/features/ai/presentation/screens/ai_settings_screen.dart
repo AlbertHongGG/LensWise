@@ -24,6 +24,16 @@ class ConfigTextField extends HookConsumerWidget {
     required this.isDark,
   });
 
+  IconData getFieldIcon() {
+    final k = field.key.toLowerCase();
+    if (k.contains('model')) return Icons.smart_toy_rounded;
+    if (k.contains('url')) return Icons.dns_rounded;
+    if (k.contains('key')) return Icons.vpn_key_rounded;
+    if (k.contains('id')) return Icons.fingerprint_rounded;
+    if (k.contains('location')) return Icons.location_on_rounded;
+    return Icons.tune_rounded;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // We use a hook to manage the controller so cursor position isn't lost on rebuild
@@ -40,21 +50,28 @@ class ConfigTextField extends HookConsumerWidget {
       return null;
     }, [field.value]);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+      leading: Icon(getFieldIcon(), color: isDark ? Colors.white54 : Colors.black54),
+      title: TextField(
         controller: controller,
         obscureText: field.isSecret,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+        style: TextStyle(
+          fontFamily: 'Outfit',
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : Colors.black87,
+        ),
         decoration: InputDecoration(
-          labelText: field.label,
-          labelStyle: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
-          filled: true,
-          fillColor: isDark ? Colors.black26 : Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+          hintText: field.label,
+          hintStyle: TextStyle(
+            fontFamily: 'Outfit',
+            color: isDark ? Colors.white30 : Colors.black38,
+            fontWeight: FontWeight.normal,
           ),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
         onChanged: (val) {
           debouncer.run(() {
@@ -109,16 +126,29 @@ class AiSettingsScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             Text(
               '選擇 AI 引擎',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
+                letterSpacing: 1.2,
                 color: isDark ? Colors.white : Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             ...AIProviderType.values.map((type) => ListTile(
               onTap: () {
                 ref.read(aiConfigControllerProvider.notifier).saveAgentConfig(
@@ -280,13 +310,15 @@ class AiSettingsScreen extends ConsumerWidget {
                                   subtitle: Row(
                                     children: [
                                       Icon(_getProviderIcon(activeProvider), size: 12, color: isDark ? Colors.white54 : Colors.black54),
-                                      const SizedBox(width: 4),
+                                      const SizedBox(width: 6),
                                       Expanded(
                                         child: Text(
-                                          '${activeProvider.name.toUpperCase()} • ${activeConfig.modelName}',
+                                          activeProvider.name.toUpperCase(),
                                           style: TextStyle(
                                             fontFamily: 'Outfit',
-                                            fontSize: 12,
+                                            fontSize: 13,
+                                            letterSpacing: 0.5,
+                                            fontWeight: FontWeight.w500,
                                             color: isDark ? Colors.white54 : Colors.black54,
                                           ),
                                           maxLines: 1,
@@ -297,40 +329,58 @@ class AiSettingsScreen extends ConsumerWidget {
                                   ),
                                   children: [
                                     Container(
-                                      color: isDark ? Colors.black12 : Colors.grey.withValues(alpha: 0.05),
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? Colors.black.withValues(alpha: 0.25) : const Color(0xFFF4F5F7),
+                                        border: Border(
+                                          top: BorderSide(
+                                            color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: [
-                                          InkWell(
-                                            onTap: () => _showProviderSelectorBottomSheet(context, ref, agentType, activeProvider, isDark),
-                                            borderRadius: BorderRadius.circular(12),
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                              decoration: BoxDecoration(
-                                                border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    '引擎: ${activeProvider.name.toUpperCase()}',
-                                                    style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                                                  ),
-                                                  Icon(Icons.swap_horiz_rounded, color: isDark ? Colors.white54 : Colors.black54),
-                                                ],
+                                          ListTile(
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                                            leading: Icon(_getProviderIcon(activeProvider), color: isDark ? Colors.white54 : Colors.black54),
+                                            title: Text(
+                                              activeProvider.name.toUpperCase(),
+                                              style: TextStyle(
+                                                fontFamily: 'Outfit',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDark ? Colors.white : Colors.black87,
                                               ),
                                             ),
+                                            trailing: Icon(Icons.keyboard_arrow_down_rounded, color: isDark ? Colors.white54 : Colors.black54),
+                                            onTap: () => _showProviderSelectorBottomSheet(context, ref, agentType, activeProvider, isDark),
                                           ),
-                                          const SizedBox(height: 16),
-                                          ...activeConfig.formFields.map((field) => ConfigTextField(
-                                            key: ValueKey('${agentType.name}_${activeProvider.name}_${field.key}'),
-                                            agentType: agentType,
-                                            activeConfig: activeConfig,
-                                            field: field,
-                                            isDark: isDark,
-                                          )),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 64),
+                                            child: Divider(height: 1, thickness: 0.5, color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+                                          ),
+                                          ...activeConfig.formFields.asMap().entries.map((entry) {
+                                            final idx = entry.key;
+                                            final field = entry.value;
+                                            return Column(
+                                              children: [
+                                                ConfigTextField(
+                                                  key: ValueKey('${agentType.name}_${activeProvider.name}_${field.key}'),
+                                                  agentType: agentType,
+                                                  activeConfig: activeConfig,
+                                                  field: field,
+                                                  isDark: isDark,
+                                                ),
+                                                if (idx != activeConfig.formFields.length - 1)
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 64),
+                                                    child: Divider(height: 1, thickness: 0.5, color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+                                                  ),
+                                              ],
+                                            );
+                                          }),
+                                          const SizedBox(height: 8),
                                         ],
                                       ),
                                     ),

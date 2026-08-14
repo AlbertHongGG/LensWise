@@ -30,7 +30,7 @@ class GeminiFlowConfig extends AIProviderConfig {
   final String baseUrl;
 
   const GeminiFlowConfig({
-    super.modelName = 'gemini-3.6-flash',
+    super.modelName = 'gemini-3.7-flash',
     this.baseUrl = 'http://127.0.0.1:8000',
   });
 
@@ -39,7 +39,7 @@ class GeminiFlowConfig extends AIProviderConfig {
 
   factory GeminiFlowConfig.fromJson(Map<String, dynamic> json) {
     return GeminiFlowConfig(
-      modelName: json['modelName'] ?? 'gemini-3.6-flash',
+      modelName: json['modelName'] ?? 'gemini-3.7-flash',
       baseUrl: json['baseUrl'] ?? 'http://127.0.0.1:8000',
     );
   }

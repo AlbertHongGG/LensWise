@@ -28,11 +28,6 @@ class _ProductComparisonRecordPageState extends State<ProductComparisonRecordPag
   int _leftIndex = 0;
   int _rightIndex = 1;
 
-  int get _imageCount {
-    if (widget.args.rawImages != null) return widget.args.rawImages!.length;
-    if (widget.args.imagePath != null) return widget.args.imagePath!.split(',').length;
-    return 0;
-  }
 
   ImageProvider _getImageProvider(int index) {
     if (widget.args.rawImages != null) {
