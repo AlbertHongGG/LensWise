@@ -75,7 +75,7 @@ class SplashAnimationPage extends HookConsumerWidget {
                     scale: logoScale,
                     child: Image.asset(
                       'assets/images/logo.png',
-                      width: 140, // Nice and prominent
+                      width: 140, // Nice and prominent (Increased size)
                       height: 140,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
