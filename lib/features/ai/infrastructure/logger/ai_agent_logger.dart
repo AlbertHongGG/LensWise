@@ -13,8 +13,8 @@ class AIAgentLogger extends BaseFileLogger<Map<String, dynamic>> {
     final yyyymmdd = parts['yyyymmdd'];
     final hhmmss = parts['hhmmss'];
     final random = Random().nextInt(999999).toString().padLeft(6, '0');
-    final typeId = agentType?.id ?? 'SystemViewer';
-    return '${yyyymmdd}_${hhmmss}_${typeId}_$random.json';
+    if (agentType == null) throw Exception('agentType is required for writing logs');
+    return '${yyyymmdd}_${hhmmss}_${agentType!.id}_$random.json';
   }
 
   void logInteraction(dynamic request, dynamic response, int startTime) {
@@ -23,7 +23,7 @@ class AIAgentLogger extends BaseFileLogger<Map<String, dynamic>> {
 
     final logData = {
       'timestamp': getLocalISOString(DateTime.now()),
-      'agentName': agentType?.id ?? 'SystemViewer',
+      'agentName': agentType?.id ?? 'Unknown',
       'durationMs': durationMs,
       'request': request,
       'response': response,

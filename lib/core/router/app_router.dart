@@ -11,7 +11,7 @@ import 'package:lens_wise/features/settings/presentation/pages/settings_page.dar
 import 'package:lens_wise/core/models/app_image_entity.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.dart';
-import 'package:lens_wise/features/ai/presentation/screens/agent_config_screen.dart';
+
 
 // History Pages
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
@@ -79,20 +79,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => const CupertinoPage(
           child: AiSettingsScreen(),
         ),
-      ),
-      GoRoute(
-        path: '/agent_config/:agentName',
-        parentNavigatorKey: globalNavigatorKey,
-        pageBuilder: (context, state) {
-          final name = state.pathParameters['agentName']!;
-          final agentType = AiAgentType.values.firstWhere(
-            (e) => e.name == name,
-            orElse: () => AiAgentType.aiChat,
-          );
-          return CupertinoPage(
-            child: AgentConfigScreen(agentType: agentType),
-          );
-        },
       ),
 
       // Result Pages

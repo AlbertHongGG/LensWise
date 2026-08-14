@@ -1,11 +1,29 @@
 enum AIProviderType { geminiflow, ollama, vertexai }
 
+class ConfigField {
+  final String key;
+  final String label;
+  final String value;
+  final bool isSecret;
+
+  const ConfigField({
+    required this.key,
+    required this.label,
+    required this.value,
+    this.isSecret = false,
+  });
+}
+
 abstract class AIProviderConfig {
   final String modelName;
 
   const AIProviderConfig({required this.modelName});
 
   Map<String, dynamic> toJson();
+  
+  List<ConfigField> get formFields;
+  
+  AIProviderConfig copyWithField(String key, String value);
 }
 
 class GeminiFlowConfig extends AIProviderConfig {
@@ -26,10 +44,17 @@ class GeminiFlowConfig extends AIProviderConfig {
     );
   }
 
-  GeminiFlowConfig copyWith({String? modelName, String? baseUrl}) {
+  @override
+  List<ConfigField> get formFields => [
+    ConfigField(key: 'modelName', label: 'Model Name', value: modelName),
+    ConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl),
+  ];
+
+  @override
+  AIProviderConfig copyWithField(String key, String value) {
     return GeminiFlowConfig(
-      modelName: modelName ?? this.modelName,
-      baseUrl: baseUrl ?? this.baseUrl,
+      modelName: key == 'modelName' ? value : modelName,
+      baseUrl: key == 'baseUrl' ? value : baseUrl,
     );
   }
 }
@@ -52,10 +77,17 @@ class OllamaConfig extends AIProviderConfig {
     );
   }
 
-  OllamaConfig copyWith({String? modelName, String? baseUrl}) {
+  @override
+  List<ConfigField> get formFields => [
+    ConfigField(key: 'modelName', label: 'Model Name', value: modelName),
+    ConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl),
+  ];
+
+  @override
+  AIProviderConfig copyWithField(String key, String value) {
     return OllamaConfig(
-      modelName: modelName ?? this.modelName,
-      baseUrl: baseUrl ?? this.baseUrl,
+      modelName: key == 'modelName' ? value : modelName,
+      baseUrl: key == 'baseUrl' ? value : baseUrl,
     );
   }
 }
@@ -89,17 +121,21 @@ class VertexAIConfig extends AIProviderConfig {
     );
   }
 
-  VertexAIConfig copyWith({
-    String? modelName,
-    String? projectId,
-    String? region,
-    String? accessToken,
-  }) {
+  @override
+  List<ConfigField> get formFields => [
+    ConfigField(key: 'modelName', label: 'Model Name', value: modelName),
+    ConfigField(key: 'projectId', label: 'Project ID', value: projectId),
+    ConfigField(key: 'region', label: 'Region', value: region),
+    ConfigField(key: 'accessToken', label: 'Access Token', value: accessToken, isSecret: true),
+  ];
+
+  @override
+  AIProviderConfig copyWithField(String key, String value) {
     return VertexAIConfig(
-      modelName: modelName ?? this.modelName,
-      projectId: projectId ?? this.projectId,
-      region: region ?? this.region,
-      accessToken: accessToken ?? this.accessToken,
+      modelName: key == 'modelName' ? value : modelName,
+      projectId: key == 'projectId' ? value : projectId,
+      region: key == 'region' ? value : region,
+      accessToken: key == 'accessToken' ? value : accessToken,
     );
   }
 }
