@@ -46,7 +46,7 @@ class MenuTranslationAgent extends BaseAgent<MenuTranslationRequest, GenerateRes
 final menuTranslationAgentProvider = Provider.autoDispose<MenuTranslationAgent>((ref) {
   return MenuTranslationAgent(
     AiAgentType.menuTranslation,
-    ref.watch(aiProviderProvider),
+    ref.watch(aiProviderFamily(AiAgentType.menuTranslation)),
     AIAgentLogger(AiAgentType.menuTranslation),
   );
 });

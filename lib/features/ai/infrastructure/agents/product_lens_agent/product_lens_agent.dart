@@ -108,7 +108,7 @@ final productLensAgentProvider = Provider.autoDispose<IProductLensAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return ProductLensAgent(
     AiAgentType.productLens,
-    ref.watch(aiProviderProvider),
+    ref.watch(aiProviderFamily(AiAgentType.productLens)),
     AIAgentLogger(AiAgentType.productLens),
     targetLanguage: language,
   );

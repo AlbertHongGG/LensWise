@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/models/ai_agent_type.dart';
 import '../../domain/models/ai_provider_config.dart';
 import '../../presentation/controllers/ai_config_controller.dart';
 import 'ai_provider.dart';
@@ -44,7 +45,8 @@ class ProviderFactory {
   }
 }
 
-final aiProviderProvider = Provider.autoDispose<AIProvider>((ref) {
+final aiProviderFamily = Provider.family.autoDispose<AIProvider, AiAgentType>((ref, agentType) {
   final state = ref.watch(aiConfigControllerProvider);
-  return ProviderFactory.createProvider(state.activeConfig);
+  final agentConfig = state.getConfigFor(agentType);
+  return ProviderFactory.createProvider(agentConfig.activeConfig);
 });

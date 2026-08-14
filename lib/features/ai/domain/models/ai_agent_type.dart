@@ -4,8 +4,7 @@ enum AiAgentType {
   menuTranslation('MenuTranslation', '菜單翻譯'),
   productComparison('ProductComparison', '商品比對'),
   productLens('ProductLens', '商品分析'),
-  receiptScanner('ReceiptScanner', '發票掃描'),
-  systemViewer('SystemViewer', '系統檢視'); // For SystemLogManager itself if needed
+  receiptScanner('ReceiptScanner', '發票掃描');
 
   final String id;
   final String displayName;

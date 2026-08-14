@@ -23,8 +23,7 @@ class AiChatRequest {
 class AiChatAgent extends BaseAgent<AiChatRequest, GenerateResponse> {
   AiChatAgent(super.agentType, super.provider, super.logger);
 
-  @override
-  Future<GenerateResponse> execute(AiChatRequest input) async {
+  GenerateRequest _buildRequest(AiChatRequest input) {
     final buffer = StringBuffer();
 
     // Inject dynamic system context (e.g. Product, Receipt, Comparison details)
@@ -41,46 +40,27 @@ class AiChatAgent extends BaseAgent<AiChatRequest, GenerateResponse> {
     buffer.writeln('User: ${input.newQuery}');
     buffer.writeln('AI: ');
 
-    final request = GenerateRequest(
+    return GenerateRequest(
       systemPrompt: buildAiChatSystemPrompt(),
       prompt: buffer.toString(),
     );
+  }
 
-    final response = await executePrompt(request);
-    return response;
+  @override
+  Future<GenerateResponse> execute(AiChatRequest input) async {
+    return await executePrompt(_buildRequest(input));
   }
 
   @override
   Stream<GenerateResponse> executeStream(AiChatRequest input) async* {
-    final buffer = StringBuffer();
-
-    // Inject dynamic system context
-    buffer.writeln(input.systemContextPrompt);
-    buffer.writeln('\n--- 對話歷史 ---');
-
-    // Inject history
-    for (final msg in input.history) {
-      buffer.writeln(
-        buildAiChatHistory(msg.text, msg.type == ChatMessageType.user),
-      );
-    }
-
-    buffer.writeln('User: ${input.newQuery}');
-    buffer.writeln('AI: ');
-
-    final request = GenerateRequest(
-      systemPrompt: buildAiChatSystemPrompt(),
-      prompt: buffer.toString(),
-    );
-
-    yield* executePromptStream(request);
+    yield* executePromptStream(_buildRequest(input));
   }
 }
 
 final aiChatAgentProvider = Provider.autoDispose<AiChatAgent>((ref) {
   return AiChatAgent(
     AiAgentType.aiChat,
-    ref.watch(aiProviderProvider),
+    ref.watch(aiProviderFamily(AiAgentType.aiChat)),
     AIAgentLogger(AiAgentType.aiChat),
   );
 });

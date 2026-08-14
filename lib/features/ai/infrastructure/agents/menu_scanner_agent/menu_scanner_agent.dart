@@ -80,7 +80,7 @@ final menuScannerAgentProvider = Provider.autoDispose<IMenuScannerAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return MenuScannerAgent(
     AiAgentType.menuScanner,
-    ref.watch(aiProviderProvider),
+    ref.watch(aiProviderFamily(AiAgentType.menuScanner)),
     AIAgentLogger(AiAgentType.menuScanner),
     targetLanguage: language,
   );
