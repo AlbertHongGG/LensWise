@@ -1,4 +1,4 @@
-package com.lenswise.lens_wise
+package com.lenswise.app
 
 import io.flutter.embedding.android.FlutterActivity
 
