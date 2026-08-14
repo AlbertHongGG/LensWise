@@ -19,28 +19,24 @@ class ScannerActionButton extends ConsumerWidget {
     final isAnalyzing = state.actionState == CameraActionState.analyzing;
     final isLocked = state.isLocked;
     
-    Color shadowColor;
+    final shadowColor = Colors.blueAccent;
     IconData iconData;
     String labelText;
     
     switch (state.currentMode) {
       case ScannerMode.product:
-        shadowColor = Colors.blueAccent;
         iconData = Icons.search;
         labelText = '開始分析';
         break;
       case ScannerMode.comparison:
-        shadowColor = Colors.purpleAccent;
         iconData = Icons.compare;
         labelText = '開始比對';
         break;
       case ScannerMode.receipt:
-        shadowColor = Colors.blueAccent;
         iconData = Icons.receipt_long;
         labelText = '開始解析';
         break;
       case ScannerMode.menu:
-        shadowColor = Colors.orangeAccent;
         iconData = Icons.restaurant_menu;
         labelText = '辨識菜單';
         break;
