@@ -62,7 +62,7 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/');
+              context.go('/scanner');
             }
           },
         );
@@ -76,7 +76,7 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
                 if (context.canPop()) {
                   context.pop();
                 } else {
-                  context.go('/');
+                  context.go('/scanner');
                 }
               },
               child: const Text('無效的資料 (返回)'),
@@ -116,7 +116,7 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go('/');
+                context.go('/scanner');
               }
             },
             icon: const Icon(Icons.arrow_back),

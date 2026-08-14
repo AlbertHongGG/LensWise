@@ -11,7 +11,7 @@ import 'package:lens_wise/features/settings/presentation/pages/settings_page.dar
 import 'package:lens_wise/core/models/app_image_entity.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.dart';
-
+import 'package:lens_wise/core/presentation/pages/splash_animation_page.dart';
 
 // History Pages
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
@@ -38,10 +38,24 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: globalNavigatorKey,
     initialLocation: '/',
     routes: [
-      // The ONE AND ONLY root page: Camera
+      // Splash Screen
       GoRoute(
         path: '/',
-        builder: (context, state) => const ScannerDashboardPage(),
+        builder: (context, state) => const SplashAnimationPage(),
+      ),
+      // Main Dashboard
+      GoRoute(
+        path: '/scanner',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ScannerDashboardPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeIn).animate(animation),
+              child: child,
+            );
+          },
+        ),
       ),
       GoRoute(
         path: '/product/processing',
