@@ -33,7 +33,10 @@ abstract class MenuScannerRecord with _$MenuScannerRecord implements IHistoryRec
   String? get deletionImagePath => null;
 
   @override
-  List<String>? get deletionImagePaths => imagePaths;
+  List<String>? get deletionImagePaths => [
+    ...imagePaths,
+    ...translatedImagePaths.values,
+  ];
 }
 
 @freezed

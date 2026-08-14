@@ -18,6 +18,14 @@ class ReceiptHistoryController extends AsyncNotifier<List<ReceiptScannerRecord>>
   }
 
   @override
+  Future<void> saveRecord(IHistoryRecord record) async {
+    final r = record as ReceiptScannerRecord;
+    final repo = ref.read(receiptScannerRepositoryProvider);
+    await repo.save(r.id, r);
+    ref.invalidateSelf();
+  }
+
+  @override
   Future<void> deleteRecord(IHistoryRecord record) async {
     final manager = ref.read(recordManagerServiceProvider);
     await manager.deleteRecord(
@@ -57,6 +65,14 @@ class ProductHistoryController extends AsyncNotifier<List<ProductLensRecord>> im
     final records = await repo.getAll();
     records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return records;
+  }
+
+  @override
+  Future<void> saveRecord(IHistoryRecord record) async {
+    final r = record as ProductLensRecord;
+    final repo = ref.read(productLensRepositoryProvider);
+    await repo.save(r.id, r);
+    ref.invalidateSelf();
   }
 
   @override
@@ -102,6 +118,14 @@ class ComparisonHistoryController extends AsyncNotifier<List<ProductComparisonRe
   }
 
   @override
+  Future<void> saveRecord(IHistoryRecord record) async {
+    final r = record as ProductComparisonRecord;
+    final repo = ref.read(productComparisonRepositoryProvider);
+    await repo.save(r.id, r);
+    ref.invalidateSelf();
+  }
+
+  @override
   Future<void> deleteRecord(IHistoryRecord record) async {
     final manager = ref.read(recordManagerServiceProvider);
     await manager.deleteRecord(
@@ -141,6 +165,14 @@ class MenuHistoryController extends AsyncNotifier<List<MenuScannerRecord>> imple
     final records = await repo.getAll();
     records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return records;
+  }
+
+  @override
+  Future<void> saveRecord(IHistoryRecord record) async {
+    final r = record as MenuScannerRecord;
+    final repo = ref.read(menuScannerRepositoryProvider);
+    await repo.save(r.id, r);
+    ref.invalidateSelf();
   }
 
   @override

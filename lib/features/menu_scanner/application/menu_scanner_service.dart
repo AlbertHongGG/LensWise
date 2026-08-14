@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
+import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/menu_scanner_agent/menu_scanner_agent.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
@@ -32,9 +33,8 @@ class MenuScannerService {
       imagePaths: savedPaths,
     );
 
-    // 4. 寫入 Hive Repository
-    final repo = _ref.read(menuScannerRepositoryProvider);
-    await repo.save('menu_$id', completeRecord);
+    // 4. 透過 Controller 更新狀態並寫入 Repository (SSOT)
+    await _ref.read(menuHistoryProvider.notifier).saveRecord(completeRecord);
 
     return completeRecord;
   }
@@ -67,9 +67,8 @@ class MenuScannerService {
     
     final updatedRecord = record.copyWith(translatedImagePaths: newMap);
     
-    // Write back to repo
-    final repo = _ref.read(menuScannerRepositoryProvider);
-    await repo.save(updatedRecord.id, updatedRecord);
+    // Write back to repo via Controller
+    await _ref.read(menuHistoryProvider.notifier).saveRecord(updatedRecord);
     
     return updatedRecord;
   }
