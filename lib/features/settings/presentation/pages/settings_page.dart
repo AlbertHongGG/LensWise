@@ -33,7 +33,7 @@ class SettingsPage extends ConsumerWidget {
             subtitle: 'SYSTEM CONFIGURATION',
           ),
           SettingsSection(
-            title: '外觀與系統',
+            title: '系統',
             children: [
               SettingsTile(
                 icon: Icons.dark_mode_rounded,
@@ -45,6 +45,17 @@ class SettingsPage extends ConsumerWidget {
                     notifier.updateThemeMode(val ? ThemeMode.dark : ThemeMode.light);
                   },
                 ),
+              ),
+              SettingsTile(
+                icon: Icons.history_rounded,
+                iconColor: AppColors.primary,
+                title: 'APP 系統通知日誌',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SystemLogViewerScreen()),
+                  );
+                },
               ),
             ],
           ),
@@ -85,17 +96,6 @@ class SettingsPage extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AiLogViewerScreen()),
-                  );
-                },
-              ),
-              SettingsTile(
-                icon: Icons.history_rounded,
-                iconColor: AppColors.primary,
-                title: 'APP 系統通知日誌',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SystemLogViewerScreen()),
                   );
                 },
               ),

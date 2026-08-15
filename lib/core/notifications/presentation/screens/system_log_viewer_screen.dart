@@ -152,26 +152,39 @@ class _SystemLogViewerScreenState extends ConsumerState<SystemLogViewerScreen> {
                                 final timestampStr = data['timestamp'] as String? ?? '';
                                 
                                 DateTime? timestamp;
+                                String displayTime = timestampStr;
                                 if (timestampStr.isNotEmpty) {
                                   timestamp = DateTime.tryParse(timestampStr);
+                                  if (timestamp != null) {
+                                    final y = timestamp.year.toString().padLeft(4, '0');
+                                    final m = timestamp.month.toString().padLeft(2, '0');
+                                    final d = timestamp.day.toString().padLeft(2, '0');
+                                    final h = timestamp.hour.toString().padLeft(2, '0');
+                                    final min = timestamp.minute.toString().padLeft(2, '0');
+                                    final s = timestamp.second.toString().padLeft(2, '0');
+                                    displayTime = '$y/$m/$d $h:$min:$s';
+                                  }
                                 }
                                 
                                 final color = _getColorForType(type);
                                 
                                 return LongPressDraggable<FileSystemEntity>(
                                   data: file,
-                                  feedback: Material(
-                                    color: Colors.transparent,
-                                    child: Opacity(
-                                      opacity: 0.8,
-                                      child: _buildCard(isDark, type, message, timestampStr, color, true),
+                                  feedback: SizedBox(
+                                    width: MediaQuery.of(context).size.width - 32,
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: Opacity(
+                                        opacity: 0.8,
+                                        child: _buildCard(isDark, type, message, displayTime, color, true),
+                                      ),
                                     ),
                                   ),
                                   childWhenDragging: Opacity(
                                     opacity: 0.3,
-                                    child: _buildCard(isDark, type, message, timestampStr, color, false),
+                                    child: _buildCard(isDark, type, message, displayTime, color, false),
                                   ),
-                                  child: _buildCard(isDark, type, message, timestampStr, color, false),
+                                  child: _buildCard(isDark, type, message, displayTime, color, false),
                                 );
                               } catch (e) {
                                 return const SizedBox.shrink();
@@ -255,38 +268,49 @@ class _SystemLogViewerScreenState extends ConsumerState<SystemLogViewerScreen> {
   }
 
   Widget _buildCard(bool isDark, String type, String message, String timestampStr, Color color, bool isDragging) {
-    return Card(
-      elevation: isDragging ? 12 : 0,
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      color: isDark ? AppColors.surfaceDark : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: isDark ? Colors.white12 : Colors.black12,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
           width: 1,
         ),
+        boxShadow: isDragging ? [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ] : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(
-                color: color,
-                width: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
+              child: Icon(_getIconForType(type), color: color, size: 24),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(_getIconForType(type), color: color, size: 24),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         type.toUpperCase(),
@@ -294,34 +318,36 @@ class _SystemLogViewerScreenState extends ConsumerState<SystemLogViewerScreen> {
                           fontFamily: 'Outfit',
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
+                          letterSpacing: 1.5,
                           color: color,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        message,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: isDark ? Colors.white : Colors.black87,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       Text(
                         timestampStr,
                         style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white54 : Colors.black54,
+                          fontSize: 11,
+                          color: isDark ? Colors.white54 : Colors.black38,
                           fontFamily: 'Outfit',
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    message,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: isDark ? Colors.white : Colors.black87,
+                      height: 1.5,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

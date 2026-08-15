@@ -43,16 +43,23 @@ class NotificationToast extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.7),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black.withValues(alpha: 0.4)
+                  : Colors.white.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: typeColor.withValues(alpha: 0.3), width: 1),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
+                width: 1,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 )
               ],
             ),
@@ -64,18 +71,24 @@ class NotificationToast extends StatelessWidget {
                 Expanded(
                   child: Text(
                     notification.message,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       decoration: TextDecoration.none,
+                      fontFamily: 'Outfit',
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: onDismiss,
-                  child: const Icon(Icons.close, color: Colors.white54, size: 20),
+                  child: Icon(
+                    Icons.close, 
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black54, 
+                    size: 20
+                  ),
                 ),
               ],
             ),
