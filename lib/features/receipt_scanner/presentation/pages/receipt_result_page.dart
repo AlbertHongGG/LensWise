@@ -141,14 +141,18 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                           child: ReceiptImageCarousel(
                             items: [
-                              ...(_currentRecord.imagePaths.map((p) => CarouselItem(
-                                image: FileImage(AppPaths.getImageFile(p)),
-                                fit: BoxFit.contain,
-                              ))),
-                              ...(widget.memoryImages?.map((m) => CarouselItem(
-                                image: MemoryImage(m.bytes),
-                                fit: m.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
-                              )) ?? []),
+                              ...(List.generate(_currentRecord.imagePaths.length, (i) {
+                                final path = _currentRecord.imagePaths[i];
+                                final memoryImage = widget.memoryImages != null && widget.memoryImages!.length > i 
+                                    ? widget.memoryImages![i] : null;
+                                
+                                return CarouselItem(
+                                  image: memoryImage != null 
+                                      ? ResizeImage(MemoryImage(memoryImage.bytes), width: 1080) 
+                                      : ResizeImage(FileImage(AppPaths.getImageFile(path)), width: 1080) as ImageProvider,
+                                  fit: memoryImage?.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
+                                );
+                              })),
                             ],
                           ),
                         ),

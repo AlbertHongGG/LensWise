@@ -64,12 +64,14 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
                 imageEntity.bytes,
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
+                cacheWidth: 1080,
               );
             } else {
               return Image.file(
                 AppPaths.getImageFile(widget.imagePaths[index]),
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
+                cacheWidth: 1080,
               );
             }
           },

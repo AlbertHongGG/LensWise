@@ -399,8 +399,8 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
       items.add(_MenuCarouselItem(
         image: CarouselItem(
           image: memoryImage != null 
-              ? MemoryImage(memoryImage.bytes) 
-              : FileImage(AppPaths.getImageFile(path)) as ImageProvider,
+              ? ResizeImage(MemoryImage(memoryImage.bytes), width: 1080) 
+              : ResizeImage(FileImage(AppPaths.getImageFile(path)), width: 1080) as ImageProvider,
           fit: fit,
         ),
         originalPath: path,
@@ -411,7 +411,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
       if (record.translatedImagePaths.containsKey(path)) {
         items.add(_MenuCarouselItem(
           image: CarouselItem(
-            image: FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)),
+            image: ResizeImage(FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)), width: 1080),
             fit: BoxFit.contain,
           ),
           originalPath: null,
