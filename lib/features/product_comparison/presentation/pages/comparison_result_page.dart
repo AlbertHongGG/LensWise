@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
+import 'package:lens_wise/core/utils/app_paths.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_hero_section.dart';
@@ -35,8 +36,8 @@ class _ProductComparisonRecordPageState extends State<ProductComparisonRecordPag
       return MemoryImage(widget.args.rawImages![index].bytes);
     }
     final paths = widget.args.imagePath!.split(',');
-    if (index >= paths.length) return FileImage(File(paths.last)); // Fallback for old records with only 1 image
-    return FileImage(File(paths[index]));
+    if (index >= paths.length) return FileImage(AppPaths.getImageFile(paths.last)); // Fallback for old records with only 1 image
+    return FileImage(AppPaths.getImageFile(paths[index]));
   }
 
   void _onAvatarTapped(int index) {

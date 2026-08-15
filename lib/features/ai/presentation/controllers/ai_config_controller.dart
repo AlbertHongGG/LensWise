@@ -7,23 +7,37 @@ import 'package:lens_wise/features/ai/domain/models/agent_ai_config.dart';
 import 'package:lens_wise/core/providers/shared_prefs_provider.dart';
 
 class AIConfigState {
+  final Map<AIProviderType, AIProviderConfig> globalProviderConfigs;
+  final AIProviderType editingGlobalProviderType;
   final Map<AiAgentType, AgentAIConfig> agentConfigs;
   final bool isAIAgentEnabled;
 
   AIConfigState({
+    required this.globalProviderConfigs,
+    this.editingGlobalProviderType = AIProviderType.geminiflow,
     required this.agentConfigs,
     this.isAIAgentEnabled = true,
   });
 
-  AgentAIConfig getConfigFor(AiAgentType agentType) {
+  AgentAIConfig getOverrideConfigFor(AiAgentType agentType) {
     return agentConfigs[agentType] ?? AgentAIConfig.defaultConfig();
   }
 
+  AgentAIConfig getEffectiveConfigFor(AiAgentType agentType) {
+    return getOverrideConfigFor(agentType).getEffectiveConfig(globalProviderConfigs);
+  }
+
+  AIProviderConfig get editingGlobalConfig => globalProviderConfigs[editingGlobalProviderType]!;
+
   AIConfigState copyWith({
+    Map<AIProviderType, AIProviderConfig>? globalProviderConfigs,
+    AIProviderType? editingGlobalProviderType,
     Map<AiAgentType, AgentAIConfig>? agentConfigs,
     bool? isAIAgentEnabled,
   }) {
     return AIConfigState(
+      globalProviderConfigs: globalProviderConfigs ?? this.globalProviderConfigs,
+      editingGlobalProviderType: editingGlobalProviderType ?? this.editingGlobalProviderType,
       agentConfigs: agentConfigs ?? this.agentConfigs,
       isAIAgentEnabled: isAIAgentEnabled ?? this.isAIAgentEnabled,
     );
@@ -36,6 +50,32 @@ class AIConfigController extends Notifier<AIConfigState> {
     final prefs = ref.watch(sharedPreferencesProvider);
     final isAIAgentEnabled = prefs.getBool('is_ai_agent_enabled') ?? true;
 
+    final Map<AIProviderType, AIProviderConfig> globalConfigs = {
+      AIProviderType.geminiflow: const GeminiFlowConfig(),
+      AIProviderType.ollama: const OllamaConfig(),
+      AIProviderType.vertexai: const VertexAIConfig(),
+    };
+
+    final globalGeminiflowJson = prefs.getString('ai_global_config_geminiflow');
+    if (globalGeminiflowJson != null) {
+      globalConfigs[AIProviderType.geminiflow] = GeminiFlowConfig.fromJson(jsonDecode(globalGeminiflowJson));
+    }
+
+    final globalOllamaJson = prefs.getString('ai_global_config_ollama');
+    if (globalOllamaJson != null) {
+      globalConfigs[AIProviderType.ollama] = OllamaConfig.fromJson(jsonDecode(globalOllamaJson));
+    }
+
+    final globalVertexaiJson = prefs.getString('ai_global_config_vertexai');
+    if (globalVertexaiJson != null) {
+      globalConfigs[AIProviderType.vertexai] = VertexAIConfig.fromJson(jsonDecode(globalVertexaiJson));
+    }
+
+    final editingGlobalTypeStr = prefs.getString('ai_global_editing_provider');
+    final editingGlobalType = editingGlobalTypeStr != null
+        ? AIProviderType.values.byName(editingGlobalTypeStr)
+        : AIProviderType.geminiflow;
+
     final Map<AiAgentType, AgentAIConfig> loadedConfigs = {};
 
     for (final agentType in AiAgentType.values) {
@@ -47,9 +87,9 @@ class AIConfigController extends Notifier<AIConfigState> {
           : AIProviderType.geminiflow;
 
       final Map<AIProviderType, AIProviderConfig> providerConfigs = {
-        AIProviderType.geminiflow: const GeminiFlowConfig(),
-        AIProviderType.ollama: const OllamaConfig(),
-        AIProviderType.vertexai: const VertexAIConfig(),
+        AIProviderType.geminiflow: const GeminiFlowConfig.empty(),
+        AIProviderType.ollama: const OllamaConfig.empty(),
+        AIProviderType.vertexai: const VertexAIConfig.empty(),
       };
 
       final geminiflowJson = prefs.getString('${prefix}_config_geminiflow');
@@ -74,9 +114,38 @@ class AIConfigController extends Notifier<AIConfigState> {
     }
 
     return AIConfigState(
+      globalProviderConfigs: globalConfigs,
+      editingGlobalProviderType: editingGlobalType,
       agentConfigs: loadedConfigs,
       isAIAgentEnabled: isAIAgentEnabled,
     );
+  }
+
+  Future<void> saveGlobalProviderConfig(
+    AIProviderType providerType, {
+    AIProviderConfig? config,
+    bool setAsEditing = false,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    var newState = state;
+    if (setAsEditing) {
+      newState = newState.copyWith(editingGlobalProviderType: providerType);
+      await prefs.setString('ai_global_editing_provider', providerType.name);
+    }
+
+    if (config != null) {
+      final newGlobalConfigs = Map<AIProviderType, AIProviderConfig>.from(newState.globalProviderConfigs);
+      newGlobalConfigs[providerType] = config;
+      newState = newState.copyWith(globalProviderConfigs: newGlobalConfigs);
+      
+      await prefs.setString(
+        'ai_global_config_${providerType.name}',
+        jsonEncode(config.toJson()),
+      );
+    }
+    
+    state = newState;
   }
 
   Future<void> saveAgentConfig(
@@ -84,7 +153,7 @@ class AIConfigController extends Notifier<AIConfigState> {
     AIProviderType? providerType,
     AIProviderConfig? activeProviderConfig,
   }) async {
-    final currentAgentConfig = state.getConfigFor(agentType);
+    final currentAgentConfig = state.getOverrideConfigFor(agentType);
     
     final newProviderConfigs = Map<AIProviderType, AIProviderConfig>.from(
       currentAgentConfig.providerConfigs,

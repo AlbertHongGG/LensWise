@@ -16,10 +16,12 @@ import 'package:lens_wise/core/di/hardware_providers.dart';
 import 'package:lens_wise/core/services/camerawesome_service.dart';
 import 'package:lens_wise/core/services/photo_manager_gallery_service.dart';
 import 'package:lens_wise/core/services/image_picker_service.dart';
+import 'package:lens_wise/core/utils/app_paths.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  await AppPaths.init();
   await Hive.initFlutter();
   Hive.registerAdapter(ReceiptScannerHiveModelAdapter());
   Hive.registerAdapter(ProductLensHiveModelAdapter());

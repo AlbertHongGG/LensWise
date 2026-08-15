@@ -48,10 +48,6 @@ class HiveReceiptScannerRepository implements IReceiptScannerRepository {
     await box.delete(id);
   }
 
-  @override
-  Future<ReceiptScannerRecord?> get(String id) async {
-    return getById(id);
-  }
 
   @override
   Future<void> clearAll() async {

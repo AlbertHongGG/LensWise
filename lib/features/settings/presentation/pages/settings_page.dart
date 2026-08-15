@@ -11,6 +11,7 @@ import 'package:lens_wise/core/widgets/premium_config_header.dart';
 import 'package:lens_wise/core/widgets/app_switch.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_log_viewer_screen.dart';
 import 'package:lens_wise/core/models/target_language.dart';
+import 'package:lens_wise/features/backup/presentation/widgets/backup_settings_section.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -88,6 +89,8 @@ class SettingsPage extends ConsumerWidget {
               ),
             ],
           ),
+          
+          const BackupSettingsSection(),
           
           const SizedBox(height: 32),
         ],

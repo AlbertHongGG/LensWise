@@ -49,10 +49,6 @@ class HiveProductLensRepository implements IProductLensRepository {
     await box.delete(id);
   }
 
-  @override
-  Future<ProductLensRecord?> get(String id) async {
-    return getById(id);
-  }
 
   @override
   Future<void> clearAll() async {

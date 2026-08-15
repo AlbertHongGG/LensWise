@@ -4,12 +4,14 @@ class ConfigField {
   final String key;
   final String label;
   final String value;
+  final String? hintValue;
   final bool isSecret;
 
   const ConfigField({
     required this.key,
     required this.label,
     required this.value,
+    this.hintValue,
     this.isSecret = false,
   });
 }
@@ -21,9 +23,11 @@ abstract class AIProviderConfig {
 
   Map<String, dynamic> toJson();
   
-  List<ConfigField> get formFields;
+  List<ConfigField> getFormFields([covariant AIProviderConfig? fallback]);
   
   AIProviderConfig copyWithField(String key, String value);
+
+  AIProviderConfig fallbackTo(covariant AIProviderConfig fallback);
 }
 
 class GeminiFlowConfig extends AIProviderConfig {
@@ -33,6 +37,8 @@ class GeminiFlowConfig extends AIProviderConfig {
     super.modelName = 'gemini-3.7-flash',
     this.baseUrl = 'http://127.0.0.1:8000',
   });
+
+  const GeminiFlowConfig.empty() : baseUrl = '', super(modelName: '');
 
   @override
   Map<String, dynamic> toJson() => {'modelName': modelName, 'baseUrl': baseUrl};
@@ -45,9 +51,9 @@ class GeminiFlowConfig extends AIProviderConfig {
   }
 
   @override
-  List<ConfigField> get formFields => [
-    ConfigField(key: 'modelName', label: 'Model Name', value: modelName),
-    ConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl),
+  List<ConfigField> getFormFields([covariant GeminiFlowConfig? fallback]) => [
+    ConfigField(key: 'modelName', label: 'Model Name', value: modelName, hintValue: fallback?.modelName),
+    ConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl, hintValue: fallback?.baseUrl),
   ];
 
   @override
@@ -55,6 +61,14 @@ class GeminiFlowConfig extends AIProviderConfig {
     return GeminiFlowConfig(
       modelName: key == 'modelName' ? value : modelName,
       baseUrl: key == 'baseUrl' ? value : baseUrl,
+    );
+  }
+
+  @override
+  AIProviderConfig fallbackTo(covariant GeminiFlowConfig fallback) {
+    return GeminiFlowConfig(
+      modelName: modelName.isNotEmpty ? modelName : fallback.modelName,
+      baseUrl: baseUrl.isNotEmpty ? baseUrl : fallback.baseUrl,
     );
   }
 }
@@ -67,6 +81,8 @@ class OllamaConfig extends AIProviderConfig {
     this.baseUrl = 'http://localhost:11434',
   });
 
+  const OllamaConfig.empty() : baseUrl = '', super(modelName: '');
+
   @override
   Map<String, dynamic> toJson() => {'modelName': modelName, 'baseUrl': baseUrl};
 
@@ -78,9 +94,9 @@ class OllamaConfig extends AIProviderConfig {
   }
 
   @override
-  List<ConfigField> get formFields => [
-    ConfigField(key: 'modelName', label: 'Model Name', value: modelName),
-    ConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl),
+  List<ConfigField> getFormFields([covariant OllamaConfig? fallback]) => [
+    ConfigField(key: 'modelName', label: 'Model Name', value: modelName, hintValue: fallback?.modelName),
+    ConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl, hintValue: fallback?.baseUrl),
   ];
 
   @override
@@ -88,6 +104,14 @@ class OllamaConfig extends AIProviderConfig {
     return OllamaConfig(
       modelName: key == 'modelName' ? value : modelName,
       baseUrl: key == 'baseUrl' ? value : baseUrl,
+    );
+  }
+
+  @override
+  AIProviderConfig fallbackTo(covariant OllamaConfig fallback) {
+    return OllamaConfig(
+      modelName: modelName.isNotEmpty ? modelName : fallback.modelName,
+      baseUrl: baseUrl.isNotEmpty ? baseUrl : fallback.baseUrl,
     );
   }
 }
@@ -103,6 +127,8 @@ class VertexAIConfig extends AIProviderConfig {
     this.region = 'us-central1',
     this.accessToken = '',
   });
+
+  const VertexAIConfig.empty() : projectId = '', region = '', accessToken = '', super(modelName: '');
 
   @override
   Map<String, dynamic> toJson() => {
@@ -122,11 +148,11 @@ class VertexAIConfig extends AIProviderConfig {
   }
 
   @override
-  List<ConfigField> get formFields => [
-    ConfigField(key: 'modelName', label: 'Model Name', value: modelName),
-    ConfigField(key: 'projectId', label: 'Project ID', value: projectId),
-    ConfigField(key: 'region', label: 'Region', value: region),
-    ConfigField(key: 'accessToken', label: 'Access Token', value: accessToken, isSecret: true),
+  List<ConfigField> getFormFields([covariant VertexAIConfig? fallback]) => [
+    ConfigField(key: 'modelName', label: 'Model Name', value: modelName, hintValue: fallback?.modelName),
+    ConfigField(key: 'projectId', label: 'Project ID', value: projectId, hintValue: fallback?.projectId),
+    ConfigField(key: 'region', label: 'Region', value: region, hintValue: fallback?.region),
+    ConfigField(key: 'accessToken', label: 'Access Token', value: accessToken, hintValue: fallback?.accessToken, isSecret: true),
   ];
 
   @override
@@ -136,6 +162,16 @@ class VertexAIConfig extends AIProviderConfig {
       projectId: key == 'projectId' ? value : projectId,
       region: key == 'region' ? value : region,
       accessToken: key == 'accessToken' ? value : accessToken,
+    );
+  }
+
+  @override
+  AIProviderConfig fallbackTo(covariant VertexAIConfig fallback) {
+    return VertexAIConfig(
+      modelName: modelName.isNotEmpty ? modelName : fallback.modelName,
+      projectId: projectId.isNotEmpty ? projectId : fallback.projectId,
+      region: region.isNotEmpty ? region : fallback.region,
+      accessToken: accessToken.isNotEmpty ? accessToken : fallback.accessToken,
     );
   }
 }

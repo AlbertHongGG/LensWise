@@ -21,13 +21,31 @@ class AgentAIConfig {
     );
   }
 
+  AgentAIConfig getEffectiveConfig(Map<AIProviderType, AIProviderConfig> globalConfigs) {
+    final effectiveConfigs = <AIProviderType, AIProviderConfig>{};
+    for (final entry in providerConfigs.entries) {
+      final type = entry.key;
+      final overrideConfig = entry.value;
+      final globalConfig = globalConfigs[type];
+      if (globalConfig != null) {
+        effectiveConfigs[type] = overrideConfig.fallbackTo(globalConfig);
+      } else {
+        effectiveConfigs[type] = overrideConfig;
+      }
+    }
+    return AgentAIConfig(
+      activeProviderType: activeProviderType,
+      providerConfigs: effectiveConfigs,
+    );
+  }
+
   factory AgentAIConfig.defaultConfig() {
     return AgentAIConfig(
       activeProviderType: AIProviderType.geminiflow,
       providerConfigs: {
-        AIProviderType.geminiflow: const GeminiFlowConfig(),
-        AIProviderType.ollama: const OllamaConfig(),
-        AIProviderType.vertexai: const VertexAIConfig(),
+        AIProviderType.geminiflow: const GeminiFlowConfig.empty(),
+        AIProviderType.ollama: const OllamaConfig.empty(),
+        AIProviderType.vertexai: const VertexAIConfig.empty(),
       },
     );
   }

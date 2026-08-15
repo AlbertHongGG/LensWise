@@ -6,7 +6,9 @@ import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'dart:io';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
+import 'package:lens_wise/core/widgets/immersive_scaffold.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_paper_card.dart';
+import 'package:lens_wise/core/utils/app_paths.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/receipt_chat_adapter.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
@@ -140,7 +142,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                           child: ReceiptImageCarousel(
                             items: [
                               ...(_currentRecord.imagePaths.map((p) => CarouselItem(
-                                image: FileImage(File(p)),
+                                image: FileImage(AppPaths.getImageFile(p)),
                                 fit: BoxFit.contain,
                               ))),
                               ...(widget.memoryImages?.map((m) => CarouselItem(

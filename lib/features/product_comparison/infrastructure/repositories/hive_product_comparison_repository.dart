@@ -48,10 +48,6 @@ class HiveProductComparisonRepository implements IProductComparisonRepository {
     await box.delete(id);
   }
 
-  @override
-  Future<ProductComparisonRecord?> get(String id) async {
-    return getById(id);
-  }
 
   @override
   Future<void> clearAll() async {

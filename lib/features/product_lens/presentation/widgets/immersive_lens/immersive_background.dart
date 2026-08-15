@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:lens_wise/core/theme/app_colors.dart';
+import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
+import 'package:lens_wise/core/utils/app_paths.dart';
 
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
@@ -64,7 +67,7 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
               );
             } else {
               return Image.file(
-                File(widget.imagePaths[index]),
+                AppPaths.getImageFile(widget.imagePaths[index]),
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
               );

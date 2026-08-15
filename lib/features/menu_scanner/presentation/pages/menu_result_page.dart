@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
+import 'package:lens_wise/core/utils/app_paths.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_chat_adapter.dart';
 import 'dart:ui';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
@@ -399,7 +400,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
         image: CarouselItem(
           image: memoryImage != null 
               ? MemoryImage(memoryImage.bytes) 
-              : FileImage(File(path)) as ImageProvider,
+              : FileImage(AppPaths.getImageFile(path)) as ImageProvider,
           fit: fit,
         ),
         originalPath: path,
@@ -410,7 +411,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
       if (record.translatedImagePaths.containsKey(path)) {
         items.add(_MenuCarouselItem(
           image: CarouselItem(
-            image: FileImage(File(record.translatedImagePaths[path]!)),
+            image: FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)),
             fit: BoxFit.contain,
           ),
           originalPath: null,
