@@ -8,6 +8,7 @@ import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 import 'package:lens_wise/core/widgets/immersive_scaffold.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_paper_card.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/core/utils/app_paths.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/receipt_chat_adapter.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
@@ -179,9 +180,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
       ref.invalidate(receiptHistoryProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('儲存失敗: $e')),
-        );
+        ref.read(notificationProvider.notifier).showError('儲存失敗: $e');
       }
     }
   }

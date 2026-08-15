@@ -4,6 +4,7 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/backup/presentation/controllers/backup_controller.dart';
 import 'package:lens_wise/features/settings/presentation/widgets/settings_section.dart';
 import 'package:lens_wise/features/settings/presentation/widgets/settings_tile.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 class BackupSettingsSection extends ConsumerWidget {
   const BackupSettingsSection({super.key});
 
@@ -19,18 +20,14 @@ class BackupSettingsSection extends ConsumerWidget {
           subtitle: '打包為 ZIP 檔',
           onTap: () async {
             final controller = ref.read(backupControllerProvider.notifier);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('正在準備匯出檔案，請稍候...')),
-            );
+            ref.read(notificationProvider.notifier).showInfo('正在準備匯出檔案，請稍候...');
             final success = await controller.exportBackup();
             if (context.mounted) {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(success ? '備份檔案已成功建立！請選擇儲存位置' : '匯出失敗，請重試'),
-                  backgroundColor: success ? Colors.green : Colors.red,
-                ),
-              );
+              if (success) {
+                ref.read(notificationProvider.notifier).showSuccess('備份檔案已成功建立！請選擇儲存位置');
+              } else {
+                ref.read(notificationProvider.notifier).showError('匯出失敗，請重試');
+              }
             }
           },
         ),
@@ -43,12 +40,11 @@ class BackupSettingsSection extends ConsumerWidget {
             final controller = ref.read(backupControllerProvider.notifier);
             final success = await controller.importBackup();
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(success ? '資料已成功還原！' : '匯入已取消或發生錯誤'),
-                  backgroundColor: success ? Colors.green : Colors.orange,
-                ),
-              );
+              if (success) {
+                ref.read(notificationProvider.notifier).showSuccess('資料已成功還原！');
+              } else {
+                ref.read(notificationProvider.notifier).showWarning('匯入已取消或發生錯誤');
+              }
             }
           },
         ),

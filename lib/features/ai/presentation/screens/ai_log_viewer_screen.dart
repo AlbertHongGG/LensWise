@@ -9,6 +9,7 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_log_model.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/ai/infrastructure/logger/system_log_manager.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/features/ai/presentation/screens/agent_log_detail_screen.dart';
 import 'package:lens_wise/core/widgets/swipe_to_obliterate_button.dart';
 
@@ -248,9 +249,7 @@ class _AiLogViewerScreenState extends ConsumerState<AiLogViewerScreen>
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to read log: $e')));
+      ref.read(notificationProvider.notifier).showError('Failed to read log: $e');
     }
   }
 

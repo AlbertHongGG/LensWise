@@ -4,6 +4,7 @@ import 'package:lens_wise/features/scanner/domain/interfaces/i_gallery_service.d
 import 'package:lens_wise/core/di/hardware_providers.dart';
 import 'package:lens_wise/features/scanner/domain/models/gallery_asset.dart';
 import 'package:intl/intl.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 
 class GalleryState {
   final List<GalleryAsset> allAssets;
@@ -12,6 +13,7 @@ class GalleryState {
   final bool hasPermission;
   final bool isLoading;
   final bool hasMore;
+  final String? errorMessage;
 
   GalleryState({
     required this.allAssets,
@@ -20,6 +22,7 @@ class GalleryState {
     required this.hasPermission,
     required this.isLoading,
     required this.hasMore,
+    this.errorMessage,
   });
 
   GalleryState copyWith({
@@ -29,6 +32,7 @@ class GalleryState {
     bool? hasPermission,
     bool? isLoading,
     bool? hasMore,
+    String? errorMessage,
   }) {
     return GalleryState(
       allAssets: allAssets ?? this.allAssets,
@@ -37,6 +41,7 @@ class GalleryState {
       hasPermission: hasPermission ?? this.hasPermission,
       isLoading: isLoading ?? this.isLoading,
       hasMore: hasMore ?? this.hasMore,
+      errorMessage: errorMessage,
     );
   }
 }
@@ -122,7 +127,8 @@ class GalleryStateController extends Notifier<GalleryState> with WidgetsBindingO
         hasMore: assets.length == _pageSize,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, errorMessage: '無法讀取相簿');
+      ref.read(notificationProvider.notifier).showError('無法讀取相簿：$e');
     }
   }
   @override

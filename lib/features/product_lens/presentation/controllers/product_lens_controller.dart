@@ -5,6 +5,8 @@ import 'package:lens_wise/features/product_lens/domain/models/product_lens_recor
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
+import 'package:lens_wise/core/router/navigation_service.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 
 enum ProductLensStatus { idle, loading, success, error }
 
@@ -72,6 +74,7 @@ class ProductLensController extends Notifier<ProductLensState> {
         status: ProductLensStatus.error,
         errorMessage: e.toString(),
       );
+      ref.read(notificationProvider.notifier).showError('商品分析失敗：$e');
     }
   }
 

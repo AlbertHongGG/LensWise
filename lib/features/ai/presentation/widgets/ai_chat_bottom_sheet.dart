@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_chat_controller.dart';
 import 'package:lens_wise/features/ai/domain/models/chat_message.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
+import 'package:lens_wise/features/ai/presentation/widgets/speech_wave_indicator.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/core/voice/presentation/controllers/voice_controller.dart';
 import 'package:lens_wise/core/voice/domain/models/voice_state.dart';
@@ -99,7 +101,10 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
 
   void _handleSubmit() {
     final text = _controller.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) {
+      ref.read(notificationProvider.notifier).showWarning('請先輸入問題或啟動語音輸入');
+      return;
+    }
 
     ref.read(aiChatControllerProvider.notifier).sendMessage(text);
     
@@ -147,9 +152,9 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
         }
       }
       if (next.hasError && !(previous?.hasError ?? false)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('無法啟用語音辨識，請確認麥克風權限與系統是否支援。')),
-        );
+        if (mounted) {
+          ref.read(notificationProvider.notifier).showError('無法啟用語音辨識，請確認麥克風權限與系統是否支援。');
+        }
       }
     });
 
@@ -465,16 +470,11 @@ class _AiChatBottomSheetState extends ConsumerState<AiChatBottomSheet> {
                         )
                       : MarkdownBody(
                           data: MarkdownUtils.fixCjkBold(message.text),
-                          selectable: true, // Allow user to copy AI text!
+                          selectable: true,
                           styleSheet: _buildPremiumMarkdownStyleSheet(context, isDark, isError),
                           onTapLink: (text, href, title) {
                             if (href != null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('欲開啟外部連結：$href'),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
+                              ref.read(notificationProvider.notifier).showInfo('欲開啟外部連結：$href');
                             }
                           },
                         ),

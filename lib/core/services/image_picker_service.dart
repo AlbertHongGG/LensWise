@@ -1,8 +1,12 @@
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/interfaces/i_image_picker_service.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 
 class ImagePickerService implements IImagePickerService {
+  final Ref _ref;
+  ImagePickerService(this._ref);
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -16,6 +20,7 @@ class ImagePickerService implements IImagePickerService {
         return await image.readAsBytes();
       }
     } catch (e) {
+      _ref.read(notificationProvider.notifier).showWarning('無法開啟相簿：$e');
       print('[ImagePickerService] Error picking single image: $e');
     }
     return null;
@@ -37,6 +42,7 @@ class ImagePickerService implements IImagePickerService {
         return bytesList;
       }
     } catch (e) {
+      _ref.read(notificationProvider.notifier).showWarning('無法開啟相簿：$e');
       print('[ImagePickerService] Error picking multiple images: $e');
     }
     return [];

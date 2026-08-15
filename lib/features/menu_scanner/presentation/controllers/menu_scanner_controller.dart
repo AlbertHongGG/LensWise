@@ -4,6 +4,7 @@ import 'package:lens_wise/core/router/navigation_service.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class MenuScannerState {
@@ -85,6 +86,7 @@ class MenuScannerController extends Notifier<MenuScannerState> {
       navService.navigateToMenuRecord(result, images);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false);
+      ref.read(notificationProvider.notifier).showError('菜單分析失敗：$e');
     }
   }
 }

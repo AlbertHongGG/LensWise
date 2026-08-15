@@ -6,6 +6,7 @@ import 'package:lens_wise/core/di/app_provider_observer.dart';
 import 'package:lens_wise/core/providers/shared_prefs_provider.dart';
 import 'package:lens_wise/core/router/app_router.dart';
 import 'package:lens_wise/core/theme/app_theme.dart';
+import 'package:lens_wise/core/notifications/presentation/widgets/global_notification_overlay.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'package:lens_wise/features/receipt_scanner/infrastructure/models/receipt_scanner_hive_model.dart';
 import 'package:lens_wise/features/product_lens/infrastructure/models/product_lens_hive_model.dart';
@@ -38,7 +39,7 @@ void main() async {
         sharedPreferencesProvider.overrideWithValue(prefs),
         cameraServiceProvider.overrideWith((ref) => CamerawesomeService()),
         galleryServiceProvider.overrideWith((ref) => PhotoManagerGalleryService()),
-        imagePickerServiceProvider.overrideWith((ref) => ImagePickerService()),
+        imagePickerServiceProvider.overrideWith((ref) => ImagePickerService(ref)),
       ],
       child: const MyApp(),
     ),
@@ -60,6 +61,9 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        return GlobalNotificationOverlay(child: child!);
+      },
     );
   }
 }

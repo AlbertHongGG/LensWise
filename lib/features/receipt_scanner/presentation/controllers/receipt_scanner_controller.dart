@@ -5,6 +5,7 @@ import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/core/router/navigation_service.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ReceiptScannerState {
@@ -104,6 +105,7 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
       }
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false, isProcessing: false);
+      ref.read(notificationProvider.notifier).showError('收據分析失敗：$e');
     }
   }
 
@@ -113,8 +115,10 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
       final repository = ref.read(receiptScannerRepositoryProvider);
       await repository.save(updatedRecord.id, updatedRecord);
       ref.invalidate(receiptHistoryProvider);
+      ref.read(notificationProvider.notifier).showSuccess('紀錄已更新');
     } catch (e) {
       state = state.copyWith(errorMessage: 'Failed to update record: $e');
+      ref.read(notificationProvider.notifier).showError('更新失敗：$e');
     }
   }
 

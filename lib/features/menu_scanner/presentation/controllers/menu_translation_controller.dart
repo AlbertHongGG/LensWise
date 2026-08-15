@@ -2,8 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/menu_translation_agent/menu_translation_agent.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
-import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
-import 'package:lens_wise/core/notifications/services/in_app_notification_service.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 import 'package:lens_wise/core/models/target_language.dart';
 
@@ -93,17 +92,16 @@ class MenuTranslationController extends Notifier<MenuTranslationState> {
         
         
         state = state.setSuccess(response.images!);
-        final notificationService = ref.read(inAppNotificationServiceProvider);
-        notificationService.showSuccess('翻譯完成，您可向左滑動檢視新圖片。', title: '✨ 翻譯成功');
+        ref.read(notificationProvider.notifier).showSuccess('翻譯完成，您可向左滑動檢視新圖片。');
         return updatedRecord;
       } else {
         state = state.setError('AI 未能生成翻譯圖片，請稍後再試。');
-        ref.read(inAppNotificationServiceProvider).showError('AI 未能生成翻譯圖片，請稍後再試。');
+        ref.read(notificationProvider.notifier).showError('AI 未能生成翻譯圖片，請稍後再試。');
         return null;
       }
     } catch (e) {
       state = state.setError(e.toString());
-      ref.read(inAppNotificationServiceProvider).showError('發生錯誤：$e');
+      ref.read(notificationProvider.notifier).showError('發生錯誤：$e');
       return null;
     }
   }

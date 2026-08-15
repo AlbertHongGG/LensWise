@@ -4,6 +4,7 @@ import 'package:lens_wise/features/product_comparison/application/product_compar
 import 'package:lens_wise/core/storage/history_providers.dart';
 
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
+import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/core/router/navigation_service.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
@@ -84,6 +85,7 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
       navService.navigateToProductComparisonRecord(result, images);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isAnalyzing: false);
+      ref.read(notificationProvider.notifier).showError('商品比對失敗：$e');
     }
   }
 }
