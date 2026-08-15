@@ -69,8 +69,12 @@ class ReceiptPaperCard extends StatelessWidget {
             const SizedBox(height: 8),
             ...record.discounts.map((discount) => Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(discount.name, style: const TextStyle(fontSize: 14, color: Colors.red)),
+                Expanded(
+                  child: Text(discount.name, style: const TextStyle(fontSize: 14, color: Colors.red)),
+                ),
+                const SizedBox(width: 8),
                 Text(discount.amount.toStringAsFixed(2), style: const TextStyle(fontSize: 14, color: Colors.red)),
               ],
             )),
@@ -81,8 +85,12 @@ class ReceiptPaperCard extends StatelessWidget {
             const SizedBox(height: 8),
             ...record.taxes.map((tax) => Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(tax.name, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+                Expanded(
+                  child: Text(tax.name, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+                ),
+                const SizedBox(width: 8),
                 Text(tax.amount.toStringAsFixed(2), style: const TextStyle(fontSize: 14, color: Colors.black54)),
               ],
             )),
