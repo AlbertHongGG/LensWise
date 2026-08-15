@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/backup/infrastructure/services/backup_service.dart';
+import 'package:lens_wise/core/storage/history_providers.dart';
 
 enum BackupResult { success, canceled, error }
 
@@ -30,6 +31,13 @@ class BackupController extends Notifier<AsyncValue<void>> {
     try {
       final service = ref.read(backupServiceProvider);
       await service.importBackup();
+      
+      // Invalidate UI state so it re-fetches from repositories
+      ref.invalidate(receiptHistoryProvider);
+      ref.invalidate(productHistoryProvider);
+      ref.invalidate(comparisonHistoryProvider);
+      ref.invalidate(menuHistoryProvider);
+
       state = const AsyncData(null);
       return (BackupResult.success, null);
     } catch (e, st) {

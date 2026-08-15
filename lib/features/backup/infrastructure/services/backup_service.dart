@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:isolate';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive_io.dart';
@@ -96,30 +98,34 @@ class BackupService implements IBackupService {
         }
       }
 
-      // 3. Zip the directory
-      final encoder = ZipFileEncoder();
-      final dateStr = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final zipPath = '${tempDir.path}/LensWise_Backup_$dateStr.zip';
+      // 3. Zip the directory manually in a background Isolate to prevent UI blocking
+      final backupDirPath = backupDir.path;
+      final zipBytes = await Isolate.run(() async {
+        final zipArchive = Archive();
+        final dir = Directory(backupDirPath);
+        await for (final entity in dir.list(recursive: true)) {
+          if (entity is File) {
+            final relPath = entity.path.substring(backupDirPath.length + 1).replaceAll('\\', '/');
+            final fileBytes = await entity.readAsBytes();
+            zipArchive.addFile(ArchiveFile(relPath, fileBytes.length, fileBytes));
+          }
+        }
+        return Uint8List.fromList(ZipEncoder().encode(zipArchive)!);
+      });
       
-      encoder.create(zipPath);
-      encoder.addDirectory(backupDir);
-      encoder.close();
+      final dateStr = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
 
       // Clean up temp backup dir
       await backupDir.delete(recursive: true);
 
       // 4. Save file via FilePicker
-      final bytes = await File(zipPath).readAsBytes();
       final Uri? outputFileUri = await FilePicker.saveFile(
         dialogTitle: '儲存備份檔案',
         fileName: 'LensWise_Backup_$dateStr.zip',
         type: FileType.custom,
         allowedExtensions: ['zip'],
-        bytes: bytes,
+        bytes: Uint8List.fromList(zipBytes),
       );
-
-      // Clean up temp zip
-      await File(zipPath).delete();
 
       if (outputFileUri == null) {
         // User canceled
@@ -156,21 +162,25 @@ class BackupService implements IBackupService {
       }
       await extractDir.create();
 
-      // 1. Unzip
-      final bytes = File(zipPath).readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
-      
-      for (final file in archive) {
-        final filename = file.name;
-        if (file.isFile) {
-          final data = file.content as List<int>;
-          final outFile = File('${extractDir.path}/$filename');
-          await outFile.create(recursive: true);
-          await outFile.writeAsBytes(data);
-        } else {
-          await Directory('${extractDir.path}/$filename').create(recursive: true);
+      // 1. Unzip in a background Isolate to prevent UI blocking
+      final extractDirPath = extractDir.path;
+      await Isolate.run(() async {
+        final bytes = File(zipPath).readAsBytesSync();
+        final archive = ZipDecoder().decodeBytes(bytes);
+        
+        final eDir = Directory(extractDirPath);
+        for (final file in archive) {
+          final filename = file.name;
+          if (file.isFile) {
+            final data = file.content as List<int>;
+            final outFile = File('${eDir.path}/$filename');
+            await outFile.create(recursive: true);
+            await outFile.writeAsBytes(data);
+          } else {
+            await Directory('${eDir.path}/$filename').create(recursive: true);
+          }
         }
-      }
+      });
 
       // Find the JSON file (it might be inside a subfolder if zipped differently)
       File? jsonFile;
