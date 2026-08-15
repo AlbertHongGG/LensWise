@@ -423,7 +423,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   }
 
   Future<Uint8List?> _getImageBytes(String path) async {
-    final file = File(path);
+    final file = AppPaths.getImageFile(path);
     if (await file.exists()) {
       return await file.readAsBytes();
     }
