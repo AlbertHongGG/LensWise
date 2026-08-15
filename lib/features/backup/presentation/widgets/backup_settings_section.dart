@@ -39,13 +39,14 @@ class BackupSettingsSection extends ConsumerWidget {
           subtitle: '從 ZIP 檔還原',
           onTap: () async {
             final controller = ref.read(backupControllerProvider.notifier);
-            final success = await controller.importBackup();
+            final result = await controller.importBackup();
             if (context.mounted) {
-              if (success) {
+              if (result.$1 == BackupResult.success) {
                 ref.read(notificationProvider.notifier).showSuccess('資料已成功還原！');
-              } else {
-                ref.read(notificationProvider.notifier).showWarning('匯入已取消或發生錯誤');
+              } else if (result.$1 == BackupResult.error) {
+                ref.read(notificationProvider.notifier).showError('匯入失敗：${result.$2 ?? "未知錯誤"}');
               }
+              // If canceled, do nothing
             }
           },
         ),

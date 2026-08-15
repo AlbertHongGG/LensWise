@@ -135,16 +135,19 @@ class BackupService implements IBackupService {
 
   @override
   Future<bool> importBackup() async {
-    try {
-      final result = await FilePicker.pickFile(
-        type: FileType.custom,
-        allowedExtensions: ['zip'],
-      );
+    final result = await FilePicker.pickFile(
+      type: FileType.custom,
+      allowedExtensions: ['zip'],
+    );
 
-      if (result == null) return false;
+    if (result == null) {
+      throw Exception('User canceled');
+    }
       
-      final zipPath = result.path;
-      if (zipPath == null) return false;
+    final zipPath = result.path;
+    if (zipPath == null) {
+      throw Exception('無法獲取選擇的檔案路徑');
+    }
 
       final tempDir = await getTemporaryDirectory();
       final extractDir = Directory('${tempDir.path}/lenswise_extract_temp');
@@ -221,14 +224,10 @@ class BackupService implements IBackupService {
         await menuRepo.save(r.id, r);
       }
 
-      // Clean up extract dir
-      await extractDir.delete(recursive: true);
+    // Clean up extract dir
+    await extractDir.delete(recursive: true);
 
-      return true;
-    } catch (e) {
-      print('Backup import failed: $e');
-      return false;
-    }
+    return true;
   }
 }
 

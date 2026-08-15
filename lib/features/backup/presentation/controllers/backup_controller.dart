@@ -25,16 +25,20 @@ class BackupController extends Notifier<AsyncValue<void>> {
     }
   }
 
-  Future<bool> importBackup() async {
+  Future<(BackupResult, String?)> importBackup() async {
     state = const AsyncLoading();
     try {
       final service = ref.read(backupServiceProvider);
-      final result = await service.importBackup();
+      await service.importBackup();
       state = const AsyncData(null);
-      return result;
+      return (BackupResult.success, null);
     } catch (e, st) {
       state = AsyncError(e, st);
-      return false;
+      final errorStr = e.toString();
+      if (errorStr.contains('User canceled')) {
+        return (BackupResult.canceled, null);
+      }
+      return (BackupResult.error, errorStr.replaceAll('Exception: ', ''));
     }
   }
 }
