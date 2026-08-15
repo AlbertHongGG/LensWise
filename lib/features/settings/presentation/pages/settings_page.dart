@@ -10,6 +10,7 @@ import 'package:lens_wise/core/widgets/immersive_scaffold.dart';
 import 'package:lens_wise/core/widgets/premium_config_header.dart';
 import 'package:lens_wise/core/widgets/app_switch.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_log_viewer_screen.dart';
+import 'package:lens_wise/core/notifications/presentation/screens/system_log_viewer_screen.dart';
 import 'package:lens_wise/core/models/target_language.dart';
 import 'package:lens_wise/features/backup/presentation/widgets/backup_settings_section.dart';
 
@@ -79,11 +80,22 @@ class SettingsPage extends ConsumerWidget {
               SettingsTile(
                 icon: Icons.data_object_rounded,
                 iconColor: AppColors.primary,
-                title: 'AI 系統日誌',
+                title: 'AI 解析日誌',
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AiLogViewerScreen()),
+                  );
+                },
+              ),
+              SettingsTile(
+                icon: Icons.history_rounded,
+                iconColor: AppColors.primary,
+                title: 'APP 系統通知日誌',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SystemLogViewerScreen()),
                   );
                 },
               ),

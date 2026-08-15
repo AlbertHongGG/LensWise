@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/menu_translation_agent/menu_translation_agent.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
+import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_response.dart';
 import 'package:lens_wise/core/models/target_language.dart';
 

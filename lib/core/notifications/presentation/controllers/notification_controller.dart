@@ -1,20 +1,18 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/app_notification.dart';
+import 'package:uuid/uuid.dart';
+import 'package:lens_wise/core/notifications/models/app_notification.dart';
+import 'package:lens_wise/core/notifications/infrastructure/notification_logger.dart';
 
 class NotificationController extends Notifier<List<AppNotification>> {
+  final NotificationLogger _logger = NotificationLogger();
+
   @override
   List<AppNotification> build() {
     return [];
   }
 
-  void _add(String message, NotificationType type, {Duration? duration}) {
-    final notification = AppNotification(
-      message: message,
-      type: type,
-      duration: duration ?? const Duration(seconds: 4),
-    );
-    
+  void _addNotification(AppNotification notification) {
     // Max 3 notifications on screen, drop oldest if exceeded
     final newState = [...state, notification];
     if (newState.length > 3) {
@@ -31,20 +29,44 @@ class NotificationController extends Notifier<List<AppNotification>> {
     state = state.where((n) => n.id != id).toList();
   }
 
-  void showSuccess(String message, {Duration? duration}) {
-    _add(message, NotificationType.success, duration: duration);
+  void showSuccess(String message, {Duration duration = const Duration(seconds: 4)}) {
+    _logger.logNotification('success', message);
+    _addNotification(AppNotification(
+      id: const Uuid().v4(),
+      type: NotificationType.success,
+      message: message,
+      duration: duration,
+    ));
   }
 
-  void showError(String message, {Duration? duration}) {
-    _add(message, NotificationType.error, duration: duration);
+  void showError(String message, {Duration duration = const Duration(seconds: 5)}) {
+    _logger.logNotification('error', message);
+    _addNotification(AppNotification(
+      id: const Uuid().v4(),
+      type: NotificationType.error,
+      message: message,
+      duration: duration,
+    ));
   }
 
-  void showInfo(String message, {Duration? duration}) {
-    _add(message, NotificationType.info, duration: duration);
+  void showWarning(String message, {Duration duration = const Duration(seconds: 4)}) {
+    _logger.logNotification('warning', message);
+    _addNotification(AppNotification(
+      id: const Uuid().v4(),
+      type: NotificationType.warning,
+      message: message,
+      duration: duration,
+    ));
   }
 
-  void showWarning(String message, {Duration? duration}) {
-    _add(message, NotificationType.warning, duration: duration);
+  void showInfo(String message, {Duration duration = const Duration(seconds: 4)}) {
+    _logger.logNotification('info', message);
+    _addNotification(AppNotification(
+      id: const Uuid().v4(),
+      type: NotificationType.info,
+      message: message,
+      duration: duration,
+    ));
   }
 }
 
