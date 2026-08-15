@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive_io.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 
 import 'package:lens_wise/features/backup/domain/services/i_backup_service.dart';
@@ -109,12 +108,25 @@ class BackupService implements IBackupService {
       // Clean up temp backup dir
       await backupDir.delete(recursive: true);
 
-      // 4. Share/Save file
-      final xFile = XFile(zipPath);
-      // ignore: deprecated_member_use
-      await Share.shareXFiles([xFile], text: 'LensWise 歷史紀錄備份');
+      // 4. Save file via FilePicker
+      final bytes = await File(zipPath).readAsBytes();
+      final Uri? outputFileUri = await FilePicker.saveFile(
+        dialogTitle: '儲存備份檔案',
+        fileName: 'LensWise_Backup_$dateStr.zip',
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+        bytes: bytes,
+      );
+
+      // Clean up temp zip
+      await File(zipPath).delete();
+
+      if (outputFileUri == null) {
+        // User canceled
+        throw Exception('User canceled');
+      }
       
-      return zipPath;
+      return outputFileUri.toString();
     } catch (e) {
       print('Backup export failed: $e');
       return null;

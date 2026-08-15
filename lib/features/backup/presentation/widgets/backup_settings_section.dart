@@ -21,13 +21,14 @@ class BackupSettingsSection extends ConsumerWidget {
           onTap: () async {
             final controller = ref.read(backupControllerProvider.notifier);
             ref.read(notificationProvider.notifier).showInfo('正在準備匯出檔案，請稍候...');
-            final success = await controller.exportBackup();
+            final result = await controller.exportBackup();
             if (context.mounted) {
-              if (success) {
-                ref.read(notificationProvider.notifier).showSuccess('備份檔案已成功建立！請選擇儲存位置');
-              } else {
+              if (result == BackupResult.success) {
+                ref.read(notificationProvider.notifier).showSuccess('備份檔案已成功匯出至指定位置！');
+              } else if (result == BackupResult.error) {
                 ref.read(notificationProvider.notifier).showError('匯出失敗，請重試');
               }
+              // If canceled, do nothing
             }
           },
         ),
