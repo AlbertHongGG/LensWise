@@ -33,7 +33,6 @@ class GeminiFlowChatRequest {
   final List<String>? images;
   final String? sessionId;
   final String language;
-  final bool autoRefreshCookies;
 
   const GeminiFlowChatRequest({
     required this.prompt,
@@ -43,7 +42,6 @@ class GeminiFlowChatRequest {
     this.images,
     this.sessionId,
     this.language = 'zh-TW',
-    this.autoRefreshCookies = true,
   });
 
   Map<String, dynamic> toJson() {
@@ -52,7 +50,6 @@ class GeminiFlowChatRequest {
       'model': model,
       'thinking': thinking.value,
       'language': language,
-      'auto_refresh_cookies': autoRefreshCookies,
     };
     if (systemPrompt != null && systemPrompt!.isNotEmpty) {
       map['system_prompt'] = systemPrompt;

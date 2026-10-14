@@ -48,7 +48,6 @@ void main() {
         expect(body['model'], 'gemini-3.8-flash');
         expect(body['thinking'], 'low');
         expect(body['language'], 'zh-TW');
-        expect(body['auto_refresh_cookies'], true);
 
         return http.Response(
           jsonEncode({
