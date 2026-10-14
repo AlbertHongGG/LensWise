@@ -1,71 +1,100 @@
-class GeminiFlowChatPayload {
+enum GeminiThinkingLevel {
+  low('low', label: '低 (極速)'),
+  medium('medium', label: '中 (平衡推理)'),
+  high('high', label: '高 (極致思維鏈)');
+
+  final String value;
+  final String label;
+
+  const GeminiThinkingLevel(this.value, {required this.label});
+
+  static GeminiThinkingLevel fromValue(String? raw) {
+    if (raw == null) return GeminiThinkingLevel.low;
+    final lower = raw.trim().toLowerCase();
+    return GeminiThinkingLevel.values.firstWhere(
+      (e) => e.value == lower || e.name == lower,
+      orElse: () => GeminiThinkingLevel.low,
+    );
+  }
+}
+
+class GeminiFlowModel {
+  static const String flash = 'gemini-3.8-flash';
+  static const String pro = 'gemini-3-pro';
+
+  static const List<String> availableModels = [flash, pro];
+}
+
+class GeminiFlowChatRequest {
   final String prompt;
   final String model;
-  final String language;
-  final bool saveImages;
+  final GeminiThinkingLevel thinking;
   final String? systemPrompt;
   final List<String>? images;
   final String? sessionId;
+  final String language;
+  final bool autoRefreshCookies;
 
-  GeminiFlowChatPayload({
+  const GeminiFlowChatRequest({
     required this.prompt,
-    required this.model,
-    required this.language,
-    required this.saveImages,
+    this.model = GeminiFlowModel.flash,
+    this.thinking = GeminiThinkingLevel.low,
     this.systemPrompt,
     this.images,
     this.sessionId,
+    this.language = 'zh-TW',
+    this.autoRefreshCookies = true,
   });
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {
+    final map = <String, dynamic>{
       'prompt': prompt,
       'model': model,
+      'thinking': thinking.value,
       'language': language,
-      'save_images': saveImages,
+      'auto_refresh_cookies': autoRefreshCookies,
     };
-    if (systemPrompt != null) {
-      data['system_prompt'] = systemPrompt;
+    if (systemPrompt != null && systemPrompt!.isNotEmpty) {
+      map['system_prompt'] = systemPrompt;
+    }
+    if (sessionId != null && sessionId!.isNotEmpty) {
+      map['session_id'] = sessionId;
     }
     if (images != null && images!.isNotEmpty) {
-      data['images'] = images;
+      map['images'] = images;
     }
-    if (sessionId != null) {
-      data['session_id'] = sessionId;
-    }
-    return data;
+    return map;
   }
 }
 
 class GeminiFlowChatResponse {
   final String text;
-  final List<String>? images;
+  final List<String> images;
 
-  GeminiFlowChatResponse({required this.text, this.images});
+  const GeminiFlowChatResponse({
+    required this.text,
+    this.images = const [],
+  });
 
   factory GeminiFlowChatResponse.fromJson(Map<String, dynamic> json) {
+    final imagesRaw = json['images'];
+    final List<String> imagesList = [];
+    if (imagesRaw is List) {
+      imagesList.addAll(imagesRaw.map((e) => e.toString()));
+    }
     return GeminiFlowChatResponse(
-      text: json['text'] ?? '',
-      images: json['images'] != null ? List<String>.from(json['images']) : null,
+      text: json['text']?.toString() ?? '',
+      images: imagesList,
     );
   }
 }
 
-class GeminiFlowStreamData {
+class GeminiFlowStreamChunk {
   final String text;
-  final List<String>? images;
+  final List<String> images;
 
-  GeminiFlowStreamData({required this.text, this.images});
-
-  factory GeminiFlowStreamData.fromJson(Map<String, dynamic> json) {
-    return GeminiFlowStreamData(
-      text:
-          json['text'] ??
-          json['chunk'] ??
-          json['response'] ??
-          json['content'] ??
-          '',
-      images: json['images'] != null ? List<String>.from(json['images']) : null,
-    );
-  }
+  const GeminiFlowStreamChunk({
+    this.text = '',
+    this.images = const [],
+  });
 }

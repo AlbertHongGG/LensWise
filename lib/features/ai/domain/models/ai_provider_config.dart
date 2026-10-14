@@ -1,3 +1,5 @@
+import 'package:lens_wise/features/ai/infrastructure/providers/geminiflow/sdk/types.dart';
+
 enum AIProviderType { geminiflow, ollama, vertexai }
 
 class ConfigField {
@@ -32,28 +34,54 @@ abstract class AIProviderConfig {
 
 class GeminiFlowConfig extends AIProviderConfig {
   final String baseUrl;
+  final GeminiThinkingLevel thinking;
 
   const GeminiFlowConfig({
-    super.modelName = 'gemini-3.7-flash',
-    this.baseUrl = 'http://127.0.0.1:8000',
+    super.modelName = GeminiFlowModel.flash,
+    this.baseUrl = 'http://127.0.0.1:5000',
+    this.thinking = GeminiThinkingLevel.low,
   });
 
-  const GeminiFlowConfig.empty() : baseUrl = '', super(modelName: '');
+  const GeminiFlowConfig.empty()
+      : baseUrl = '',
+        thinking = GeminiThinkingLevel.low,
+        super(modelName: '');
 
   @override
-  Map<String, dynamic> toJson() => {'modelName': modelName, 'baseUrl': baseUrl};
+  Map<String, dynamic> toJson() => {
+    'modelName': modelName,
+    'baseUrl': baseUrl,
+    'thinking': thinking.value,
+  };
 
   factory GeminiFlowConfig.fromJson(Map<String, dynamic> json) {
     return GeminiFlowConfig(
-      modelName: json['modelName'] ?? 'gemini-3.7-flash',
-      baseUrl: json['baseUrl'] ?? 'http://127.0.0.1:8000',
+      modelName: json['modelName'] ?? GeminiFlowModel.flash,
+      baseUrl: json['baseUrl'] ?? 'http://127.0.0.1:5000',
+      thinking: GeminiThinkingLevel.fromValue(json['thinking']),
     );
   }
 
   @override
   List<ConfigField> getFormFields([covariant GeminiFlowConfig? fallback]) => [
-    ConfigField(key: 'modelName', label: 'Model Name', value: modelName, hintValue: fallback?.modelName),
-    ConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl, hintValue: fallback?.baseUrl),
+    ConfigField(
+      key: 'modelName',
+      label: 'Model Name',
+      value: modelName,
+      hintValue: fallback?.modelName,
+    ),
+    ConfigField(
+      key: 'baseUrl',
+      label: 'Base URL',
+      value: baseUrl,
+      hintValue: fallback?.baseUrl,
+    ),
+    ConfigField(
+      key: 'thinking',
+      label: 'Thinking Level (low, medium, high)',
+      value: thinking.value,
+      hintValue: fallback?.thinking.value,
+    ),
   ];
 
   @override
@@ -61,14 +89,17 @@ class GeminiFlowConfig extends AIProviderConfig {
     return GeminiFlowConfig(
       modelName: key == 'modelName' ? value : modelName,
       baseUrl: key == 'baseUrl' ? value : baseUrl,
+      thinking: key == 'thinking' ? GeminiThinkingLevel.fromValue(value) : thinking,
     );
   }
 
   @override
   AIProviderConfig fallbackTo(covariant GeminiFlowConfig fallback) {
+    final hasExplicitSettings = modelName.isNotEmpty || baseUrl.isNotEmpty;
     return GeminiFlowConfig(
       modelName: modelName.isNotEmpty ? modelName : fallback.modelName,
       baseUrl: baseUrl.isNotEmpty ? baseUrl : fallback.baseUrl,
+      thinking: hasExplicitSettings ? thinking : fallback.thinking,
     );
   }
 }

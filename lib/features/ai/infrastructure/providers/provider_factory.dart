@@ -16,6 +16,7 @@ class ProviderFactory {
       return GeminiFlowProvider(
         baseUrl: config.baseUrl,
         modelName: config.modelName,
+        thinking: config.thinking,
       );
     } else if (config is OllamaConfig) {
       if (config.baseUrl.isEmpty) {
