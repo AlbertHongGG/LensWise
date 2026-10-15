@@ -81,7 +81,7 @@ final menuScannerAgentProvider = Provider.autoDispose<IMenuScannerAgent>((ref) {
   return MenuScannerAgent(
     AiAgentType.menuScanner,
     ref.watch(aiProviderFamily(AiAgentType.menuScanner)),
-    AIAgentLogger(AiAgentType.menuScanner),
+    ref.watch(aiAgentLoggerProvider(AiAgentType.menuScanner)),
     targetLanguage: language,
   );
 });

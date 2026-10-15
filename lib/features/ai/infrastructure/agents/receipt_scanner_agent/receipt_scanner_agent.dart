@@ -111,7 +111,7 @@ final receiptScannerAgentProvider = Provider.autoDispose<IReceiptScannerAgent>((
   return ReceiptScannerAgent(
     AiAgentType.receiptScanner,
     ref.watch(aiProviderFamily(AiAgentType.receiptScanner)),
-    AIAgentLogger(AiAgentType.receiptScanner),
+    ref.watch(aiAgentLoggerProvider(AiAgentType.receiptScanner)),
     targetLanguage: language,
   );
 });

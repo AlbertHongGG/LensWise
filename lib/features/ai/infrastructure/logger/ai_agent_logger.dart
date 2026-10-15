@@ -1,11 +1,13 @@
-import 'dart:math';
-import 'package:lens_wise/features/ai/infrastructure/logger/base_file_logger.dart';
+import 'dart:math' show Random;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lens_wise/core/logging/base_file_logger.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
+import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 
 class AIAgentLogger extends BaseFileLogger<Map<String, dynamic>> {
   final AiAgentType? agentType;
 
-  AIAgentLogger([this.agentType]) : super('agent');
+  AIAgentLogger({this.agentType, super.isEnabled}) : super('agent');
 
   @override
   String getFileName() {
@@ -18,6 +20,11 @@ class AIAgentLogger extends BaseFileLogger<Map<String, dynamic>> {
   }
 
   void logInteraction(dynamic request, dynamic response, int startTime) {
+    // 守門檢查：如果關閉記錄，直接返回，避免後續 Map 構建與 log 調用
+    if (isEnabled != null && !isEnabled!()) {
+      return;
+    }
+
     final endTime = DateTime.now().millisecondsSinceEpoch;
     final durationMs = endTime - startTime;
 
@@ -29,6 +36,13 @@ class AIAgentLogger extends BaseFileLogger<Map<String, dynamic>> {
       'response': response,
     };
 
-    this.log(logData);
+    log(logData);
   }
 }
+
+final aiAgentLoggerProvider = Provider.family<AIAgentLogger, AiAgentType>((ref, type) {
+  return AIAgentLogger(
+    agentType: type,
+    isEnabled: () => ref.read(settingsProvider).enableAiLog,
+  );
+});

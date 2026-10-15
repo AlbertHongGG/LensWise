@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/notifications/infrastructure/notification_logger.dart';
+import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 
 final notificationLoggerProvider = Provider<NotificationLogger>((ref) {
-  return NotificationLogger();
+  return NotificationLogger(
+    isEnabled: () => ref.read(settingsProvider).enableNotificationLog,
+  );
 });
 
 final systemLogListProvider = FutureProvider.autoDispose<List<FileSystemEntity>>(

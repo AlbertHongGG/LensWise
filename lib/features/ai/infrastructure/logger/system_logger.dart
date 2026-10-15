@@ -1,8 +1,8 @@
-import 'dart:math';
-import 'package:lens_wise/features/ai/infrastructure/logger/base_file_logger.dart';
+import 'dart:math' show Random;
+import 'package:lens_wise/core/logging/base_file_logger.dart';
 
 class SystemLogger extends BaseFileLogger<Map<String, dynamic>> {
-  SystemLogger() : super('system');
+  SystemLogger({super.isEnabled}) : super('system');
 
   @override
   String getFileName() {
@@ -19,6 +19,6 @@ class SystemLogger extends BaseFileLogger<Map<String, dynamic>> {
       'eventType': eventType,
       'data': data,
     };
-    this.log(logData);
+    log(logData);
   }
 }

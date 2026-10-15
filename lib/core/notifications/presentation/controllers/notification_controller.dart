@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lens_wise/core/notifications/models/app_notification.dart';
 import 'package:lens_wise/core/notifications/infrastructure/notification_logger.dart';
+import 'package:lens_wise/core/notifications/presentation/providers/system_log_provider.dart';
 
 class NotificationController extends Notifier<List<AppNotification>> {
-  final NotificationLogger _logger = NotificationLogger();
+  late final NotificationLogger _logger;
 
   @override
   List<AppNotification> build() {
+    _logger = ref.watch(notificationLoggerProvider);
     return [];
   }
 

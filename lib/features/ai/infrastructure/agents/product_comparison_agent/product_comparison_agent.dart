@@ -85,7 +85,7 @@ final productComparisonAgentProvider = Provider.autoDispose<IProductComparisonAg
   return ProductComparisonAgent(
     AiAgentType.productComparison,
     ref.watch(aiProviderFamily(AiAgentType.productComparison)),
-    AIAgentLogger(AiAgentType.productComparison),
+    ref.watch(aiAgentLoggerProvider(AiAgentType.productComparison)),
     targetLanguage: language,
   );
 });

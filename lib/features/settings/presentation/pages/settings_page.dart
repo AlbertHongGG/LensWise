@@ -49,13 +49,19 @@ class SettingsPage extends ConsumerWidget {
               SettingsTile(
                 icon: Icons.history_rounded,
                 iconColor: AppColors.primary,
-                title: 'APP 系統通知日誌',
+                title: '通知日誌',
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const SystemLogViewerScreen()),
                   );
                 },
+                trailing: AppSwitch(
+                  value: settingsState.enableNotificationLog,
+                  onChanged: (val) {
+                    notifier.toggleNotificationLog(val);
+                  },
+                ),
               ),
             ],
           ),
@@ -91,13 +97,19 @@ class SettingsPage extends ConsumerWidget {
               SettingsTile(
                 icon: Icons.data_object_rounded,
                 iconColor: AppColors.primary,
-                title: 'AI 解析日誌',
+                title: 'AI 日誌',
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AiLogViewerScreen()),
                   );
                 },
+                trailing: AppSwitch(
+                  value: settingsState.enableAiLog,
+                  onChanged: (val) {
+                    notifier.toggleAiLog(val);
+                  },
+                ),
               ),
             ],
           ),

@@ -47,6 +47,6 @@ final menuTranslationAgentProvider = Provider.autoDispose<MenuTranslationAgent>(
   return MenuTranslationAgent(
     AiAgentType.menuTranslation,
     ref.watch(aiProviderFamily(AiAgentType.menuTranslation)),
-    AIAgentLogger(AiAgentType.menuTranslation),
+    ref.watch(aiAgentLoggerProvider(AiAgentType.menuTranslation)),
   );
 });

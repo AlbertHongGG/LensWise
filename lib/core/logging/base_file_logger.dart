@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:lens_wise/features/ai/infrastructure/logger/i_logger.dart';
+import 'package:lens_wise/core/logging/i_logger.dart';
 
 abstract class BaseFileLogger<T> implements ILogger<T> {
   final String subDirectory;
+  final bool Function()? isEnabled;
   late final Future<Directory> logDirFuture;
 
-  BaseFileLogger(this.subDirectory) {
+  BaseFileLogger(this.subDirectory, {this.isEnabled}) {
     logDirFuture = _initLogDir();
   }
 
@@ -40,6 +41,11 @@ abstract class BaseFileLogger<T> implements ILogger<T> {
 
   @override
   void log(T data) async {
+    // 守門檢查：如果關閉記錄，直接短路退出，杜絕無謂的磁碟 I/O
+    if (isEnabled != null && !isEnabled!()) {
+      return;
+    }
+
     final fileName = getFileName();
     try {
       final logDir = await logDirFuture;

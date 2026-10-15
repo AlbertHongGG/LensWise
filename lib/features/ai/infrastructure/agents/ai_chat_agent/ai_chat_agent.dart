@@ -61,6 +61,6 @@ final aiChatAgentProvider = Provider.autoDispose<AiChatAgent>((ref) {
   return AiChatAgent(
     AiAgentType.aiChat,
     ref.watch(aiProviderFamily(AiAgentType.aiChat)),
-    AIAgentLogger(AiAgentType.aiChat),
+    ref.watch(aiAgentLoggerProvider(AiAgentType.aiChat)),
   );
 });

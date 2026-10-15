@@ -1,8 +1,8 @@
-import 'dart:math';
-import 'package:lens_wise/features/ai/infrastructure/logger/base_file_logger.dart';
+import 'dart:math' show Random;
+import 'package:lens_wise/core/logging/base_file_logger.dart';
 
 class NotificationLogger extends BaseFileLogger<Map<String, dynamic>> {
-  NotificationLogger() : super('notifications');
+  NotificationLogger({super.isEnabled}) : super('notifications');
 
   @override
   String getFileName() {
@@ -19,6 +19,6 @@ class NotificationLogger extends BaseFileLogger<Map<String, dynamic>> {
       'type': type,
       'message': message,
     };
-    this.log(logData);
+    log(logData);
   }
 }

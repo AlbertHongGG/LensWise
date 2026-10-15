@@ -7,19 +7,27 @@ import 'package:lens_wise/core/models/target_language.dart';
 class SettingsState {
   final TargetLanguage targetLanguage;
   final ThemeMode themeMode;
+  final bool enableNotificationLog;
+  final bool enableAiLog;
 
   const SettingsState({
     required this.targetLanguage,
     required this.themeMode,
+    required this.enableNotificationLog,
+    required this.enableAiLog,
   });
 
   SettingsState copyWith({
     TargetLanguage? targetLanguage,
     ThemeMode? themeMode,
+    bool? enableNotificationLog,
+    bool? enableAiLog,
   }) {
     return SettingsState(
       targetLanguage: targetLanguage ?? this.targetLanguage,
       themeMode: themeMode ?? this.themeMode,
+      enableNotificationLog: enableNotificationLog ?? this.enableNotificationLog,
+      enableAiLog: enableAiLog ?? this.enableAiLog,
     );
   }
 }
@@ -37,7 +45,15 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final themeIndex = _settingsBox.get('themeMode', defaultValue: ThemeMode.light.index) as int;
     final theme = ThemeMode.values.firstWhere((e) => e.index == themeIndex, orElse: () => ThemeMode.light);
 
-    return SettingsState(targetLanguage: lang, themeMode: theme);
+    final notificationLog = _settingsBox.get('enableNotificationLog', defaultValue: true) as bool;
+    final aiLog = _settingsBox.get('enableAiLog', defaultValue: true) as bool;
+
+    return SettingsState(
+      targetLanguage: lang,
+      themeMode: theme,
+      enableNotificationLog: notificationLog,
+      enableAiLog: aiLog,
+    );
   }
 
   void updateTargetLanguage(TargetLanguage language) {
@@ -48,6 +64,16 @@ class SettingsNotifier extends Notifier<SettingsState> {
   void updateThemeMode(ThemeMode mode) {
     _settingsBox.put('themeMode', mode.index);
     state = state.copyWith(themeMode: mode);
+  }
+
+  void toggleNotificationLog(bool value) {
+    _settingsBox.put('enableNotificationLog', value);
+    state = state.copyWith(enableNotificationLog: value);
+  }
+
+  void toggleAiLog(bool value) {
+    _settingsBox.put('enableAiLog', value);
+    state = state.copyWith(enableAiLog: value);
   }
 }
 
