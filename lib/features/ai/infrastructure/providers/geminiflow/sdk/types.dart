@@ -1,28 +1,72 @@
 enum GeminiThinkingLevel {
-  low('low', label: '低 (極速)'),
-  medium('medium', label: '中 (平衡推理)'),
-  high('high', label: '高 (極致思維鏈)');
+  low('low', label: '低', description: '極速回應'),
+  medium('medium', label: '中', description: '平衡推理'),
+  high('high', label: '高', description: '極致思維鏈');
 
   final String value;
   final String label;
+  final String description;
 
-  const GeminiThinkingLevel(this.value, {required this.label});
+  const GeminiThinkingLevel(
+    this.value, {
+    required this.label,
+    required this.description,
+  });
 
   static GeminiThinkingLevel fromValue(String? raw) {
     if (raw == null) return GeminiThinkingLevel.low;
     final lower = raw.trim().toLowerCase();
     return GeminiThinkingLevel.values.firstWhere(
-      (e) => e.value == lower || e.name == lower,
+      (e) => e.value == lower || e.name == lower || e.label == raw.trim(),
       orElse: () => GeminiThinkingLevel.low,
     );
   }
 }
 
+class GeminiFlowModelItem {
+  final String id;
+  final String displayName;
+  final String? description;
+
+  const GeminiFlowModelItem({
+    required this.id,
+    required this.displayName,
+    this.description,
+  });
+}
+
 class GeminiFlowModel {
   static const String flash = 'gemini-3.8-flash';
   static const String pro = 'gemini-3-pro';
+  static const String argon = 'gemini4Argon';
 
-  static const List<String> availableModels = [flash, pro];
+  static const List<GeminiFlowModelItem> modelItems = [
+    GeminiFlowModelItem(
+      id: flash,
+      displayName: 'Gemini 3.8 Flash',
+      description: '極速輕量',
+    ),
+    GeminiFlowModelItem(
+      id: pro,
+      displayName: 'Gemini 3 Pro',
+      description: '旗艦推理',
+    ),
+    GeminiFlowModelItem(
+      id: argon,
+      displayName: 'Gemini 4 Argon',
+      description: '次世代旗艦',
+    ),
+  ];
+
+  static const List<String> availableModels = [flash, pro, argon];
+
+  static String getDisplayName(String id) {
+    final item = modelItems.firstWhere(
+      (e) => e.id.toLowerCase() == id.trim().toLowerCase(),
+      orElse: () => GeminiFlowModelItem(id: id, displayName: id),
+    );
+    return item.displayName;
+  }
 }
 
 class GeminiFlowChatRequest {

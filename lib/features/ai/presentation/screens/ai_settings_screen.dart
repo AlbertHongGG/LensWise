@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/ai/domain/models/ai_provider_config.dart';
 import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
@@ -8,76 +7,7 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/app_switch.dart';
 import 'package:lens_wise/core/widgets/premium_config_header.dart';
 import 'package:lens_wise/core/widgets/immersive_scaffold.dart';
-import 'package:lens_wise/core/utils/debouncer.dart';
-
-class ConfigTextField extends HookConsumerWidget {
-  final AIProviderConfig activeConfig;
-  final ConfigField field;
-  final bool isDark;
-  final void Function(String) onChanged;
-
-  const ConfigTextField({
-    super.key,
-    required this.activeConfig,
-    required this.field,
-    required this.isDark,
-    required this.onChanged,
-  });
-
-  IconData getFieldIcon() {
-    final k = field.key.toLowerCase();
-    if (k.contains('model')) return Icons.smart_toy_rounded;
-    if (k.contains('url')) return Icons.dns_rounded;
-    if (k.contains('key')) return Icons.vpn_key_rounded;
-    if (k.contains('id')) return Icons.fingerprint_rounded;
-    if (k.contains('location')) return Icons.location_on_rounded;
-    return Icons.tune_rounded;
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = useTextEditingController(text: field.value);
-    final debouncer = useMemoized(() => Debouncer(milliseconds: 500));
-
-    useEffect(() {
-      if (controller.text != field.value) {
-        controller.text = field.value;
-      }
-      return null;
-    }, [field.value]);
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-      leading: Icon(getFieldIcon(), color: isDark ? Colors.white54 : Colors.black54),
-      title: TextField(
-        controller: controller,
-        obscureText: field.isSecret,
-        style: TextStyle(
-          fontFamily: 'Outfit',
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: isDark ? Colors.white : Colors.black87,
-        ),
-        decoration: InputDecoration(
-          hintText: field.label,
-          hintStyle: TextStyle(
-            fontFamily: 'Outfit',
-            color: isDark ? Colors.white30 : Colors.black38,
-            fontWeight: FontWeight.normal,
-          ),
-          border: InputBorder.none,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-        onChanged: (val) {
-          debouncer.run(() {
-            onChanged(val);
-          });
-        },
-      ),
-    );
-  }
-}
+import 'package:lens_wise/features/ai/presentation/widgets/config_field_tile.dart';
 
 class AiSettingsScreen extends ConsumerWidget {
   const AiSettingsScreen({super.key});
@@ -411,7 +341,7 @@ class AiSettingsScreen extends ConsumerWidget {
                                     final field = entry.value;
                                     return Column(
                                       children: [
-                                        ConfigTextField(
+                                        ConfigFieldTile(
                                           key: ValueKey('global_${state.editingGlobalProviderType.name}_${field.key}'),
                                           activeConfig: state.editingGlobalConfig,
                                           field: field,
@@ -564,7 +494,7 @@ class AiSettingsScreen extends ConsumerWidget {
                                             final field = entry.value;
                                             return Column(
                                               children: [
-                                                ConfigTextField(
+                                                ConfigFieldTile(
                                                   key: ValueKey('${agentType.name}_${activeProvider.name}_${field.key}'),
                                                   activeConfig: activeConfig,
                                                   field: field,

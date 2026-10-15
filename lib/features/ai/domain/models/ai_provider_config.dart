@@ -1,21 +1,66 @@
+import 'package:flutter/material.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/geminiflow/sdk/types.dart';
 
 enum AIProviderType { geminiflow, ollama, vertexai }
 
-class ConfigField {
+class FieldOption {
+  final String value;
+  final String label;
+  final String? description;
+  final IconData? icon;
+
+  const FieldOption({
+    required this.value,
+    required this.label,
+    this.description,
+    this.icon,
+  });
+}
+
+abstract class ConfigField {
   final String key;
   final String label;
   final String value;
   final String? hintValue;
-  final bool isSecret;
 
   const ConfigField({
     required this.key,
     required this.label,
     required this.value,
     this.hintValue,
+  });
+}
+
+class TextConfigField extends ConfigField {
+  final bool isSecret;
+
+  const TextConfigField({
+    required super.key,
+    required super.label,
+    required super.value,
+    super.hintValue,
     this.isSecret = false,
   });
+}
+
+class SelectConfigField extends ConfigField {
+  final List<FieldOption> options;
+
+  const SelectConfigField({
+    required super.key,
+    required super.label,
+    required super.value,
+    super.hintValue,
+    required this.options,
+  });
+
+  String get displayLabel {
+    final match = options.firstWhere(
+      (opt) => opt.value.toLowerCase() == value.toLowerCase(),
+      orElse: () => FieldOption(value: value, label: value),
+    );
+    return match.label;
+  }
 }
 
 abstract class AIProviderConfig {
@@ -64,23 +109,35 @@ class GeminiFlowConfig extends AIProviderConfig {
 
   @override
   List<ConfigField> getFormFields([covariant GeminiFlowConfig? fallback]) => [
-    ConfigField(
+    SelectConfigField(
       key: 'modelName',
-      label: 'Model Name',
+      label: '模型',
       value: modelName,
       hintValue: fallback?.modelName,
+      options: GeminiFlowModel.modelItems.map((m) => FieldOption(
+        value: m.id,
+        label: m.displayName,
+        description: m.description,
+        icon: Icons.smart_toy_rounded,
+      )).toList(),
     ),
-    ConfigField(
+    TextConfigField(
       key: 'baseUrl',
       label: 'Base URL',
       value: baseUrl,
       hintValue: fallback?.baseUrl,
     ),
-    ConfigField(
+    SelectConfigField(
       key: 'thinking',
-      label: 'Thinking Level (low, medium, high)',
+      label: '思考強度',
       value: thinking.value,
       hintValue: fallback?.thinking.value,
+      options: GeminiThinkingLevel.values.map((lvl) => FieldOption(
+        value: lvl.value,
+        label: lvl.label,
+        description: lvl.description,
+        icon: Icons.tune_rounded,
+      )).toList(),
     ),
   ];
 
@@ -126,8 +183,8 @@ class OllamaConfig extends AIProviderConfig {
 
   @override
   List<ConfigField> getFormFields([covariant OllamaConfig? fallback]) => [
-    ConfigField(key: 'modelName', label: 'Model Name', value: modelName, hintValue: fallback?.modelName),
-    ConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl, hintValue: fallback?.baseUrl),
+    TextConfigField(key: 'modelName', label: 'Model Name', value: modelName, hintValue: fallback?.modelName),
+    TextConfigField(key: 'baseUrl', label: 'Base URL', value: baseUrl, hintValue: fallback?.baseUrl),
   ];
 
   @override
@@ -180,10 +237,10 @@ class VertexAIConfig extends AIProviderConfig {
 
   @override
   List<ConfigField> getFormFields([covariant VertexAIConfig? fallback]) => [
-    ConfigField(key: 'modelName', label: 'Model Name', value: modelName, hintValue: fallback?.modelName),
-    ConfigField(key: 'projectId', label: 'Project ID', value: projectId, hintValue: fallback?.projectId),
-    ConfigField(key: 'region', label: 'Region', value: region, hintValue: fallback?.region),
-    ConfigField(key: 'accessToken', label: 'Access Token', value: accessToken, hintValue: fallback?.accessToken, isSecret: true),
+    TextConfigField(key: 'modelName', label: 'Model Name', value: modelName, hintValue: fallback?.modelName),
+    TextConfigField(key: 'projectId', label: 'Project ID', value: projectId, hintValue: fallback?.projectId),
+    TextConfigField(key: 'region', label: 'Region', value: region, hintValue: fallback?.region),
+    TextConfigField(key: 'accessToken', label: 'Access Token', value: accessToken, hintValue: fallback?.accessToken, isSecret: true),
   ];
 
   @override

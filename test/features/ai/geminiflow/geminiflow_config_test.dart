@@ -57,5 +57,34 @@ void main() {
       expect(effective.baseUrl, 'http://192.168.1.50:5000');
       expect(effective.thinking, GeminiThinkingLevel.high);
     });
+
+    test('getFormFields returns polymorphic fields with pure labels without parentheses', () {
+      const config = GeminiFlowConfig();
+      final fields = config.getFormFields();
+
+      expect(fields.length, 3);
+      expect(fields[0], isA<SelectConfigField>());
+      expect(fields[1], isA<TextConfigField>());
+      expect(fields[2], isA<SelectConfigField>());
+
+      final modelField = fields[0] as SelectConfigField;
+      expect(modelField.key, 'modelName');
+      expect(modelField.displayLabel, 'Gemini 3.8 Flash');
+      for (final opt in modelField.options) {
+        expect(opt.label.contains('('), isFalse, reason: 'Model label must not contain parenthesis');
+        expect(opt.label.contains(')'), isFalse, reason: 'Model label must not contain parenthesis');
+      }
+
+      final thinkingField = fields[2] as SelectConfigField;
+      expect(thinkingField.key, 'thinking');
+      expect(thinkingField.displayLabel, '低');
+      for (final opt in thinkingField.options) {
+        expect(opt.label.contains('('), isFalse, reason: 'Thinking label must not contain parenthesis');
+        expect(opt.label.contains(')'), isFalse, reason: 'Thinking label must not contain parenthesis');
+      }
+
+      final thinkingLabels = thinkingField.options.map((e) => e.label).toList();
+      expect(thinkingLabels, ['低', '中', '高']);
+    });
   });
 }
