@@ -41,14 +41,6 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : const Color(0xFFF5F5F5);
 
-    final controllerState = ref.watch(receiptScannerControllerProvider);
-    final isStreaming = controllerState.status == ReceiptScannerStatus.streaming;
-    final activeRecord = (isStreaming && controllerState.receiptRecord != null)
-        ? controllerState.receiptRecord!
-        : (controllerState.status == ReceiptScannerStatus.success && controllerState.receiptRecord != null)
-            ? controllerState.receiptRecord!
-            : _currentRecord;
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: bgColor,
@@ -61,7 +53,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
               child: Column(
                 children: [
                   ReceiptPaperCard(
-                    record: activeRecord,
+                    initialRecord: _currentRecord,
                     onUpdate: _updateRecord,
                   ),
                   const SizedBox(height: 100), // Space for FAB
@@ -91,7 +83,10 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                     ],
                     FloatingActionButton(
                       heroTag: 'receipt_ai_btn',
-                      onPressed: () => showReceiptChat(context, _currentRecord),
+                      onPressed: () => showReceiptChat(
+                        context,
+                        ref.read(receiptScannerControllerProvider).receiptRecord ?? _currentRecord,
+                      ),
                       backgroundColor: isDark ? Colors.white24 : Colors.black87,
                       foregroundColor: Colors.white,
                       elevation: 4,

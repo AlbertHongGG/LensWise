@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/glass_action_button.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
+import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/product_chat_adapter.dart';
 
-class InteractiveDetailPanel extends StatelessWidget {
-  final ProductLensRecord record;
+class InteractiveDetailPanel extends ConsumerWidget {
+  final ProductLensRecord? initialRecord;
 
-  const InteractiveDetailPanel({super.key, required this.record});
+  const InteractiveDetailPanel({
+    super.key,
+    ProductLensRecord? initialRecord,
+    ProductLensRecord? record,
+  }) : initialRecord = initialRecord ?? record;
 
-  void _showIngredientsSheet(BuildContext context) {
+  void _showIngredientsSheet(BuildContext context, ProductLensRecord record) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -54,7 +60,7 @@ class InteractiveDetailPanel extends StatelessWidget {
     );
   }
 
-  void _showProsConsSheet(BuildContext context) {
+  void _showProsConsSheet(BuildContext context, ProductLensRecord record) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -146,73 +152,72 @@ class InteractiveDetailPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge(
-    BuildContext context,
-    String text, {
-    required bool isAlert,
-  }) {
-    final color = isAlert ? Colors.redAccent : AppColors.primary;
+  Widget _buildBadge(BuildContext context, String text, {bool isAlert = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(12),
+        color: isAlert
+            ? Colors.red.withValues(alpha: 0.1)
+            : Theme.of(context).primaryColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isAlert
+              ? Colors.red.withValues(alpha: 0.3)
+              : Theme.of(context).primaryColor.withValues(alpha: 0.3),
+        ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isAlert) ...[
-            Icon(Icons.warning_amber_rounded, size: 14, color: color),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
+      child: Text(
+        text,
+        style: TextStyle(
+          color: isAlert ? Colors.red : Theme.of(context).primaryColor,
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final hasIngredients =
-        record.ingredients.isNotEmpty || record.allergenAlerts.isNotEmpty;
-    final hasProsCons =
-        record.whenRecommended.isNotEmpty ||
-        record.whenNotRecommended.isNotEmpty;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Fine-grained selector: Only rebuilds when boolean availability flags change!
+    final flags = ref.watch(productLensControllerProvider.select((state) {
+      final rec = state.result ?? initialRecord;
+      if (rec == null) return (hasIngredients: false, hasProsCons: false);
+      return (
+        hasIngredients: rec.ingredients.isNotEmpty || rec.allergenAlerts.isNotEmpty,
+        hasProsCons: rec.whenRecommended.isNotEmpty || rec.whenNotRecommended.isNotEmpty,
+      );
+    }));
+
+    ProductLensRecord getActiveRecord() {
+      return ref.read(productLensControllerProvider).result ?? initialRecord ?? ProductLensRecord.empty();
+    }
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (hasIngredients) ...[
+        if (flags.hasIngredients) ...[
           GlassActionButton(
             icon: Icons.science_outlined,
-            onPressed: () => _showIngredientsSheet(context),
+            onPressed: () => _showIngredientsSheet(context, getActiveRecord()),
           ),
           const SizedBox(width: 12),
         ],
-        if (hasProsCons) ...[
+        if (flags.hasProsCons) ...[
           GlassActionButton(
             icon: Icons.people_outline,
-            onPressed: () => _showProsConsSheet(context),
+            onPressed: () => _showProsConsSheet(context, getActiveRecord()),
           ),
           const SizedBox(width: 12),
         ],
         GlassActionButton(
           icon: Icons.auto_awesome,
-          onPressed: () => showProductChat(context, record),
+          onPressed: () => showProductChat(context, getActiveRecord()),
         ),
       ],
     );
   }
 }
-
 
 class _DetailSheet extends StatelessWidget {
   final String title;
@@ -253,12 +258,12 @@ class _DetailSheet extends StatelessWidget {
             ),
             Row(
               children: [
-                Icon(icon, size: 28, color: AppColors.primary),
+                Icon(icon, color: AppColors.primary, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

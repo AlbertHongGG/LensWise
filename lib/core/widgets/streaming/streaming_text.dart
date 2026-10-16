@@ -1,70 +1,35 @@
 import 'package:flutter/material.dart';
 
-class StreamingText extends StatefulWidget {
+/// Direct text display for streaming content with zero animation jitter.
+/// Uses [RepaintBoundary] to isolate text repainting from parent widgets.
+class StreamingText extends StatelessWidget {
   final String text;
   final TextStyle? style;
   final TextAlign? textAlign;
-  final bool isStreaming;
   final int? maxLines;
   final TextOverflow? overflow;
+  final bool isStreaming;
 
   const StreamingText({
     super.key,
     required this.text,
     this.style,
     this.textAlign,
-    this.isStreaming = false,
     this.maxLines,
     this.overflow,
+    this.isStreaming = false,
   });
-
-  @override
-  State<StreamingText> createState() => _StreamingTextState();
-}
-
-class _StreamingTextState extends State<StreamingText>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _cursorController;
-
-  @override
-  void initState() {
-    super.initState();
-    _cursorController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _cursorController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: widget.isStreaming
-          ? AnimatedBuilder(
-              animation: _cursorController,
-              builder: (context, child) {
-                final showCursor = _cursorController.value > 0.4;
-                return Text(
-                  '${widget.text}${showCursor ? ' ▌' : ''}',
-                  style: widget.style,
-                  textAlign: widget.textAlign,
-                  maxLines: widget.maxLines,
-                  overflow: widget.overflow,
-                );
-              },
-            )
-          : Text(
-              widget.text,
-              style: widget.style,
-              textAlign: widget.textAlign,
-              maxLines: widget.maxLines,
-              overflow: widget.overflow,
-            ),
+      child: Text(
+        text,
+        style: style,
+        textAlign: textAlign,
+        maxLines: maxLines,
+        overflow: overflow,
+      ),
     );
   }
 }

@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/ai/streaming_snapshot.dart';
-import 'package:lens_wise/core/router/navigation_service.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/menu_scanner_agent/menu_scanner_agent.dart';
 import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service.dart';

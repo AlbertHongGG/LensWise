@@ -47,19 +47,21 @@ class _StreamingSkeletonState extends State<StreamingSkeleton>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark ? Colors.white : Colors.black;
 
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          width: widget.width,
-          height: widget.height,
-          margin: widget.margin,
-          decoration: BoxDecoration(
-            color: baseColor.withValues(alpha: _animation.value * (isDark ? 0.15 : 0.08)),
-            borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
-          ),
-        );
-      },
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Container(
+            width: widget.width,
+            height: widget.height,
+            margin: widget.margin,
+            decoration: BoxDecoration(
+              color: baseColor.withValues(alpha: _animation.value * (isDark ? 0.15 : 0.08)),
+              borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
+            ),
+          );
+        },
+      ),
     );
   }
 }

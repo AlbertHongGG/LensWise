@@ -1,23 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 import 'package:lens_wise/core/widgets/streaming/streaming_text.dart';
+import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 
-class VerdictFloatingCard extends StatelessWidget {
-  final String summary;
+class VerdictFloatingCard extends ConsumerWidget {
+  final String? initialSummary;
+  final String? summary;
   final bool isStreaming;
 
   const VerdictFloatingCard({
     super.key,
-    required this.summary,
+    this.initialSummary,
+    this.summary,
     this.isStreaming = false,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (summary.isEmpty) {
+    // Fine-grained selector: Only rebuilds when summary text actually changes!
+    final effectiveSummary = ref.watch(productLensControllerProvider.select((state) {
+      final resSummary = state.result?.summary;
+      if (resSummary != null && resSummary.isNotEmpty) {
+        return resSummary;
+      }
+      return summary ?? initialSummary ?? '';
+    }));
+
+    if (effectiveSummary.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -35,14 +48,14 @@ class VerdictFloatingCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
-              children: [
-                const StreamingSkeleton(
+              children: const [
+                StreamingSkeleton(
                   width: 32,
                   height: 32,
                   borderRadius: BorderRadius.all(Radius.circular(16)),
                 ),
-                const SizedBox(width: 12),
-                const StreamingSkeleton(width: 80, height: 18),
+                SizedBox(width: 12),
+                StreamingSkeleton(width: 80, height: 18),
               ],
             ),
             const SizedBox(height: 16),
@@ -105,8 +118,7 @@ class VerdictFloatingCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           StreamingText(
-            text: summary,
-            isStreaming: isStreaming,
+            text: effectiveSummary,
             style: TextStyle(
               fontSize: 15,
               color: isDark ? Colors.white70 : Colors.black87,

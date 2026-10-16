@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lens_wise/core/router/navigation_service.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
@@ -26,19 +25,6 @@ class _MenuProcessingPageState extends ConsumerState<MenuProcessingPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(menuScannerControllerProvider.notifier).reset();
       ref.read(menuScannerControllerProvider.notifier).analyzeMenu(widget.memoryImages);
-    });
-  }
-
-  void _navigateToResult(MenuScannerState state) {
-    if (_hasNavigated) return;
-    _hasNavigated = true;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ref.read(navigationServiceProvider).navigateToMenuRecord(
-        state.parsingResult ?? state.capturedImages as dynamic,
-        widget.memoryImages,
-      );
     });
   }
 

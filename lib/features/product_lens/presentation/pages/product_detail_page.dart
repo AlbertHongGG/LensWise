@@ -23,22 +23,14 @@ class ProductDetailPage extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA);
 
-    // Watch streaming controller if it is actively streaming
-    final controllerState = ref.watch(productLensControllerProvider);
-    final isStreaming = controllerState.status == ProductLensStatus.streaming;
-    final activeRecord = (isStreaming && controllerState.result != null)
-        ? controllerState.result!
-        : (controllerState.status == ProductLensStatus.success && controllerState.result != null)
-            ? controllerState.result!
-            : record;
-
-    final effectiveAppImages = appImages ?? controllerState.appImages;
+    // Static image resolution: appImages never change during the streaming session
+    final effectiveAppImages = appImages ?? ref.read(productLensControllerProvider).appImages;
 
     return Scaffold(
       backgroundColor: bgColor,
       body: Stack(
         children: [
-          // 1. Fixed Top Image Area
+          // 1. Fixed Top Image Area (Rendered once, isolated from stream updates)
           Positioned(
             top: 0,
             left: 0,
@@ -46,17 +38,17 @@ class ProductDetailPage extends ConsumerWidget {
             height: MediaQuery.of(context).size.height * 0.48,
             child: ImmersiveBackground(
               appImages: effectiveAppImages,
-              imagePaths: activeRecord.imagePaths,
+              imagePaths: record.imagePaths,
             ),
           ),
-          
-          // Right Floating Glassmorphism FABs
+
+          // Right Floating Glassmorphism FABs (Fine-grained boolean reactive island)
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             right: 16,
-            child: InteractiveDetailPanel(record: activeRecord),
+            child: InteractiveDetailPanel(initialRecord: record),
           ),
-          
+
           // 2. Fixed Bottom Content Card
           Positioned(
             top: MediaQuery.of(context).size.height * 0.42, // Overlap the image slightly
@@ -84,23 +76,19 @@ class ProductDetailPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title Area with Skeleton & progressive update
+                  // Title Area with Fine-Grained Reactive Selector
                   HeroTitleOverlay(
-                    productName: activeRecord.productName,
-                    originalName: activeRecord.originalName,
-                    brand: activeRecord.brand,
-                    origin: activeRecord.origin,
+                    initialRecord: record,
                   ),
                   const SizedBox(height: 24),
-                  // Scrollable Summary Area with live streaming text
+                  // Scrollable Summary Area with Direct Text Updates
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
                       clipBehavior: Clip.none,
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
                       child: VerdictFloatingCard(
-                        summary: activeRecord.summary,
-                        isStreaming: isStreaming,
+                        initialSummary: record.summary,
                       ),
                     ),
                   ),

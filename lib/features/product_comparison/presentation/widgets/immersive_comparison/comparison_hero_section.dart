@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
+import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
 
-class ComparisonHeroSection extends StatelessWidget {
+class ComparisonHeroSection extends ConsumerWidget {
   final ProductComparisonRecord result;
   final int leftIndex;
   final int rightIndex;
@@ -17,9 +19,22 @@ class ComparisonHeroSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     Widget leftWidget = Image(image: imageProviderFactory(leftIndex), fit: BoxFit.cover, height: 220);
     Widget rightWidget = Image(image: imageProviderFactory(rightIndex), fit: BoxFit.cover, height: 220);
+
+    // Fine-grained selector: Only rebuilds when the visible pair's names change!
+    final products = ref.watch(productComparisonScannerControllerProvider.select((state) {
+      final rec = state.parsingResult ?? result;
+      final leftProd = leftIndex < rec.products.length ? rec.products[leftIndex] : null;
+      final rightProd = rightIndex < rec.products.length ? rec.products[rightIndex] : null;
+      return (
+        leftName: leftProd?.translatedName ?? '',
+        leftOriginal: leftProd?.originalName ?? '',
+        rightName: rightProd?.translatedName ?? '',
+        rightOriginal: rightProd?.originalName ?? '',
+      );
+    }));
 
     return Container(
       height: 220,
@@ -47,7 +62,7 @@ class ComparisonHeroSection extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         leftWidget,
-                        _buildProductNameOverlay(leftIndex),
+                        _buildProductNameOverlay(products.leftName, products.leftOriginal),
                       ],
                     ),
                   ),
@@ -72,7 +87,7 @@ class ComparisonHeroSection extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         rightWidget,
-                        _buildProductNameOverlay(rightIndex),
+                        _buildProductNameOverlay(products.rightName, products.rightOriginal),
                       ],
                     ),
                   ),
@@ -130,10 +145,9 @@ class ComparisonHeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildProductNameOverlay(int index) {
-    if (result.products.isEmpty || index >= result.products.length) return const SizedBox.shrink();
-    final product = result.products[index];
-    
+  Widget _buildProductNameOverlay(String translatedName, String originalName) {
+    if (translatedName.isEmpty && originalName.isEmpty) return const SizedBox.shrink();
+
     return Positioned(
       bottom: 0,
       left: 0,
@@ -155,7 +169,7 @@ class ComparisonHeroSection extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              product.translatedName,
+              translatedName,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -164,9 +178,9 @@ class ComparisonHeroSection extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            if (product.originalName.isNotEmpty && product.originalName != product.translatedName)
+            if (originalName.isNotEmpty && originalName != translatedName)
               Text(
-                product.originalName,
+                originalName,
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 11,

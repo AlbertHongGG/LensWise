@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/utils/app_paths.dart';
@@ -174,7 +173,12 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 ),
-                child: _buildAiVerdictContent(context, scrollController, widget.args.result, isDark),
+                child: _buildAiVerdictContent(
+                  context,
+                  scrollController,
+                  ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result,
+                  isDark,
+                ),
               ),
             ),
           ),
@@ -204,7 +208,12 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 ),
-                child: _buildContendersContent(context, scrollController, widget.args.result, isDark),
+                child: _buildContendersContent(
+                  context,
+                  scrollController,
+                  ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result,
+                  isDark,
+                ),
               ),
             ),
           ),
@@ -216,14 +225,10 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final controllerState = ref.watch(productComparisonScannerControllerProvider);
-    final isStreaming = controllerState.status == ProductComparisonStatus.streaming;
-    final result = (isStreaming && controllerState.parsingResult != null)
-        ? controllerState.parsingResult!
-        : (controllerState.status == ProductComparisonStatus.success && controllerState.parsingResult != null)
-            ? controllerState.parsingResult!
-            : widget.args.result;
+    final baseResult = widget.args.result;
+    final productCount = widget.args.rawImages?.length ??
+        widget.args.imagePath?.split(',').length ??
+        baseResult.products.length;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -245,7 +250,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                           bottom: 120, // Padding for Bottom Roster Bar
                         ),
                         child: ComparisonUnifiedBoard(
-                          result: result,
+                          result: baseResult,
                           leftIndex: _leftIndex,
                           rightIndex: _rightIndex,
                           isDark: isDark,
@@ -254,7 +259,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                       
                       // Top Layer: Hero VS Section (Pressing down on the board)
                       ComparisonHeroSection(
-                        result: result,
+                        result: baseResult,
                         leftIndex: _leftIndex,
                         rightIndex: _rightIndex,
                         imageProviderFactory: _getImageProvider,
@@ -271,7 +276,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
               left: 0,
               right: 0,
               child: ComparisonRosterBar(
-                itemCount: result.products.length,
+                itemCount: productCount,
                 leftIndex: _leftIndex,
                 rightIndex: _rightIndex,
                 imageProviderFactory: _getImageProvider,
@@ -289,7 +294,10 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                 children: [
                   _buildGlassButton(
                     icon: Icons.auto_awesome,
-                    onTap: () => showComparisonChat(context, result),
+                    onTap: () => showComparisonChat(
+                      context,
+                      ref.read(productComparisonScannerControllerProvider).parsingResult ?? baseResult,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   _buildGlassButton(

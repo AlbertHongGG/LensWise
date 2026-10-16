@@ -46,22 +46,13 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1F2937);
 
-    // Watch streaming controller if it is actively streaming
-    final controllerState = ref.watch(menuScannerControllerProvider);
-    final isStreaming = controllerState.status == MenuScannerStatus.streaming;
-    final activeRecord = (isStreaming && controllerState.parsingResult != null)
-        ? controllerState.parsingResult!
-        : (controllerState.status == MenuScannerStatus.success && controllerState.parsingResult != null)
-            ? controllerState.parsingResult!
-            : _currentRecord; 
-
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         bottom: false,
         child: Stack(
           children: [
-            // 全板塊滑動 (The Scrolling Card Layout)
+            // 全板塊滑動 (The Scrolling Card Layout - Static Container)
             SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
@@ -80,8 +71,16 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildHeader(context, isDark, textColor, activeRecord),
-                    _buildList(context, isDark, textColor, activeRecord),
+                    MenuHeaderSection(
+                      initialRecord: _currentRecord,
+                      isDark: isDark,
+                      textColor: textColor,
+                    ),
+                    MenuListSection(
+                      initialRecord: _currentRecord,
+                      isDark: isDark,
+                      textColor: textColor,
+                    ),
                     const SizedBox(height: 32), // 底部留白
                   ],
                 ),
@@ -96,82 +95,6 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
               _buildImageDrawer(),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, bool isDark, Color textColor, MenuScannerRecord record) {
-    final title = record.storeName.isNotEmpty ? record.storeName : '翻譯菜單';
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'serif',
-              color: textColor,
-              height: 1.2,
-              letterSpacing: 2.0,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: 40,
-            height: 2,
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white24 : Colors.black12,
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '${record.items.length} 個品項',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: isDark ? Colors.white54 : Colors.black54,
-              letterSpacing: 1.0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildList(BuildContext context, bool isDark, Color textColor, MenuScannerRecord record) {
-    if (record.items.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          children: const [
-            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
-            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
-            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: List.generate(record.items.length, (index) {
-          final item = record.items[index];
-          final isLast = index == record.items.length - 1;
-          
-          return MenuListItemTile(
-            item: item,
-            isDark: isDark,
-            textColor: textColor,
-            isLast: isLast,
-          );
-        }),
       ),
     );
   }
@@ -461,3 +384,119 @@ class _MenuCarouselItem {
   
   _MenuCarouselItem({required this.image, this.originalPath, this.isTranslated = false});
 }
+
+class MenuHeaderSection extends ConsumerWidget {
+  final MenuScannerRecord initialRecord;
+  final bool isDark;
+  final Color textColor;
+
+  const MenuHeaderSection({
+    super.key,
+    required this.initialRecord,
+    required this.isDark,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final headerData = ref.watch(menuScannerControllerProvider.select((state) {
+      final rec = state.parsingResult ?? initialRecord;
+      return (
+        storeName: rec.storeName.isNotEmpty ? rec.storeName : '翻譯菜單',
+        itemCount: rec.items.length,
+      );
+    }));
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            headerData.storeName,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'serif',
+              color: textColor,
+              height: 1.2,
+              letterSpacing: 2.0,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 2,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white24 : Colors.black12,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '${headerData.itemCount} 個品項',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.white54 : Colors.black54,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MenuListSection extends ConsumerWidget {
+  final MenuScannerRecord initialRecord;
+  final bool isDark;
+  final Color textColor;
+
+  const MenuListSection({
+    super.key,
+    required this.initialRecord,
+    required this.isDark,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(menuScannerControllerProvider.select((state) {
+      return state.parsingResult?.items ?? initialRecord.items;
+    }));
+
+    if (items.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: const [
+            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
+            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
+            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: List.generate(items.length, (index) {
+          final item = items[index];
+          final isLast = index == items.length - 1;
+
+          return MenuListItemTile(
+            item: item,
+            isDark: isDark,
+            textColor: textColor,
+            isLast: isLast,
+          );
+        }),
+      ),
+    );
+  }
+}
+

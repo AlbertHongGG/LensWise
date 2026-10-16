@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
+import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
 
-class ComparisonUnifiedBoard extends StatelessWidget {
+class ComparisonUnifiedBoard extends ConsumerWidget {
   final ProductComparisonRecord result;
   final int leftIndex;
   final int rightIndex;
@@ -17,8 +19,12 @@ class ComparisonUnifiedBoard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (result.comparisonPoints.isEmpty) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final comparisonPoints = ref.watch(productComparisonScannerControllerProvider.select((state) {
+      return state.parsingResult?.comparisonPoints ?? result.comparisonPoints;
+    }));
+
+    if (comparisonPoints.isEmpty) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.only(top: 40, bottom: 24, left: 16, right: 16),
@@ -62,8 +68,8 @@ class ComparisonUnifiedBoard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: List.generate(result.comparisonPoints.length, (index) {
-          final point = result.comparisonPoints[index];
+        children: List.generate(comparisonPoints.length, (index) {
+          final point = comparisonPoints[index];
           final isLast = index == result.comparisonPoints.length - 1;
 
           String leftVal = leftIndex < point.values.length ? point.values[leftIndex] : 'N/A';
