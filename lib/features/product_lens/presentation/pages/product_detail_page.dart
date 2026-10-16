@@ -1,14 +1,14 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/immersive_background.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/hero_title_overlay.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/verdict_floating_card.dart';
 import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_lens/interactive_detail_panel.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
+import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailPage extends ConsumerWidget {
   final ProductLensRecord record;
   final List<AppImageEntity>? appImages;
 
@@ -19,9 +19,20 @@ class ProductDetailPage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA);
+
+    // Watch streaming controller if it is actively streaming
+    final controllerState = ref.watch(productLensControllerProvider);
+    final isStreaming = controllerState.status == ProductLensStatus.streaming;
+    final activeRecord = (isStreaming && controllerState.result != null)
+        ? controllerState.result!
+        : (controllerState.status == ProductLensStatus.success && controllerState.result != null)
+            ? controllerState.result!
+            : record;
+
+    final effectiveAppImages = appImages ?? controllerState.appImages;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -32,21 +43,18 @@ class ProductDetailPage extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            // 增加圖片高度確保完全覆蓋卡片頂部的 32px 圓角，避免露出缺角
             height: MediaQuery.of(context).size.height * 0.48,
             child: ImmersiveBackground(
-              appImages: appImages,
-              imagePaths: record.imagePaths,
+              appImages: effectiveAppImages,
+              imagePaths: activeRecord.imagePaths,
             ),
           ),
-          
-          // (Close button removed as requested)
           
           // Right Floating Glassmorphism FABs
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             right: 16,
-            child: InteractiveDetailPanel(record: record),
+            child: InteractiveDetailPanel(record: activeRecord),
           ),
           
           // 2. Fixed Bottom Content Card
@@ -70,27 +78,30 @@ class ProductDetailPage extends StatelessWidget {
                     blurRadius: 30,
                     offset: const Offset(0, -10),
                   ),
-                ]
+                ],
               ),
-              padding: const EdgeInsets.only(top: 32), // Only top padding for the whole card
+              padding: const EdgeInsets.only(top: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title Area (Will take natural height, bounded by maxLines)
+                  // Title Area with Skeleton & progressive update
                   HeroTitleOverlay(
-                    productName: record.productName,
-                    originalName: record.originalName,
-                    brand: record.brand,
-                    origin: record.origin,
+                    productName: activeRecord.productName,
+                    originalName: activeRecord.originalName,
+                    brand: activeRecord.brand,
+                    origin: activeRecord.origin,
                   ),
                   const SizedBox(height: 24),
-                  // Scrollable Summary Area (Will take remaining space)
+                  // Scrollable Summary Area with live streaming text
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
-                      clipBehavior: Clip.none, // Prevent clipping of shadows during bounce
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 40), // Padding inside scroll view for shadows
-                      child: VerdictFloatingCard(summary: record.summary),
+                      clipBehavior: Clip.none,
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+                      child: VerdictFloatingCard(
+                        summary: activeRecord.summary,
+                        isStreaming: isStreaming,
+                      ),
                     ),
                   ),
                 ],

@@ -1,16 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
+import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
+import 'package:lens_wise/core/widgets/streaming/streaming_text.dart';
 
 class VerdictFloatingCard extends StatelessWidget {
   final String summary;
+  final bool isStreaming;
 
-  const VerdictFloatingCard({super.key, required this.summary});
+  const VerdictFloatingCard({
+    super.key,
+    required this.summary,
+    this.isStreaming = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (summary.isEmpty) return const SizedBox.shrink();
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (summary.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF1E1E1E).withValues(alpha: 0.6)
+              : Colors.white.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const StreamingSkeleton(
+                  width: 32,
+                  height: 32,
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
+                const SizedBox(width: 12),
+                const StreamingSkeleton(width: 80, height: 18),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const StreamingSkeleton(width: double.infinity, height: 14),
+            const SizedBox(height: 10),
+            const StreamingSkeleton(width: 220, height: 14),
+          ],
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -62,8 +104,9 @@ class VerdictFloatingCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            summary,
+          StreamingText(
+            text: summary,
+            isStreaming: isStreaming,
             style: TextStyle(
               fontSize: 15,
               color: isDark ? Colors.white70 : Colors.black87,

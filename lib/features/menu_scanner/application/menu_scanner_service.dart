@@ -39,6 +39,26 @@ class MenuScannerService {
     return completeRecord;
   }
 
+  /// 串流完成時持久化菜單記錄與圖片
+  Future<MenuScannerRecord> saveCompletedRecord(MenuScannerRecord parsedRecord, List<Uint8List> images) async {
+    final localMediaService = _ref.read(localMediaServiceProvider);
+    final savedPaths = <String>[];
+    for (final imageBytes in images) {
+      final path = await localMediaService.saveImage(imageBytes);
+      savedPaths.add(path);
+    }
+
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final completeRecord = parsedRecord.copyWith(
+      id: 'menu_$id',
+      timestamp: DateTime.now(),
+      imagePaths: savedPaths,
+    );
+
+    await _ref.read(menuHistoryProvider.notifier).saveRecord(completeRecord);
+    return completeRecord;
+  }
+
   Future<MenuScannerRecord> saveTranslatedImage(MenuScannerRecord record, String originalImagePath, AIImageResponse generatedImage) async {
     final localMediaService = _ref.read(localMediaServiceProvider);
     

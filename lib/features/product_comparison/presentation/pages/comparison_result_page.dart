@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/utils/app_paths.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_hero_section.dart';
@@ -13,7 +15,7 @@ import 'package:lens_wise/core/utils/markdown_utils.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_roster_bar.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_chat_adapter.dart';
 
-class ProductComparisonRecordPage extends StatefulWidget {
+class ProductComparisonRecordPage extends ConsumerStatefulWidget {
   final ProductComparisonRecordArgs args;
   
   const ProductComparisonRecordPage({
@@ -22,10 +24,10 @@ class ProductComparisonRecordPage extends StatefulWidget {
   });
 
   @override
-  State<ProductComparisonRecordPage> createState() => _ProductComparisonRecordPageState();
+  ConsumerState<ProductComparisonRecordPage> createState() => _ProductComparisonRecordPageState();
 }
 
-class _ProductComparisonRecordPageState extends State<ProductComparisonRecordPage> {
+class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonRecordPage> {
   int _leftIndex = 0;
   int _rightIndex = 1;
 
@@ -214,7 +216,14 @@ class _ProductComparisonRecordPageState extends State<ProductComparisonRecordPag
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final result = widget.args.result;
+    
+    final controllerState = ref.watch(productComparisonScannerControllerProvider);
+    final isStreaming = controllerState.status == ProductComparisonStatus.streaming;
+    final result = (isStreaming && controllerState.parsingResult != null)
+        ? controllerState.parsingResult!
+        : (controllerState.status == ProductComparisonStatus.success && controllerState.parsingResult != null)
+            ? controllerState.parsingResult!
+            : widget.args.result;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

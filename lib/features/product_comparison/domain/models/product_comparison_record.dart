@@ -21,6 +21,16 @@ abstract class ProductComparisonRecord with _$ProductComparisonRecord implements
 
   factory ProductComparisonRecord.fromJson(Map<String, dynamic> json) => _$ProductComparisonRecordFromJson(json);
 
+  factory ProductComparisonRecord.empty() => ProductComparisonRecord(
+        id: '',
+        timestamp: DateTime.now(),
+        title: '',
+        summary: '',
+        products: const [],
+        comparisonPoints: const [],
+        imagePath: '',
+      );
+
   @override
   String get displayTitle => title.isNotEmpty ? title : '商品比對紀錄';
 

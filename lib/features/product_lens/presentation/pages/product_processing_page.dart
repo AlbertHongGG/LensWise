@@ -15,8 +15,30 @@ class ProductProcessingPage extends ConsumerStatefulWidget {
 }
 
 class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
+  bool _hasNavigated = false;
+
+  void _navigateToDetail(ProductLensState state) {
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.pushReplacement('/product/detail', extra: {
+        'record': state.result,
+        'appImages': state.appImages,
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen<ProductLensState>(productLensControllerProvider, (prev, next) {
+      if (next.status == ProductLensStatus.streaming ||
+          next.status == ProductLensStatus.success) {
+        _navigateToDetail(next);
+      }
+    });
+
     final state = ref.watch(productLensControllerProvider);
 
     return Scaffold(
@@ -31,7 +53,7 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     switch (state.status) {
-      case ProductLensStatus.loading:
+      case ProductLensStatus.connecting:
         return Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -39,14 +61,31 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
               ThinkingOrb(size: 100, isDark: isDark),
               const SizedBox(height: 32),
               const Text(
-                'AI 深度萃取中...',
+                'AI 連線解析中...',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
               const SizedBox(height: 16),
               Text(
-                '正在為您解析成份與特徵\n這可能需要幾秒鐘的時間',
+                '正在為您辨識商品包裝特徵\n即將為您即時展開分析結果',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
+              ),
+            ],
+          ),
+        );
+
+      case ProductLensStatus.streaming:
+      case ProductLensStatus.success:
+        // Transitioning to detail page
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ThinkingOrb(size: 100, isDark: isDark),
+              const SizedBox(height: 32),
+              const Text(
+                '特徵辨識完成，載入中...',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
             ],
           ),
@@ -67,49 +106,7 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
           },
         );
 
-      case ProductLensStatus.success:
-        if (state.result == null) {
-          return Center(
-            child: ElevatedButton(
-              onPressed: () {
-                ref.read(productLensControllerProvider.notifier).reset();
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/scanner');
-                }
-              },
-              child: const Text('無效的資料 (返回)'),
-            ),
-          );
-        }
-        
-        final record = state.result!;
-        
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          context.pushReplacement('/product/detail', extra: {
-            'record': state.result,
-            'appImages': state.appImages,
-          });
-        });
-
-        // 在跳轉前維持著載入畫面
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ThinkingOrb(size: 100, isDark: isDark),
-              const SizedBox(height: 32),
-              const Text(
-                '解析完成...',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
-              ),
-            ],
-          ),
-        );
-
       case ProductLensStatus.idle:
-        // Fallback for idle state (when user just lands on page without analysis)
         return Center(
           child: ElevatedButton.icon(
             onPressed: () {
@@ -125,5 +122,4 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
         );
     }
   }
-
 }

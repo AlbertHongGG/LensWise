@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lens_wise/core/ai/streaming_snapshot.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
@@ -12,6 +13,7 @@ import 'prompts.dart';
 
 abstract class IMenuScannerAgent {
   Future<MenuScannerRecord> execute(List<Uint8List> input);
+  Stream<StreamingSnapshot<MenuScannerRecord>> executeStreamSnapshot(List<Uint8List> input);
 }
 
 class _MenuResponseDto {
@@ -39,6 +41,52 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
     super.logger, {
     required this.targetLanguage,
   });
+
+  MenuScannerRecord _mapJsonToRecord(Map<String, dynamic> jsonMap) {
+    try {
+      final dto = _MenuResponseDto.fromJson(jsonMap);
+      final data = dto.data;
+      if (data == null) {
+        return MenuScannerRecord.empty();
+      }
+      final itemsList = (data['items'] as List<dynamic>?)
+              ?.whereType<Map<String, dynamic>>()
+              .map((e) => MenuScannerItem(
+                    originalName: e['originalName'] as String? ?? '',
+                    translatedName: e['translatedName'] as String? ?? '',
+                    description: e['description'] as String?,
+                    price: (e['price'] is num) ? (e['price'] as num).toDouble() : 0.0,
+                  ))
+              .toList() ??
+          const [];
+
+      return MenuScannerRecord(
+        id: '',
+        timestamp: DateTime.now(),
+        imagePaths: const [],
+        storeName: data['storeName'] as String? ?? '',
+        items: itemsList,
+        translatedImagePaths: const {},
+      );
+    } catch (_) {
+      return MenuScannerRecord.empty();
+    }
+  }
+
+  @override
+  Stream<StreamingSnapshot<MenuScannerRecord>> executeStreamSnapshot(List<Uint8List> input) {
+    final request = GenerateRequest(
+      systemPrompt: buildMenuScannerSystemPrompt(targetLanguage),
+      prompt: buildMenuScannerUserPrompt(),
+      images: input,
+    );
+
+    return executeStreamingPipeline(
+      request: request,
+      mapper: _mapJsonToRecord,
+      initialData: MenuScannerRecord.empty(),
+    );
+  }
 
   @override
   Future<MenuScannerRecord> execute(List<Uint8List> input) async {

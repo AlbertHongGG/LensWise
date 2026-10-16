@@ -11,6 +11,7 @@ import 'prompts.dart';
 
 import 'package:lens_wise/features/receipt_scanner/domain/interfaces/i_receipt_scanner_agent.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
+import 'package:lens_wise/core/ai/streaming_snapshot.dart';
 
 class _ReceiptScannerResponseDto {
   final String status;
@@ -66,6 +67,46 @@ class ReceiptScannerAgent extends BaseAgent<List<Uint8List>, ReceiptScannerRecor
     super.logger, {
     required this.targetLanguage,
   });
+
+  ReceiptScannerRecord _mapJsonToRecord(Map<String, dynamic> jsonMap) {
+    try {
+      final dto = _ReceiptScannerResponseDto.fromJson(jsonMap);
+      final data = dto.data;
+      if (data == null) {
+        return ReceiptScannerRecord.empty();
+      }
+      return ReceiptScannerRecord(
+        id: '',
+        timestamp: DateTime.now(),
+        receiptDate: data.receiptDate,
+        storeName: data.storeName ?? '',
+        currency: data.currency,
+        subtotal: data.subtotal,
+        items: data.items,
+        discounts: data.discounts,
+        taxes: data.taxes,
+        totalAmount: data.totalAmount,
+        imagePaths: const [],
+      );
+    } catch (_) {
+      return ReceiptScannerRecord.empty();
+    }
+  }
+
+  @override
+  Stream<StreamingSnapshot<ReceiptScannerRecord>> executeStreamSnapshot(List<Uint8List> input) {
+    final request = GenerateRequest(
+      systemPrompt: buildReceiptParsingSystemPrompt(targetLanguage),
+      prompt: buildReceiptParsingUserPrompt(),
+      images: input,
+    );
+
+    return executeStreamingPipeline(
+      request: request,
+      mapper: _mapJsonToRecord,
+      initialData: ReceiptScannerRecord.empty(),
+    );
+  }
 
   @override
   Future<ReceiptScannerRecord> execute(List<Uint8List> input) async {

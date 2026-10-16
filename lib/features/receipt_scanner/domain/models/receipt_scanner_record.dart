@@ -25,6 +25,18 @@ abstract class ReceiptScannerRecord with _$ReceiptScannerRecord implements IHist
 
   factory ReceiptScannerRecord.fromJson(Map<String, dynamic> json) => _$ReceiptScannerRecordFromJson(json);
 
+  factory ReceiptScannerRecord.empty() => ReceiptScannerRecord(
+        id: '',
+        timestamp: DateTime.now(),
+        storeName: '',
+        subtotal: 0.0,
+        totalAmount: 0.0,
+        items: const [],
+        discounts: const [],
+        taxes: const [],
+        imagePaths: const [],
+      );
+
   @override
   String get displayTitle => storeName.isNotEmpty ? storeName : '未知商家';
 

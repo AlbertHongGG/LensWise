@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lens_wise/core/ai/streaming_snapshot.dart';
 import 'package:lens_wise/features/ai/domain/models/generate_request.dart';
 import 'package:lens_wise/features/ai/infrastructure/agents/base_agent.dart';
 import 'package:lens_wise/features/ai/infrastructure/providers/provider_factory.dart';
@@ -37,6 +38,50 @@ class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductCompariso
     super.logger, {
     required this.targetLanguage,
   });
+
+  ProductComparisonRecord _mapJsonToRecord(Map<String, dynamic> jsonMap) {
+    try {
+      final dto = _ComparisonResponseDto.fromJson(jsonMap);
+      final data = dto.data;
+      if (data == null) {
+        return ProductComparisonRecord.empty();
+      }
+      return ProductComparisonRecord(
+        id: '',
+        timestamp: DateTime.now(),
+        imagePath: '',
+        title: data['title'] as String? ?? '商品比對結果',
+        summary: data['summary'] as String? ?? '',
+        products: (data['products'] as List<dynamic>?)
+                ?.whereType<Map<String, dynamic>>()
+                .map((e) => ComparisonProduct.fromJson(e))
+                .toList() ??
+            const [],
+        comparisonPoints: (data['comparisonPoints'] as List<dynamic>?)
+                ?.whereType<Map<String, dynamic>>()
+                .map((e) => ComparisonPoint.fromJson(e))
+                .toList() ??
+            const [],
+      );
+    } catch (_) {
+      return ProductComparisonRecord.empty();
+    }
+  }
+
+  @override
+  Stream<StreamingSnapshot<ProductComparisonRecord>> executeStreamSnapshot(List<Uint8List> input) {
+    final request = GenerateRequest(
+      systemPrompt: buildProductComparisonSystemPrompt(targetLanguage, input.length),
+      prompt: buildProductComparisonUserPrompt(),
+      images: input,
+    );
+
+    return executeStreamingPipeline(
+      request: request,
+      mapper: _mapJsonToRecord,
+      initialData: ProductComparisonRecord.empty(),
+    );
+  }
 
   @override
   Future<ProductComparisonRecord> execute(List<Uint8List> input) async {

@@ -1,7 +1,7 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lens_wise/core/router/navigation_service.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
@@ -18,6 +18,8 @@ class MenuProcessingPage extends ConsumerStatefulWidget {
 }
 
 class _MenuProcessingPageState extends ConsumerState<MenuProcessingPage> {
+  bool _hasNavigated = false;
+
   @override
   void initState() {
     super.initState();
@@ -27,8 +29,37 @@ class _MenuProcessingPageState extends ConsumerState<MenuProcessingPage> {
     });
   }
 
+  void _navigateToResult(MenuScannerState state) {
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(navigationServiceProvider).navigateToMenuRecord(
+        state.parsingResult ?? state.capturedImages as dynamic,
+        widget.memoryImages,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen<MenuScannerState>(menuScannerControllerProvider, (prev, next) {
+      if (next.status == MenuScannerStatus.streaming ||
+          next.status == MenuScannerStatus.success) {
+        if (!_hasNavigated && next.parsingResult != null) {
+          _hasNavigated = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            context.pushReplacement('/result/menu', extra: {
+              'record': next.parsingResult,
+              'memoryImages': widget.memoryImages,
+            });
+          });
+        }
+      }
+    });
+
     final state = ref.watch(menuScannerControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -41,7 +72,7 @@ class _MenuProcessingPageState extends ConsumerState<MenuProcessingPage> {
   }
 
   Widget _buildBody(BuildContext context, MenuScannerState state, bool isDark) {
-    if (state.errorMessage != null) {
+    if (state.status == MenuScannerStatus.error && state.errorMessage != null) {
       return PremiumErrorView(
         title: '解析失敗',
         message: state.errorMessage!,
@@ -59,15 +90,26 @@ class _MenuProcessingPageState extends ConsumerState<MenuProcessingPage> {
         children: [
           ThinkingOrb(size: 100, isDark: isDark),
           const SizedBox(height: 32),
-          const Text(
-            'AI 正在翻譯菜單...',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
+          Text(
+            state.status == MenuScannerStatus.streaming
+                ? '菜單辨識完成，載入中...'
+                : 'AI 菜單解析中...',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
-            '這可能需要幾秒鐘的時間',
+            state.status == MenuScannerStatus.streaming
+                ? '即將為您即時展開餐點明細'
+                : '正在為您翻譯餐點與價格\n這可能需要幾秒鐘的時間',
             textAlign: TextAlign.center,
-            style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black54,
+              fontSize: 14,
+            ),
           ),
         ],
       ),

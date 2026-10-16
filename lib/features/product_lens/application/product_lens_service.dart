@@ -42,6 +42,28 @@ class ProductLensService {
       throw Exception('資料解析異常，請確保圖片清晰度並重新嘗試');
     }
   }
+
+  /// 將串流已解析完成的記錄儲存至歷史資料庫與本機檔案 (用於方案 B 串流結束時持久化)
+  Future<ProductLensRecord> saveCompletedRecord(
+    ProductLensRecord parsedRecord,
+    List<Uint8List> imageBytesList,
+  ) async {
+    final mediaService = _ref.read(localMediaServiceProvider);
+    final List<String> savedImagePaths = [];
+    for (final bytes in imageBytesList) {
+      final path = await mediaService.saveImage(bytes);
+      savedImagePaths.add(path);
+    }
+
+    final record = parsedRecord.copyWith(
+      id: const Uuid().v4(),
+      timestamp: DateTime.now(),
+      imagePaths: savedImagePaths,
+    );
+
+    await _ref.read(productHistoryProvider.notifier).saveRecord(record);
+    return record;
+  }
 }
 
 final productLensServiceProvider = Provider<ProductLensService>((ref) {

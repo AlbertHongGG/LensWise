@@ -11,6 +11,7 @@ import 'prompts.dart';
 
 import 'package:lens_wise/features/product_lens/domain/interfaces/i_product_lens_agent.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
+import 'package:lens_wise/core/ai/streaming_snapshot.dart';
 
 class _ProductLensResponseDto {
   final String status;
@@ -62,6 +63,48 @@ class ProductLensAgent extends BaseAgent<List<Uint8List>, ProductLensRecord> imp
     super.logger, {
     required this.targetLanguage,
   });
+
+  ProductLensRecord _mapJsonToRecord(Map<String, dynamic> jsonMap) {
+    try {
+      final dto = _ProductLensResponseDto.fromJson(jsonMap);
+      final data = dto.data;
+      if (data == null) {
+        return ProductLensRecord.empty();
+      }
+      return ProductLensRecord(
+        id: '',
+        timestamp: DateTime.now(),
+        productName: data.productName,
+        originalName: data.originalName,
+        brand: data.brand,
+        origin: data.origin,
+        summary: data.summary,
+        ingredients: data.ingredients,
+        allergenAlerts: data.allergens,
+        dietaryFlags: data.dietaryFlags,
+        whenRecommended: data.recommendedFor,
+        whenNotRecommended: data.notRecommendedFor,
+        imagePaths: const [],
+      );
+    } catch (_) {
+      return ProductLensRecord.empty();
+    }
+  }
+
+  @override
+  Stream<StreamingSnapshot<ProductLensRecord>> executeStreamSnapshot(List<Uint8List> input) {
+    final request = GenerateRequest(
+      systemPrompt: buildProductAnalysisSystemPrompt(targetLanguage),
+      prompt: buildProductAnalysisUserPrompt(),
+      images: input,
+    );
+
+    return executeStreamingPipeline(
+      request: request,
+      mapper: _mapJsonToRecord,
+      initialData: ProductLensRecord.empty(),
+    );
+  }
 
   @override
   Future<ProductLensRecord> execute(List<Uint8List> input) async {

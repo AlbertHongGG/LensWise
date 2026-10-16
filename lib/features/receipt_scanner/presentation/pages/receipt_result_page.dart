@@ -1,16 +1,14 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/core/storage/storage_providers.dart';
-import 'dart:io';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
-import 'package:lens_wise/core/widgets/immersive_scaffold.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_paper_card.dart';
 import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/core/utils/app_paths.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/receipt_chat_adapter.dart';
+import 'package:lens_wise/features/receipt_scanner/presentation/controllers/receipt_scanner_controller.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ReceiptResultPage extends ConsumerStatefulWidget {
@@ -43,6 +41,14 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : const Color(0xFFF5F5F5);
 
+    final controllerState = ref.watch(receiptScannerControllerProvider);
+    final isStreaming = controllerState.status == ReceiptScannerStatus.streaming;
+    final activeRecord = (isStreaming && controllerState.receiptRecord != null)
+        ? controllerState.receiptRecord!
+        : (controllerState.status == ReceiptScannerStatus.success && controllerState.receiptRecord != null)
+            ? controllerState.receiptRecord!
+            : _currentRecord;
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: bgColor,
@@ -55,7 +61,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
               child: Column(
                 children: [
                   ReceiptPaperCard(
-                    record: _currentRecord,
+                    record: activeRecord,
                     onUpdate: _updateRecord,
                   ),
                   const SizedBox(height: 100), // Space for FAB

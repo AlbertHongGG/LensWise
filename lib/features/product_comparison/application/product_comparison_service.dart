@@ -43,6 +43,25 @@ class ProductComparisonService {
       throw Exception('資料儲存異常');
     }
   }
+
+  /// 串流完成時持久化商品比對記錄與圖片
+  Future<ProductComparisonRecord> saveCompletedRecord(ProductComparisonRecord parsedRecord, List<Uint8List> imageBytes) async {
+    final mediaService = _ref.read(localMediaServiceProvider);
+    final paths = <String>[];
+    for (final img in imageBytes) {
+      paths.add(await mediaService.saveImage(img));
+    }
+    final imagePath = paths.join(',');
+    
+    final record = parsedRecord.copyWith(
+      id: const Uuid().v4(),
+      timestamp: DateTime.now(),
+      imagePath: imagePath,
+    );
+
+    await _ref.read(comparisonHistoryProvider.notifier).saveRecord(record);
+    return record;
+  }
 }
 
 final productComparisonServiceProvider = Provider<ProductComparisonService>((ref) {

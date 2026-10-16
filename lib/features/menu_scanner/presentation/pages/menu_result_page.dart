@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +9,8 @@ import 'dart:ui';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/controllers/menu_translation_controller.dart';
+import 'package:lens_wise/features/menu_scanner/presentation/controllers/menu_scanner_controller.dart';
+import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_list_item_tile.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 
@@ -43,7 +44,16 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA); 
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final textColor = isDark ? Colors.white : const Color(0xFF1F2937); 
+    final textColor = isDark ? Colors.white : const Color(0xFF1F2937);
+
+    // Watch streaming controller if it is actively streaming
+    final controllerState = ref.watch(menuScannerControllerProvider);
+    final isStreaming = controllerState.status == MenuScannerStatus.streaming;
+    final activeRecord = (isStreaming && controllerState.parsingResult != null)
+        ? controllerState.parsingResult!
+        : (controllerState.status == MenuScannerStatus.success && controllerState.parsingResult != null)
+            ? controllerState.parsingResult!
+            : _currentRecord; 
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -70,8 +80,8 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildHeader(context, isDark, textColor),
-                    _buildList(context, isDark, textColor),
+                    _buildHeader(context, isDark, textColor, activeRecord),
+                    _buildList(context, isDark, textColor, activeRecord),
                     const SizedBox(height: 32), // 底部留白
                   ],
                 ),
@@ -90,8 +100,8 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark, Color textColor) {
-    final title = _currentRecord.storeName.isNotEmpty ? _currentRecord.storeName : '翻譯菜單';
+  Widget _buildHeader(BuildContext context, bool isDark, Color textColor, MenuScannerRecord record) {
+    final title = record.storeName.isNotEmpty ? record.storeName : '翻譯菜單';
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
       child: Column(
@@ -120,7 +130,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            '${_currentRecord.items.length} 個品項',
+            '${record.items.length} 個品項',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -133,14 +143,27 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
     );
   }
 
-  Widget _buildList(BuildContext context, bool isDark, Color textColor) {
+  Widget _buildList(BuildContext context, bool isDark, Color textColor, MenuScannerRecord record) {
+    if (record.items.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: const [
+            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
+            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
+            StreamingSkeleton(width: double.infinity, height: 60, margin: EdgeInsets.only(bottom: 16)),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: List.generate(_currentRecord.items.length, (index) {
-          final item = _currentRecord.items[index];
-          final isLast = index == _currentRecord.items.length - 1;
+        children: List.generate(record.items.length, (index) {
+          final item = record.items[index];
+          final isLast = index == record.items.length - 1;
           
           return MenuListItemTile(
             item: item,

@@ -27,6 +27,22 @@ abstract class ProductLensRecord with _$ProductLensRecord implements IHistoryRec
 
   factory ProductLensRecord.fromJson(Map<String, dynamic> json) => _$ProductLensRecordFromJson(json);
 
+  factory ProductLensRecord.empty() => ProductLensRecord(
+        id: '',
+        timestamp: DateTime.now(),
+        productName: '',
+        originalName: '',
+        brand: '',
+        origin: '',
+        summary: '',
+        ingredients: const [],
+        allergenAlerts: const [],
+        dietaryFlags: const [],
+        whenRecommended: const [],
+        whenNotRecommended: const [],
+        imagePaths: const [],
+      );
+
   @override
   String get displayTitle => productName.isNotEmpty ? productName : (originalName.isNotEmpty ? originalName : '未知商品');
 

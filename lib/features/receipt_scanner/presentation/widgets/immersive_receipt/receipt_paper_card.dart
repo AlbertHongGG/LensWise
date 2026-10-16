@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'receipt_item_row.dart';
 
@@ -31,7 +32,7 @@ class ReceiptPaperCard extends StatelessWidget {
           _buildEditableField(
             context: context,
             title: '商店名稱',
-            value: record.storeName ?? '未知商店',
+            value: record.storeName.isEmpty ? '未知商店' : record.storeName,
             textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
             onSave: (val) => onUpdate(record.copyWith(storeName: val)),
           ),
@@ -46,14 +47,20 @@ class ReceiptPaperCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...record.items.asMap().entries.map((e) {
-            return ReceiptItemRow(
-              item: e.value,
-              index: e.key,
-              record: record,
-              onUpdate: onUpdate,
-            );
-          }),
+          if (record.items.isEmpty) ...[
+            const StreamingSkeleton(width: double.infinity, height: 26, margin: EdgeInsets.symmetric(vertical: 4)),
+            const StreamingSkeleton(width: double.infinity, height: 26, margin: EdgeInsets.symmetric(vertical: 4)),
+            const StreamingSkeleton(width: double.infinity, height: 26, margin: EdgeInsets.symmetric(vertical: 4)),
+          ] else ...[
+            ...record.items.asMap().entries.map((e) {
+              return ReceiptItemRow(
+                item: e.value,
+                index: e.key,
+                record: record,
+                onUpdate: onUpdate,
+              );
+            }),
+          ],
           const Divider(height: 32, thickness: 1, color: Colors.black12),
           // Subtotal
           Row(

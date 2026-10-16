@@ -20,6 +20,15 @@ abstract class MenuScannerRecord with _$MenuScannerRecord implements IHistoryRec
 
   factory MenuScannerRecord.fromJson(Map<String, dynamic> json) => _$MenuScannerRecordFromJson(json);
 
+  factory MenuScannerRecord.empty() => MenuScannerRecord(
+        id: '',
+        timestamp: DateTime.now(),
+        storeName: '',
+        items: const [],
+        imagePaths: const [],
+        translatedImagePaths: const {},
+      );
+
   @override
   String get displayTitle => storeName.isNotEmpty ? storeName : '未知餐廳菜單';
 

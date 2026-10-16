@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 
 class HeroTitleOverlay extends StatelessWidget {
   final String productName;
@@ -17,6 +18,27 @@ class HeroTitleOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (productName.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            StreamingSkeleton(
+              width: 110,
+              height: 24,
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+            ),
+            SizedBox(height: 14),
+            StreamingSkeleton(width: 240, height: 34),
+            SizedBox(height: 10),
+            StreamingSkeleton(width: 150, height: 18),
+          ],
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),

@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +17,7 @@ class ReceiptProcessingPage extends ConsumerStatefulWidget {
 }
 
 class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
-  // Navigation is decoupled to controller
+  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -31,11 +30,24 @@ class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ReceiptScannerState>(receiptScannerControllerProvider, (prev, next) {
+      if (next.status == ReceiptScannerStatus.streaming ||
+          next.status == ReceiptScannerStatus.success) {
+        if (!_hasNavigated && next.receiptRecord != null) {
+          _hasNavigated = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            context.pushReplacement('/result/receipt', extra: {
+              'record': next.receiptRecord,
+              'memoryImages': widget.memoryImages,
+            });
+          });
+        }
+      }
+    });
+
     final state = ref.watch(receiptScannerControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Navigation is now completely handled by the Controller and NavigationService.
-    // UI strictly acts as a dumb renderer for the loading/error state.
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -46,7 +58,7 @@ class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
   }
 
   Widget _buildBody(BuildContext context, ReceiptScannerState state, bool isDark) {
-    if (state.errorMessage != null) {
+    if (state.status == ReceiptScannerStatus.error && state.errorMessage != null) {
       return PremiumErrorView(
         title: '解析失敗',
         message: state.errorMessage!,
@@ -58,22 +70,32 @@ class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
       );
     }
 
-    // Default to Loading state
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           ThinkingOrb(size: 100, isDark: isDark),
           const SizedBox(height: 32),
-          const Text(
-            'AI 正在解析收據內容...',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
+          Text(
+            state.status == ReceiptScannerStatus.streaming
+                ? '收據辨識完成，載入中...'
+                : 'AI 收據萃取中...',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
-            '這可能需要幾秒鐘的時間',
+            state.status == ReceiptScannerStatus.streaming
+                ? '即將為您即時展開消費明細與稅金'
+                : '正在為您辨識品項與計算金額\n這可能需要幾秒鐘的時間',
             textAlign: TextAlign.center,
-            style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black54,
+              fontSize: 14,
+            ),
           ),
         ],
       ),

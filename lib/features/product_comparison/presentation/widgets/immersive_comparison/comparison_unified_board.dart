@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 
 class ComparisonUnifiedBoard extends StatelessWidget {
@@ -17,7 +18,27 @@ class ComparisonUnifiedBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (result.comparisonPoints.isEmpty) return const SizedBox.shrink();
+    if (result.comparisonPoints.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.only(top: 40, bottom: 24, left: 16, right: 16),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+          border: Border.all(
+            color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.03),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: const [
+            StreamingSkeleton(width: double.infinity, height: 44, margin: EdgeInsets.only(bottom: 16)),
+            StreamingSkeleton(width: double.infinity, height: 44, margin: EdgeInsets.only(bottom: 16)),
+            StreamingSkeleton(width: double.infinity, height: 44, margin: EdgeInsets.only(bottom: 16)),
+          ],
+        ),
+      );
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
