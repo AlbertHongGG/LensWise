@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
-import 'package:lens_wise/core/utils/app_paths.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_chat_adapter.dart';
 import 'dart:ui';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
@@ -400,7 +399,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
       if (path != null && record.translatedImagePaths.containsKey(path)) {
         items.add(_MenuCarouselItem(
           image: CarouselItem(
-            image: ResizeImage(FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)), width: 1080),
+            image: _imageResolver.resolveDiskImage(record.translatedImagePaths[path]!),
             fit: BoxFit.contain,
           ),
           originalPath: null,
@@ -413,7 +412,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   }
 
   Future<Uint8List?> _getImageBytes(String path) async {
-    final file = AppPaths.getImageFile(path);
+    final file = _imageResolver.getFile(path);
     if (await file.exists()) {
       return await file.readAsBytes();
     }

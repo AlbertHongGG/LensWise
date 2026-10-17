@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
@@ -23,13 +24,16 @@ final Uint8List kTransparentImageBytes = Uint8List.fromList(<int>[
 /// 2. 嚴格執行索引保護（Index Clamping），當要求索引超出圖片長度時平滑鎖定至最後一張，防止 IndexOutOfBounds。
 /// 3. 提供安全 Fallback 佔位機制，當無任何圖片時永不觸發 Null check operator 或紅畫面崩潰。
 /// 4. 統一透過 ResizeImage 限制解析度（預設寬度 1080px），防範大圖 OOM。
+/// 5. 支援策略注入 (Strategy Injection via [fileResolver])，使單元測試能在零全域副作用下隔離執行。
 class SessionImageResolver {
   final List<AppImageEntity>? memoryImages;
   final List<String> imagePaths;
+  final File Function(String filename)? fileResolver;
 
   const SessionImageResolver({
     this.memoryImages,
     this.imagePaths = const [],
+    this.fileResolver,
   });
 
   /// 是否處於記憶體暫存態（即時串流分析階段）
@@ -40,6 +44,11 @@ class SessionImageResolver {
 
   /// 是否包含至少一張可用圖片
   bool get hasImages => count > 0;
+
+  File _resolveFile(String filename) {
+    final resolver = fileResolver ?? AppPaths.getImageFile;
+    return resolver(filename);
+  }
 
   /// 獲取安全快取的 ImageProvider
   ///
@@ -57,12 +66,20 @@ class SessionImageResolver {
       return ResizeImage(MemoryImage(entity.bytes), width: targetWidth);
     } else {
       final filename = imagePaths[safeIndex];
-      if (filename.isEmpty) {
-        return ResizeImage(MemoryImage(kTransparentImageBytes), width: 1);
-      }
-      return ResizeImage(FileImage(AppPaths.getImageFile(filename)), width: targetWidth);
+      return resolveDiskImage(filename, targetWidth: targetWidth);
     }
   }
+
+  /// 單獨安全解析特定磁碟檔案名稱（例如菜單翻譯圖片）
+  ImageProvider resolveDiskImage(String filename, {int targetWidth = 1080}) {
+    if (filename.isEmpty) {
+      return ResizeImage(MemoryImage(kTransparentImageBytes), width: 1);
+    }
+    return ResizeImage(FileImage(_resolveFile(filename)), width: targetWidth);
+  }
+
+  /// 取得特定檔案名稱的實體 File 物件
+  File getFile(String filename) => _resolveFile(filename);
 
   /// 取得磁碟檔案檔名（歷史模式下有效，即時模式下可能為 null）
   String? getDiskPath(int index) {

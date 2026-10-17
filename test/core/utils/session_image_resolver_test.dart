@@ -1,8 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
-import 'package:lens_wise/core/utils/app_paths.dart';
 import 'package:lens_wise/core/utils/session_image_resolver.dart';
 
 void main() {
@@ -17,9 +17,6 @@ void main() {
   ];
 
   group('SessionImageResolver', () {
-    setUp(() {
-      AppPaths.setTestMediaDir('/test/media');
-    });
     test('Live Session (Memory Images) has precedence', () {
       final resolver = SessionImageResolver(
         memoryImages: memoryEntities,
@@ -52,10 +49,11 @@ void main() {
       expect(memoryImg.bytes, equals(dummyBytes2));
     });
 
-    test('History Mode (Disk Paths) resolves to FileImage', () {
+    test('History Mode (Disk Paths) resolves to FileImage via strategy injection', () {
       final resolver = SessionImageResolver(
         memoryImages: null,
         imagePaths: ['receipt_001.jpg', 'receipt_002.jpg'],
+        fileResolver: (filename) => File('/isolated/test/media/$filename'),
       );
 
       expect(resolver.isMemorySource, isFalse);
@@ -68,6 +66,23 @@ void main() {
       expect(resize.imageProvider, isA<FileImage>());
       final fileImg = resize.imageProvider as FileImage;
       expect(fileImg.file.path, contains('receipt_002.jpg'));
+      expect(fileImg.file.path, contains('/isolated/test/media/'));
+    });
+
+    test('resolveDiskImage uses custom fileResolver without modifying global state', () {
+      final resolver = SessionImageResolver(
+        fileResolver: (filename) => File('/custom/sandbox/$filename'),
+      );
+
+      final provider = resolver.resolveDiskImage('menu_translated.jpg');
+      expect(provider, isA<ResizeImage>());
+      final resize = provider as ResizeImage;
+      expect(resize.imageProvider, isA<FileImage>());
+      final fileImg = resize.imageProvider as FileImage;
+      expect(fileImg.file.path, contains('/custom/sandbox/menu_translated.jpg'));
+
+      final file = resolver.getFile('test.jpg');
+      expect(file.path, equals('/custom/sandbox/test.jpg'));
     });
 
     test('Graceful fallback when completely empty (0 images)', () {
