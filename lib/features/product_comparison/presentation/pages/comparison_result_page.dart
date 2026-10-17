@@ -11,6 +11,7 @@ import 'package:lens_wise/features/product_comparison/presentation/widgets/immer
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_contenders_drawer.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:lens_wise/core/utils/markdown_utils.dart';
+import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_roster_bar.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_chat_adapter.dart';
 
@@ -173,11 +174,16 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 ),
-                child: _buildAiVerdictContent(
-                  context,
-                  scrollController,
-                  ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result,
-                  isDark,
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
+                    return _buildAiVerdictContent(
+                      context,
+                      scrollController,
+                      currentResult,
+                      isDark,
+                    );
+                  },
                 ),
               ),
             ),
@@ -208,11 +214,16 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 ),
-                child: _buildContendersContent(
-                  context,
-                  scrollController,
-                  ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result,
-                  isDark,
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
+                    return _buildContendersContent(
+                      context,
+                      scrollController,
+                      currentResult,
+                      isDark,
+                    );
+                  },
                 ),
               ),
             ),
@@ -225,10 +236,11 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseResult = widget.args.result;
+    final activeResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
+    final isStreaming = ref.watch(productComparisonScannerControllerProvider.select((s) => s.status == ProductComparisonStatus.streaming));
     final productCount = widget.args.rawImages?.length ??
         widget.args.imagePath?.split(',').length ??
-        baseResult.products.length;
+        activeResult.products.length;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -250,16 +262,17 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                           bottom: 120, // Padding for Bottom Roster Bar
                         ),
                         child: ComparisonUnifiedBoard(
-                          result: baseResult,
+                          result: activeResult,
                           leftIndex: _leftIndex,
                           rightIndex: _rightIndex,
                           isDark: isDark,
+                          isStreaming: isStreaming,
                         ),
                       ),
                       
                       // Top Layer: Hero VS Section (Pressing down on the board)
                       ComparisonHeroSection(
-                        result: baseResult,
+                        result: activeResult,
                         leftIndex: _leftIndex,
                         rightIndex: _rightIndex,
                         imageProviderFactory: _getImageProvider,
@@ -296,7 +309,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                     icon: Icons.auto_awesome,
                     onTap: () => showComparisonChat(
                       context,
-                      ref.read(productComparisonScannerControllerProvider).parsingResult ?? baseResult,
+                      ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -400,32 +413,41 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                 ],
               ),
               const SizedBox(height: 24),
-              MarkdownBody(
-                data: MarkdownUtils.fixCjkBold(result.summary),
-                styleSheet: MarkdownStyleSheet(
-                  h2: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                    height: 1.5,
+              if (result.summary.trim().isEmpty)
+                const Column(
+                  children: [
+                    StreamingSkeleton(width: double.infinity, height: 20, margin: EdgeInsets.only(bottom: 12)),
+                    StreamingSkeleton(width: double.infinity, height: 20, margin: EdgeInsets.only(bottom: 12)),
+                    StreamingSkeleton(width: 200, height: 20),
+                  ],
+                )
+              else
+                MarkdownBody(
+                  data: MarkdownUtils.fixCjkBold(result.summary),
+                  styleSheet: MarkdownStyleSheet(
+                    h2: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                      height: 1.5,
+                    ),
+                    p: TextStyle(
+                      fontSize: 16,
+                      color: isDark ? Colors.white.withValues(alpha: 0.85) : Colors.black87,
+                      height: 1.8,
+                      letterSpacing: 0.5,
+                    ),
+                    listBullet: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 16,
+                    ),
+                    strong: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                    blockSpacing: 16,
                   ),
-                  p: TextStyle(
-                    fontSize: 16,
-                    color: isDark ? Colors.white.withValues(alpha: 0.85) : Colors.black87,
-                    height: 1.8,
-                    letterSpacing: 0.5,
-                  ),
-                  listBullet: TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 16,
-                  ),
-                  strong: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                  blockSpacing: 16,
                 ),
-              ),
             ],
           ),
         ),

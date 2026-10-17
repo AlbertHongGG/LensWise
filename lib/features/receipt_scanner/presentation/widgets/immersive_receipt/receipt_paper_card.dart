@@ -80,27 +80,39 @@ class _ReceiptPaperHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final headerData = ref.watch(receiptScannerControllerProvider.select((state) {
       final rec = state.receiptRecord ?? initialRecord;
+      final isStreaming = state.status == ReceiptScannerStatus.streaming;
       return (
-        storeName: rec.storeName.isEmpty ? '未知商店' : rec.storeName,
-        receiptDate: rec.receiptDate ?? rec.timestamp.toString().split('.')[0],
+        storeName: rec.storeName,
+        receiptDate: rec.receiptDate ?? (isStreaming ? null : rec.timestamp.toString().split('.')[0]),
+        isStreaming: isStreaming,
       );
     }));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildEditableField(
-          context: context,
-          title: '商店名稱',
-          value: headerData.storeName,
-          textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-          onSave: (val) {
-            final current = ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord;
-            onUpdate(current.copyWith(storeName: val));
-          },
-        ),
+        if (headerData.isStreaming && headerData.storeName.isEmpty)
+          const StreamingSkeleton(
+            width: 140,
+            height: 28,
+            margin: EdgeInsets.only(bottom: 8),
+          )
+        else
+          _buildEditableField(
+            context: context,
+            title: '商店名稱',
+            value: headerData.storeName.isNotEmpty ? headerData.storeName : '未知商店',
+            textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+            onSave: (val) {
+              final current = ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord;
+              onUpdate(current.copyWith(storeName: val));
+            },
+          ),
         const SizedBox(height: 8),
-        Text(headerData.receiptDate, style: const TextStyle(color: Colors.grey)),
+        if (headerData.isStreaming && (headerData.receiptDate == null || headerData.receiptDate!.isEmpty))
+          const StreamingSkeleton(width: 100, height: 16)
+        else
+          Text(headerData.receiptDate ?? '', style: const TextStyle(color: Colors.grey)),
       ],
     );
   }
@@ -218,6 +230,10 @@ class _ReceiptPaperItems extends ConsumerWidget {
       return rec.items;
     }));
 
+    final isStreaming = ref.watch(receiptScannerControllerProvider.select((state) {
+      return state.status == ReceiptScannerStatus.streaming;
+    }));
+
     if (items.isEmpty) {
       return Column(
         children: const [
@@ -231,14 +247,27 @@ class _ReceiptPaperItems extends ConsumerWidget {
     final activeRecord = ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord;
 
     return Column(
-      children: items.asMap().entries.map((e) {
-        return ReceiptItemRow(
-          item: e.value,
-          index: e.key,
-          record: activeRecord,
-          onUpdate: onUpdate,
-        );
-      }).toList(),
+      children: [
+        ...items.asMap().entries.map((e) {
+          final item = e.value;
+          final index = e.key;
+          return ReceiptItemRow(
+            key: ValueKey('receipt_item_${item.originalName}_$index'),
+            item: item,
+            index: index,
+            record: activeRecord,
+            onUpdate: onUpdate,
+          );
+        }),
+        if (isStreaming)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 4),
+            child: StreamingSkeleton(
+              width: double.infinity,
+              height: 26,
+            ),
+          ),
+      ],
     );
   }
 }
@@ -262,6 +291,7 @@ class _ReceiptPaperTotals extends ConsumerWidget {
         taxes: rec.taxes,
         totalAmount: rec.totalAmount,
         currency: rec.currency ?? '',
+        isStreaming: state.status == ReceiptScannerStatus.streaming,
       );
     }));
 
@@ -273,7 +303,10 @@ class _ReceiptPaperTotals extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('小計', style: TextStyle(fontSize: 16, color: Colors.black87)),
-            Text(totals.subtotal.toStringAsFixed(2), style: const TextStyle(fontSize: 16, color: Colors.black87)),
+            if (totals.isStreaming && totals.subtotal <= 0.0)
+              const StreamingSkeleton(width: 60, height: 18)
+            else
+              Text(totals.subtotal.toStringAsFixed(2), style: const TextStyle(fontSize: 16, color: Colors.black87)),
           ],
         ),
 
@@ -315,6 +348,7 @@ class _ReceiptPaperTotals extends ConsumerWidget {
           ref: ref,
           currency: totals.currency,
           totalAmount: totals.totalAmount,
+          isStreaming: totals.isStreaming,
         ),
       ],
     );
@@ -325,7 +359,21 @@ class _ReceiptPaperTotals extends ConsumerWidget {
     required WidgetRef ref,
     required String currency,
     required double totalAmount,
+    required bool isStreaming,
   }) {
+    if (isStreaming && totalAmount <= 0.0) {
+      return const Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '總計',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          StreamingSkeleton(width: 90, height: 28),
+        ],
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         final controller = TextEditingController(text: totalAmount.toStringAsFixed(2));

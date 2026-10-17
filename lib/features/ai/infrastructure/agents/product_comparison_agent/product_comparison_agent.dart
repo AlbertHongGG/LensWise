@@ -12,22 +12,7 @@ import 'prompts.dart';
 
 import 'package:lens_wise/features/product_comparison/domain/interfaces/i_product_comparison_agent.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
-
-class _ComparisonResponseDto {
-  final String status;
-  final String? message;
-  final Map<String, dynamic>? data;
-
-  _ComparisonResponseDto({required this.status, this.message, this.data});
-
-  factory _ComparisonResponseDto.fromJson(Map<String, dynamic> json) {
-    return _ComparisonResponseDto(
-      status: json['status'] as String? ?? 'error',
-      message: json['message'] as String?,
-      data: json['data'] as Map<String, dynamic>?,
-    );
-  }
-}
+import 'product_comparison_payload_parser.dart';
 
 class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductComparisonRecord> implements IProductComparisonAgent {
   final TargetLanguage targetLanguage;
@@ -39,35 +24,6 @@ class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductCompariso
     required this.targetLanguage,
   });
 
-  ProductComparisonRecord _mapJsonToRecord(Map<String, dynamic> jsonMap) {
-    try {
-      final dto = _ComparisonResponseDto.fromJson(jsonMap);
-      final data = dto.data;
-      if (data == null) {
-        return ProductComparisonRecord.empty();
-      }
-      return ProductComparisonRecord(
-        id: '',
-        timestamp: DateTime.now(),
-        imagePath: '',
-        title: data['title'] as String? ?? '商品比對結果',
-        summary: data['summary'] as String? ?? '',
-        products: (data['products'] as List<dynamic>?)
-                ?.whereType<Map<String, dynamic>>()
-                .map((e) => ComparisonProduct.fromJson(e))
-                .toList() ??
-            const [],
-        comparisonPoints: (data['comparisonPoints'] as List<dynamic>?)
-                ?.whereType<Map<String, dynamic>>()
-                .map((e) => ComparisonPoint.fromJson(e))
-                .toList() ??
-            const [],
-      );
-    } catch (_) {
-      return ProductComparisonRecord.empty();
-    }
-  }
-
   @override
   Stream<StreamingSnapshot<ProductComparisonRecord>> executeStreamSnapshot(List<Uint8List> input) {
     final request = GenerateRequest(
@@ -78,7 +34,7 @@ class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductCompariso
 
     return executeStreamingPipeline(
       request: request,
-      mapper: _mapJsonToRecord,
+      mapper: ProductComparisonPayloadParser.parseStreamingSnapshot,
       initialData: ProductComparisonRecord.empty(),
     );
   }
@@ -96,36 +52,22 @@ class ProductComparisonAgent extends BaseAgent<List<Uint8List>, ProductCompariso
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
-      final dto = _ComparisonResponseDto.fromJson(jsonMap);
+      final status = jsonMap['status'] as String? ?? 'error';
 
-      if (dto.status != 'success' || dto.data == null) {
-        throw Exception(dto.message ?? '解析過程發生錯誤');
+      if (status != 'success') {
+        throw Exception(jsonMap['message']?.toString() ?? '解析過程發生錯誤');
       }
 
-      // Convert the AI DTO map into the true Domain Model
-      return ProductComparisonRecord(
-        id: '',
-        timestamp: DateTime.now(),
-        imagePath: '',
-        title: dto.data!['title'] as String? ?? '商品比對結果',
-        summary: dto.data!['summary'] as String? ?? '',
-        products: (dto.data!['products'] as List<dynamic>?)
-                ?.map((e) => ComparisonProduct.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-        comparisonPoints: (dto.data!['comparisonPoints'] as List<dynamic>?)
-                ?.map((e) => ComparisonPoint.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-      );
+      return ProductComparisonPayloadParser.parseStreamingSnapshot(jsonMap);
     } catch (e, stack) {
+      if (e is Exception) rethrow;
       print('Failed to parse AI response: $e\n$stack');
       throw Exception('解析或比對過程發生錯誤: $e\n請確認照片是否清晰且包含多樣商品。');
     }
   }
 }
 
-final productComparisonAgentProvider = Provider.autoDispose<IProductComparisonAgent>((ref) {
+final productComparisonAgentProvider = Provider<IProductComparisonAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return ProductComparisonAgent(
     AiAgentType.productComparison,

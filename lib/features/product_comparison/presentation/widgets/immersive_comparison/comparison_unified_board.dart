@@ -9,6 +9,7 @@ class ComparisonUnifiedBoard extends ConsumerWidget {
   final int leftIndex;
   final int rightIndex;
   final bool isDark;
+  final bool isStreaming;
 
   const ComparisonUnifiedBoard({
     super.key,
@@ -16,15 +17,24 @@ class ComparisonUnifiedBoard extends ConsumerWidget {
     required this.leftIndex,
     required this.rightIndex,
     required this.isDark,
+    this.isStreaming = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final activeStreaming = isStreaming ||
+        ref.watch(productComparisonScannerControllerProvider.select((state) {
+          return state.status == ProductComparisonStatus.streaming;
+        }));
+
     final comparisonPoints = ref.watch(productComparisonScannerControllerProvider.select((state) {
       return state.parsingResult?.comparisonPoints ?? result.comparisonPoints;
     }));
 
     if (comparisonPoints.isEmpty) {
+      if (!activeStreaming) {
+        return const SizedBox.shrink();
+      }
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.only(top: 40, bottom: 24, left: 16, right: 16),
@@ -36,8 +46,8 @@ class ComparisonUnifiedBoard extends ConsumerWidget {
             width: 1,
           ),
         ),
-        child: Column(
-          children: const [
+        child: const Column(
+          children: [
             StreamingSkeleton(width: double.infinity, height: 44, margin: EdgeInsets.only(bottom: 16)),
             StreamingSkeleton(width: double.infinity, height: 44, margin: EdgeInsets.only(bottom: 16)),
             StreamingSkeleton(width: double.infinity, height: 44, margin: EdgeInsets.only(bottom: 16)),
@@ -68,33 +78,53 @@ class ComparisonUnifiedBoard extends ConsumerWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: List.generate(comparisonPoints.length, (index) {
-          final point = comparisonPoints[index];
-          final isLast = index == result.comparisonPoints.length - 1;
+        children: [
+          ...List.generate(comparisonPoints.length, (index) {
+            final point = comparisonPoints[index];
+            final isLast = index == comparisonPoints.length - 1 && !activeStreaming;
 
-          String leftVal = leftIndex < point.values.length ? point.values[leftIndex] : 'N/A';
-          String rightVal = rightIndex < point.values.length ? point.values[rightIndex] : 'N/A';
+            String leftVal = leftIndex < point.values.length ? point.values[leftIndex] : 'N/A';
+            String rightVal = rightIndex < point.values.length ? point.values[rightIndex] : 'N/A';
 
-          return Column(
-            children: [
-              ComparisonMatrixRow(
-                aspect: point.aspect,
-                leftValue: leftVal,
-                rightValue: rightVal,
-                isDark: isDark,
-              ),
-              if (!isLast)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Divider(
-                    color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
-                    thickness: 1,
-                    height: 1,
+            return KeyedSubtree(
+              key: ValueKey('comparison_point_${point.aspect}_$index'),
+              child: Column(
+                children: [
+                  ComparisonMatrixRow(
+                    aspect: point.aspect,
+                    leftValue: leftVal,
+                    rightValue: rightVal,
+                    isDark: isDark,
                   ),
-                ),
-            ],
-          );
-        }),
+                  if (!isLast)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Divider(
+                        color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
+                        thickness: 1,
+                        height: 1,
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
+          if (activeStreaming) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Divider(
+                color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
+                thickness: 1,
+                height: 1,
+              ),
+            ),
+            const StreamingSkeleton(
+              width: double.infinity,
+              height: 44,
+              margin: EdgeInsets.only(bottom: 8),
+            ),
+          ],
+        ],
       ),
     );
   }

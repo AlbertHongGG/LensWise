@@ -13,46 +13,7 @@ import 'package:lens_wise/features/product_lens/domain/interfaces/i_product_lens
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 import 'package:lens_wise/core/ai/streaming_snapshot.dart';
 
-class _ProductLensResponseDto {
-  final String status;
-  final String? message;
-  final _ProductLensDataDto? data;
-
-  _ProductLensResponseDto({required this.status, this.message, this.data});
-
-  factory _ProductLensResponseDto.fromJson(Map<String, dynamic> json) {
-    return _ProductLensResponseDto(
-      status: json['status'] as String? ?? 'error',
-      message: json['message'] as String?,
-      data: json['data'] != null ? _ProductLensDataDto.fromJson(json['data']) : null,
-    );
-  }
-}
-
-class _ProductLensDataDto {
-  final String productName;
-  final String originalName;
-  final String brand;
-  final String origin;
-  final String summary;
-  final List<String> ingredients;
-  final List<String> allergens;
-  final List<String> dietaryFlags;
-  final List<String> recommendedFor;
-  final List<String> notRecommendedFor;
-
-  _ProductLensDataDto.fromJson(Map<String, dynamic> json)
-      : productName = json['productName'] as String? ?? '',
-        originalName = json['originalName'] as String? ?? '',
-        brand = json['brand'] as String? ?? '',
-        origin = json['origin'] as String? ?? '',
-        summary = json['summary'] as String? ?? '',
-        ingredients = (json['ingredients'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-        allergens = (json['allergens'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-        dietaryFlags = (json['dietaryFlags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-        recommendedFor = (json['recommendedFor'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-        notRecommendedFor = (json['notRecommendedFor'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
-}
+import 'product_lens_payload_parser.dart';
 
 class ProductLensAgent extends BaseAgent<List<Uint8List>, ProductLensRecord> implements IProductLensAgent {
   final TargetLanguage targetLanguage;
@@ -64,33 +25,6 @@ class ProductLensAgent extends BaseAgent<List<Uint8List>, ProductLensRecord> imp
     required this.targetLanguage,
   });
 
-  ProductLensRecord _mapJsonToRecord(Map<String, dynamic> jsonMap) {
-    try {
-      final dto = _ProductLensResponseDto.fromJson(jsonMap);
-      final data = dto.data;
-      if (data == null) {
-        return ProductLensRecord.empty();
-      }
-      return ProductLensRecord(
-        id: '',
-        timestamp: DateTime.now(),
-        productName: data.productName,
-        originalName: data.originalName,
-        brand: data.brand,
-        origin: data.origin,
-        summary: data.summary,
-        ingredients: data.ingredients,
-        allergenAlerts: data.allergens,
-        dietaryFlags: data.dietaryFlags,
-        whenRecommended: data.recommendedFor,
-        whenNotRecommended: data.notRecommendedFor,
-        imagePaths: const [],
-      );
-    } catch (_) {
-      return ProductLensRecord.empty();
-    }
-  }
-
   @override
   Stream<StreamingSnapshot<ProductLensRecord>> executeStreamSnapshot(List<Uint8List> input) {
     final request = GenerateRequest(
@@ -101,7 +35,7 @@ class ProductLensAgent extends BaseAgent<List<Uint8List>, ProductLensRecord> imp
 
     return executeStreamingPipeline(
       request: request,
-      mapper: _mapJsonToRecord,
+      mapper: ProductLensPayloadParser.parseStreamingSnapshot,
       initialData: ProductLensRecord.empty(),
     );
   }
@@ -119,35 +53,21 @@ class ProductLensAgent extends BaseAgent<List<Uint8List>, ProductLensRecord> imp
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
-      final dto = _ProductLensResponseDto.fromJson(jsonMap);
+      final status = jsonMap['status'] as String? ?? 'error';
 
-      if (dto.status != 'success' || dto.data == null) {
-        throw Exception(dto.message ?? '解析過程發生錯誤');
+      if (status != 'success') {
+        throw Exception(jsonMap['message']?.toString() ?? '解析過程發生錯誤');
       }
 
-      final data = dto.data!;
-      return ProductLensRecord(
-        id: '', // Placeholder, populated by Service
-        timestamp: DateTime.now(), // Placeholder, populated by Service
-        productName: data.productName,
-        originalName: data.originalName,
-        brand: data.brand,
-        origin: data.origin,
-        summary: data.summary,
-        ingredients: data.ingredients,
-        allergenAlerts: data.allergens,
-        dietaryFlags: data.dietaryFlags,
-        whenRecommended: data.recommendedFor,
-        whenNotRecommended: data.notRecommendedFor,
-        imagePaths: [], // Placeholder, populated by Service
-      );
+      return ProductLensPayloadParser.parseStreamingSnapshot(jsonMap);
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('解析過程發生錯誤，可能是照片資訊太過複雜。請換個角度拍攝。');
     }
   }
 }
 
-final productLensAgentProvider = Provider.autoDispose<IProductLensAgent>((ref) {
+final productLensAgentProvider = Provider<IProductLensAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return ProductLensAgent(
     AiAgentType.productLens,
@@ -156,3 +76,4 @@ final productLensAgentProvider = Provider.autoDispose<IProductLensAgent>((ref) {
     targetLanguage: language,
   );
 });
+

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
-import 'package:lens_wise/core/widgets/streaming/streaming_text.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 
 class VerdictFloatingCard extends ConsumerWidget {
@@ -117,8 +116,8 @@ class VerdictFloatingCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          StreamingText(
-            text: effectiveSummary,
+          Text(
+            effectiveSummary,
             style: TextStyle(
               fontSize: 15,
               color: isDark ? Colors.white70 : Colors.black87,
