@@ -189,5 +189,55 @@ void main() {
       expect(finalData.products.length, 2);
       expect(finalData.comparisonPoints.length, 2);
     });
+
+    test('Simulate optimized topology streaming: products and comparisonPoints arrive before structured markdown summary', () async {
+      // In optimized topology: title -> products -> comparisonPoints -> summary
+      final structuredMarkdown = '## 核心結論\n這是一場 **平價便利** 與 **名店職人風味** 的本質對決。\n\n## 選購指南：誰該買哪款？\n- **商品 0**：適合追求極致性價比者。\n- **商品 1**：適合追求道地香氣與口感者。\n\n## 關鍵取捨與避坑\n- 商品 1 單價較高且鈉含量偏高，請酌量飲用高湯。';
+
+      final intermediateJson = {
+        'status': 'success',
+        'data': {
+          'title': '日清泡麵頂上對決',
+          'products': [
+            {'originalName': 'どん兵衛 きつねうどん', 'translatedName': '日清兵衛豆皮烏龍麵'},
+            {'originalName': 'どん兵衛 鴨だしそば', 'translatedName': '日清兵衛鴨肉高湯蕎麥麵'},
+          ],
+          'comparisonPoints': [
+            {'aspect': '麵體與沖泡時間', 'values': ['粗烏龍麵 (5分鐘)', '細蕎麥麵 (3分鐘)']},
+          ],
+          // summary not arrived yet!
+        }
+      };
+
+      final intermediateRecord = ProductComparisonPayloadParser.parseStreamingSnapshot(intermediateJson);
+      expect(intermediateRecord.title, '日清泡麵頂上對決');
+      expect(intermediateRecord.products.length, 2);
+      expect(intermediateRecord.comparisonPoints.length, 1);
+      expect(intermediateRecord.summary, ''); // Summary gracefully defaults to empty string for skeleton loader
+
+      final completedJson = {
+        'status': 'success',
+        'data': {
+          'title': '日清泡麵頂上對決',
+          'products': [
+            {'originalName': 'どん兵衛 きつねうどん', 'translatedName': '日清兵衛豆皮烏龍麵'},
+            {'originalName': 'どん兵衛 鴨だしそば', 'translatedName': '日清兵衛鴨肉高湯蕎麥麵'},
+          ],
+          'comparisonPoints': [
+            {'aspect': '麵體與沖泡時間', 'values': ['粗烏龍麵 (5分鐘)', '細蕎麥麵 (3分鐘)']},
+          ],
+          'summary': structuredMarkdown,
+        }
+      };
+
+      final completedRecord = ProductComparisonPayloadParser.parseStreamingSnapshot(completedJson);
+      expect(completedRecord.title, '日清泡麵頂上對決');
+      expect(completedRecord.products.length, 2);
+      expect(completedRecord.comparisonPoints.length, 1);
+      expect(completedRecord.summary, contains('## 核心結論'));
+      expect(completedRecord.summary, contains('**平價便利**'));
+      expect(completedRecord.summary, contains('## 選購指南：誰該買哪款？'));
+      expect(completedRecord.summary, contains('## 關鍵取捨與避坑'));
+    });
   });
 }
