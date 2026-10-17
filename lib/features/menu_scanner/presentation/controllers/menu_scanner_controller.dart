@@ -65,7 +65,9 @@ class MenuScannerController extends Notifier<MenuScannerState> {
   void reset() {
     _streamSub?.cancel();
     _streamSub = null;
-    state = MenuScannerState();
+    if (ref.mounted) {
+      state = MenuScannerState();
+    }
   }
 
   Future<void> analyzeMenu(List<AppImageEntity> images) async {

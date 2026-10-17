@@ -66,7 +66,9 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
   void reset() {
     _streamSub?.cancel();
     _streamSub = null;
-    state = ReceiptScannerState();
+    if (ref.mounted) {
+      state = ReceiptScannerState();
+    }
   }
 
   Future<void> analyzeReceipt(List<AppImageEntity> images) async {

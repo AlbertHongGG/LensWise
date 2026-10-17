@@ -128,7 +128,9 @@ class ProductLensController extends Notifier<ProductLensState> {
   void reset() {
     _streamSub?.cancel();
     _streamSub = null;
-    state = ProductLensState();
+    if (ref.mounted) {
+      state = ProductLensState();
+    }
   }
 }
 

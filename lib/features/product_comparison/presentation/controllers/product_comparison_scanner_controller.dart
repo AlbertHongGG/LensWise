@@ -65,7 +65,9 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
   void reset() {
     _streamSub?.cancel();
     _streamSub = null;
-    state = ProductComparisonScannerState();
+    if (ref.mounted) {
+      state = ProductComparisonScannerState();
+    }
   }
 
   Future<void> analyzeComparison(List<AppImageEntity> images) async {

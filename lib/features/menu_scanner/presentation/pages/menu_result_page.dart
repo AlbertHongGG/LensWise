@@ -30,6 +30,7 @@ class MenuResultPage extends ConsumerStatefulWidget {
 
 class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   late MenuScannerRecord _currentRecord;
+  late final MenuScannerController _controller;
   bool _isDrawerOpen = false;
   int _currentCarouselIndex = 0;
 
@@ -57,12 +58,15 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   void initState() {
     super.initState();
     _currentRecord = widget.record;
+    if (isLiveSession) {
+      _controller = ref.read(menuScannerControllerProvider.notifier);
+    }
   }
 
   @override
   void dispose() {
     if (isLiveSession) {
-      ref.read(menuScannerControllerProvider.notifier).reset();
+      Future.microtask(() => _controller.reset());
     }
     super.dispose();
   }
@@ -364,37 +368,60 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
 
   List<_MenuCarouselItem> _buildCarouselItems(MenuScannerRecord record) {
     List<_MenuCarouselItem> items = [];
-    for (int i = 0; i < record.imagePaths.length; i++) {
-      final path = record.imagePaths[i];
-      final memoryImage = widget.memoryImages != null && widget.memoryImages!.length > i 
-          ? widget.memoryImages![i] : null;
-      
-      final fit = memoryImage?.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain;
 
-      // Original
-      items.add(_MenuCarouselItem(
-        image: CarouselItem(
-          image: memoryImage != null 
-              ? ResizeImage(MemoryImage(memoryImage.bytes), width: 1080) 
-              : ResizeImage(FileImage(AppPaths.getImageFile(path)), width: 1080) as ImageProvider,
-          fit: fit,
-        ),
-        originalPath: path,
-        isTranslated: false,
-      ));
-      
-      // Translated
-      if (record.translatedImagePaths.containsKey(path)) {
+    if (widget.memoryImages != null && widget.memoryImages!.isNotEmpty) {
+      for (int i = 0; i < widget.memoryImages!.length; i++) {
+        final memoryImage = widget.memoryImages![i];
+        final path = i < record.imagePaths.length ? record.imagePaths[i] : null;
+        final fit = memoryImage.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain;
+
+        // Original from memory
         items.add(_MenuCarouselItem(
           image: CarouselItem(
-            image: ResizeImage(FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)), width: 1080),
+            image: ResizeImage(MemoryImage(memoryImage.bytes), width: 1080),
+            fit: fit,
+          ),
+          originalPath: path,
+          isTranslated: false,
+        ));
+
+        // Translated
+        if (path != null && record.translatedImagePaths.containsKey(path)) {
+          items.add(_MenuCarouselItem(
+            image: CarouselItem(
+              image: ResizeImage(FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)), width: 1080),
+              fit: BoxFit.contain,
+            ),
+            originalPath: null,
+            isTranslated: true,
+          ));
+        }
+      }
+    } else {
+      for (int i = 0; i < record.imagePaths.length; i++) {
+        final path = record.imagePaths[i];
+        items.add(_MenuCarouselItem(
+          image: CarouselItem(
+            image: ResizeImage(FileImage(AppPaths.getImageFile(path)), width: 1080),
             fit: BoxFit.contain,
           ),
-          originalPath: null,
-          isTranslated: true,
+          originalPath: path,
+          isTranslated: false,
         ));
+
+        if (record.translatedImagePaths.containsKey(path)) {
+          items.add(_MenuCarouselItem(
+            image: CarouselItem(
+              image: ResizeImage(FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)), width: 1080),
+              fit: BoxFit.contain,
+            ),
+            originalPath: null,
+            isTranslated: true,
+          ));
+        }
       }
     }
+
     return items;
   }
 

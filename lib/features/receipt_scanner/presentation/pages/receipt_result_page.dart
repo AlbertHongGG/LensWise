@@ -27,6 +27,7 @@ class ReceiptResultPage extends ConsumerStatefulWidget {
 
 class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
   late ReceiptScannerRecord _currentRecord;
+  late final ReceiptScannerController _controller;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOpen = false;
 
@@ -36,12 +37,15 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
   void initState() {
     super.initState();
     _currentRecord = widget.record;
+    if (isLiveSession) {
+      _controller = ref.read(receiptScannerControllerProvider.notifier);
+    }
   }
 
   @override
   void dispose() {
     if (isLiveSession) {
-      ref.read(receiptScannerControllerProvider.notifier).reset();
+      Future.microtask(() => _controller.reset());
     }
     super.dispose();
   }
@@ -155,20 +159,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                           child: ReceiptImageCarousel(
-                            items: [
-                              ...(List.generate(_currentRecord.imagePaths.length, (i) {
-                                final path = _currentRecord.imagePaths[i];
-                                final memoryImage = widget.memoryImages != null && widget.memoryImages!.length > i 
-                                    ? widget.memoryImages![i] : null;
-                                
-                                return CarouselItem(
-                                  image: memoryImage != null 
-                                      ? ResizeImage(MemoryImage(memoryImage.bytes), width: 1080) 
-                                      : ResizeImage(FileImage(AppPaths.getImageFile(path)), width: 1080) as ImageProvider,
-                                  fit: memoryImage?.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
-                                );
-                              })),
-                            ],
+                            items: _buildCarouselItems(),
                           ),
                         ),
                       ),
@@ -182,6 +173,24 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
         ),
       ),
     );
+  }
+
+  List<CarouselItem> _buildCarouselItems() {
+    if (widget.memoryImages != null && widget.memoryImages!.isNotEmpty) {
+      return widget.memoryImages!.map((memoryImage) {
+        return CarouselItem(
+          image: ResizeImage(MemoryImage(memoryImage.bytes), width: 1080),
+          fit: memoryImage.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
+        );
+      }).toList();
+    }
+
+    return _currentRecord.imagePaths.map((path) {
+      return CarouselItem(
+        image: ResizeImage(FileImage(AppPaths.getImageFile(path)), width: 1080),
+        fit: BoxFit.contain,
+      );
+    }).toList();
   }
 
   Future<void> _updateRecord(ReceiptScannerRecord updated) async {

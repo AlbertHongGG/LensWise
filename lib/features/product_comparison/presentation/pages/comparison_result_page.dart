@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/utils/app_paths.dart';
@@ -14,6 +13,7 @@ import 'package:lens_wise/core/utils/markdown_utils.dart';
 import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_roster_bar.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_chat_adapter.dart';
+import 'package:lens_wise/core/widgets/glass_action_button.dart';
 
 class ProductComparisonRecordPage extends ConsumerStatefulWidget {
   final ProductComparisonRecordArgs args;
@@ -30,15 +30,22 @@ class ProductComparisonRecordPage extends ConsumerStatefulWidget {
 class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonRecordPage> {
   int _leftIndex = 0;
   int _rightIndex = 1;
+  late final ProductComparisonScannerController _controller;
 
   bool get isLiveSession => widget.args.rawImages != null;
 
   @override
+  void initState() {
+    super.initState();
+    if (isLiveSession) {
+      _controller = ref.read(productComparisonScannerControllerProvider.notifier);
+    }
+  }
+
+  @override
   void dispose() {
     if (isLiveSession) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(productComparisonScannerControllerProvider.notifier).reset();
-      });
+      Future.microtask(() => _controller.reset());
     }
     super.dispose();
   }
@@ -336,63 +343,29 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildGlassButton(
+                  GlassActionButton(
                     icon: Icons.auto_awesome,
-                    onTap: () => showComparisonChat(
+                    onPressed: () => showComparisonChat(
                       context,
                       isLiveSession
                           ? (ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result)
                           : widget.args.result,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildGlassButton(
+                  const SizedBox(height: 12),
+                  GlassActionButton(
                     icon: Icons.summarize_outlined,
-                    onTap: _showAiVerdictSheet,
+                    onPressed: _showAiVerdictSheet,
                   ),
-                  const SizedBox(height: 16),
-                  _buildGlassButton(
+                  const SizedBox(height: 12),
+                  GlassActionButton(
                     icon: Icons.view_carousel_outlined,
-                    onTap: _showContendersSheet,
+                    onPressed: _showContendersSheet,
                   ),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassButton({required IconData icon, required VoidCallback onTap}) {
-    return ClipOval(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.black.withValues(alpha: 0.35), // Sophisticated dark transparency
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Icon(icon, color: Colors.white, size: 22),
-            ),
-          ),
         ),
       ),
     );
@@ -456,29 +429,56 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                 )
               else
                 MarkdownBody(
-                  data: MarkdownUtils.fixCjkBold(result.summary),
+                  data: MarkdownUtils.formatAiMarkdown(result.summary),
                   styleSheet: MarkdownStyleSheet(
-                    h2: TextStyle(
-                      fontSize: 20,
+                    h1: const TextStyle(
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
+                      height: 1.6,
+                      letterSpacing: 0.5,
+                    ),
+                    h2: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : AppColors.primary,
+                      height: 1.5,
+                      letterSpacing: 0.5,
+                    ),
+                    h3: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : Colors.black87,
                       height: 1.5,
                     ),
                     p: TextStyle(
-                      fontSize: 16,
-                      color: isDark ? Colors.white.withValues(alpha: 0.85) : Colors.black87,
-                      height: 1.8,
-                      letterSpacing: 0.5,
+                      fontSize: 15,
+                      color: isDark ? Colors.white.withValues(alpha: 0.85) : const Color(0xFF2D3748),
+                      height: 1.75,
+                      letterSpacing: 0.3,
                     ),
-                    listBullet: TextStyle(
+                    listBullet: const TextStyle(
                       color: AppColors.primary,
-                      fontSize: 16,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
                     ),
+                    listIndent: 20,
                     strong: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : Colors.black,
                     ),
-                    blockSpacing: 16,
+                    blockquote: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                      height: 1.6,
+                    ),
+                    blockquoteDecoration: BoxDecoration(
+                      color: isDark ? AppColors.primary.withValues(alpha: 0.1) : AppColors.primary.withValues(alpha: 0.05),
+                      border: const Border(left: BorderSide(color: AppColors.primary, width: 3.5)),
+                      borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                    ),
+                    blockquotePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    blockSpacing: 14,
                   ),
                 ),
             ],

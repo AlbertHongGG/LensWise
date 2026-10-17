@@ -23,12 +23,21 @@ class ProductDetailPage extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
+  late final ProductLensController _controller;
   bool get isLiveSession => widget.appImages != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (isLiveSession) {
+      _controller = ref.read(productLensControllerProvider.notifier);
+    }
+  }
 
   @override
   void dispose() {
     if (isLiveSession) {
-      ref.read(productLensControllerProvider.notifier).reset();
+      Future.microtask(() => _controller.reset());
     }
     super.dispose();
   }

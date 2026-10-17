@@ -42,8 +42,8 @@ String buildProductComparisonSystemPrompt(
     - values (字串陣列): 依照圖片上傳順序，列出每張圖片在該維度下的特徵數值或描述。此陣列長度必須剛好是 $imageCount。例如 ["商品 0 的特徵", "商品 1 的特徵", ...]
 
 【回應要求】
-1. 僅回傳 JSON，**絕對不要**包含 Markdown 格式 (如 ```json) 或任何其他說明文字。
-2. 輸出的 JSON 字串必須是可以被合法解析的格式。''';
+1. 最外層必須為純合法 JSON 物件，絕對不要在外層包裹 Markdown 程式碼區塊標記 (例如 ```json 或 ```)，直接以 { 開始並以 } 結束，不要有任何前導或結尾說明文字。但 JSON 內部之 summary 欄位值**必須強制使用完整標準的 Markdown 語法**進行結構化排版 (包含 ## 標題、- 條列與 ** 粗體)。
+2. 輸出的 JSON 字串必須是可以被合法解析的標準 JSON 格式。''';
 }
 
 String buildProductComparisonUserPrompt() {
