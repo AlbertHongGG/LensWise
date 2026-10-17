@@ -7,6 +7,7 @@ import 'package:lens_wise/core/storage/history_providers.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
+import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 
 enum ProductComparisonStatus {
   idle,
@@ -61,27 +62,25 @@ class ProductComparisonScannerController extends Notifier<ProductComparisonScann
     return ProductComparisonScannerState();
   }
 
-  void addImage(AppImageEntity image) {
-    state = state.copyWith(
-      capturedImages: [...state.capturedImages, image],
-      errorMessage: null,
-    );
-  }
-
-  void removeImage(int index) {
-    final newList = List<AppImageEntity>.from(state.capturedImages);
-    newList.removeAt(index);
-    state = state.copyWith(capturedImages: newList);
-  }
-
   void reset() {
     _streamSub?.cancel();
+    _streamSub = null;
     state = ProductComparisonScannerState();
   }
 
   Future<void> analyzeComparison(List<AppImageEntity> images) async {
     if (images.isEmpty) return;
-    
+
+    final aiState = ref.read(aiConfigControllerProvider);
+    if (!aiState.isAIAgentEnabled) {
+      state = state.copyWith(
+        status: ProductComparisonStatus.error,
+        errorMessage: 'AI 輔助未啟用，請至設定開啟。',
+      );
+      ref.read(notificationProvider.notifier).showError('AI 輔助未啟用，請至設定開啟。');
+      return;
+    }
+
     await _streamSub?.cancel();
 
     state = state.copyWith(

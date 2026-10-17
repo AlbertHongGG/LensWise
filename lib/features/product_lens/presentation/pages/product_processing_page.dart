@@ -6,9 +6,12 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ProductProcessingPage extends ConsumerStatefulWidget {
-  const ProductProcessingPage({super.key});
+  final List<AppImageEntity> memoryImages;
+
+  const ProductProcessingPage({super.key, required this.memoryImages});
 
   @override
   ConsumerState<ProductProcessingPage> createState() => _ProductProcessingPageState();
@@ -16,16 +19,35 @@ class ProductProcessingPage extends ConsumerStatefulWidget {
 
 class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
   bool _hasNavigated = false;
+  late final ProductLensController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ref.read(productLensControllerProvider.notifier);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.reset();
+      _controller.analyzeImage(widget.memoryImages);
+    });
+  }
+
+  @override
+  void dispose() {
+    if (!_hasNavigated) {
+      Future.microtask(() => _controller.reset());
+    }
+    super.dispose();
+  }
 
   void _navigateToDetail(ProductLensState state) {
-    if (_hasNavigated) return;
+    if (_hasNavigated || state.result == null) return;
     _hasNavigated = true;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.pushReplacement('/product/detail', extra: {
+      context.pushReplacement('/result/product', extra: {
         'record': state.result,
-        'appImages': state.appImages,
+        'memoryImages': widget.memoryImages,
       });
     });
   }
@@ -52,74 +74,51 @@ class _ProductProcessingPageState extends ConsumerState<ProductProcessingPage> {
   Widget _buildBody(BuildContext context, WidgetRef ref, ProductLensState state) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    switch (state.status) {
-      case ProductLensStatus.connecting:
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ThinkingOrb(size: 100, isDark: isDark),
-              const SizedBox(height: 32),
-              const Text(
-                'AI 連線解析中...',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '正在為您辨識商品包裝特徵\n即將為您即時展開分析結果',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
-              ),
-            ],
-          ),
-        );
-
-      case ProductLensStatus.streaming:
-      case ProductLensStatus.success:
-        // Transitioning to detail page
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ThinkingOrb(size: 100, isDark: isDark),
-              const SizedBox(height: 32),
-              const Text(
-                '特徵辨識完成，載入中...',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
-              ),
-            ],
-          ),
-        );
-
-      case ProductLensStatus.error:
-        return PremiumErrorView(
-          title: '解析失敗',
-          message: AppErrorMapper.map(state.errorMessage),
-          isDark: isDark,
-          onActionPressed: () {
-            ref.read(productLensControllerProvider.notifier).reset();
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/scanner');
-            }
-          },
-        );
-
-      case ProductLensStatus.idle:
-        return Center(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/scanner');
-              }
-            },
-            icon: const Icon(Icons.arrow_back),
-            label: const Text('返回相機'),
-          ),
-        );
+    if (state.status == ProductLensStatus.error && state.errorMessage != null) {
+      return PremiumErrorView(
+        title: '解析失敗',
+        message: AppErrorMapper.map(state.errorMessage),
+        isDark: isDark,
+        onActionPressed: () {
+          ref.read(productLensControllerProvider.notifier).reset();
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/scanner');
+          }
+        },
+      );
     }
+
+    final isStreaming = state.status == ProductLensStatus.streaming || state.status == ProductLensStatus.success;
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThinkingOrb(size: 100, isDark: isDark),
+          const SizedBox(height: 32),
+          Text(
+            isStreaming ? '特徵辨識完成，載入中...' : 'AI 連線解析中...',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            isStreaming
+                ? '即將為您即時展開分析結果'
+                : '正在為您辨識商品包裝特徵\n這可能需要幾秒鐘的時間',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black54,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

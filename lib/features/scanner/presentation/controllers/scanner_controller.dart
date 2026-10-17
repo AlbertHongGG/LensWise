@@ -6,9 +6,6 @@ import 'package:lens_wise/features/scanner/domain/models/scanner_state.dart';
 import 'package:lens_wise/features/scanner/domain/models/scanner_mode_config.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
-import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
-import 'package:lens_wise/features/receipt_scanner/presentation/controllers/receipt_scanner_controller.dart';
-
 class ScannerController extends Notifier<ScannerState> {
   @override
   ScannerState build() {
@@ -68,14 +65,12 @@ class ScannerController extends Notifier<ScannerState> {
       if (context.mounted) {
         switch (state.currentMode) {
           case ScannerMode.product:
-            ref.read(productLensControllerProvider.notifier).analyzeImage(processedImages);
-            context.push('/product/processing');
+            context.push('/process/product', extra: processedImages);
             break;
           case ScannerMode.comparison:
             context.push('/process/comparison', extra: processedImages);
             break;
           case ScannerMode.receipt:
-            ref.read(receiptScannerControllerProvider.notifier).reset();
             context.push('/process/receipt', extra: processedImages);
             break;
           case ScannerMode.menu:

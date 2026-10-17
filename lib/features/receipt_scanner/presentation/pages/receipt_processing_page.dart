@@ -18,14 +18,24 @@ class ReceiptProcessingPage extends ConsumerStatefulWidget {
 
 class _ReceiptProcessingPageState extends ConsumerState<ReceiptProcessingPage> {
   bool _hasNavigated = false;
+  late final ReceiptScannerController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = ref.read(receiptScannerControllerProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(receiptScannerControllerProvider.notifier).reset();
-      ref.read(receiptScannerControllerProvider.notifier).analyzeReceipt(widget.memoryImages);
+      _controller.reset();
+      _controller.analyzeReceipt(widget.memoryImages);
     });
+  }
+
+  @override
+  void dispose() {
+    if (!_hasNavigated) {
+      Future.microtask(() => _controller.reset());
+    }
+    super.dispose();
   }
 
   @override

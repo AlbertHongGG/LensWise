@@ -18,14 +18,24 @@ class MenuProcessingPage extends ConsumerStatefulWidget {
 
 class _MenuProcessingPageState extends ConsumerState<MenuProcessingPage> {
   bool _hasNavigated = false;
+  late final MenuScannerController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = ref.read(menuScannerControllerProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(menuScannerControllerProvider.notifier).reset();
-      ref.read(menuScannerControllerProvider.notifier).analyzeMenu(widget.memoryImages);
+      _controller.reset();
+      _controller.analyzeMenu(widget.memoryImages);
     });
+  }
+
+  @override
+  void dispose() {
+    if (!_hasNavigated) {
+      Future.microtask(() => _controller.reset());
+    }
+    super.dispose();
   }
 
   @override

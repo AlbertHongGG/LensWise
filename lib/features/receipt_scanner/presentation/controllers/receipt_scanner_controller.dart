@@ -5,9 +5,9 @@ import 'package:lens_wise/features/ai/infrastructure/agents/receipt_scanner_agen
 import 'package:lens_wise/features/receipt_scanner/application/receipt_scanner_service.dart';
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/core/storage/history_providers.dart';
-import 'package:lens_wise/core/storage/storage_providers.dart';
 import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
+import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 
 enum ReceiptScannerStatus {
   idle,
@@ -20,7 +20,6 @@ enum ReceiptScannerStatus {
 class ReceiptScannerState {
   final List<AppImageEntity> capturedImages;
   final String? errorMessage;
-  final bool isScanning;
   final ReceiptScannerRecord? receiptRecord;
   final ReceiptScannerStatus status;
   final bool isStreamingComplete;
@@ -28,7 +27,6 @@ class ReceiptScannerState {
   ReceiptScannerState({
     this.capturedImages = const [],
     this.errorMessage,
-    this.isScanning = false,
     this.receiptRecord,
     this.status = ReceiptScannerStatus.idle,
     this.isStreamingComplete = false,
@@ -40,7 +38,6 @@ class ReceiptScannerState {
   ReceiptScannerState copyWith({
     List<AppImageEntity>? capturedImages,
     String? errorMessage,
-    bool? isScanning,
     ReceiptScannerRecord? receiptRecord,
     ReceiptScannerStatus? status,
     bool? isStreamingComplete,
@@ -48,7 +45,6 @@ class ReceiptScannerState {
     return ReceiptScannerState(
       capturedImages: capturedImages ?? this.capturedImages,
       errorMessage: errorMessage ?? this.errorMessage,
-      isScanning: isScanning ?? this.isScanning,
       receiptRecord: receiptRecord ?? this.receiptRecord,
       status: status ?? this.status,
       isStreamingComplete: isStreamingComplete ?? this.isStreamingComplete,
@@ -67,38 +63,24 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
     return ReceiptScannerState();
   }
 
-  void startScanning() {
-    state = state.copyWith(
-      isScanning: true,
-      capturedImages: [],
-      errorMessage: null,
-    );
-  }
-
-  void stopScanning() {
-    state = state.copyWith(isScanning: false);
-  }
-
-  void addImage(AppImageEntity image) {
-    state = state.copyWith(
-      capturedImages: [...state.capturedImages, image],
-      errorMessage: null,
-    );
-  }
-
-  void removeImage(int index) {
-    final newList = List<AppImageEntity>.from(state.capturedImages);
-    newList.removeAt(index);
-    state = state.copyWith(capturedImages: newList);
-  }
-
   void reset() {
     _streamSub?.cancel();
+    _streamSub = null;
     state = ReceiptScannerState();
   }
 
   Future<void> analyzeReceipt(List<AppImageEntity> images) async {
     if (images.isEmpty) return;
+
+    final aiState = ref.read(aiConfigControllerProvider);
+    if (!aiState.isAIAgentEnabled) {
+      state = state.copyWith(
+        status: ReceiptScannerStatus.error,
+        errorMessage: 'AI 輔助未啟用，請至設定開啟。',
+      );
+      ref.read(notificationProvider.notifier).showError('AI 輔助未啟用，請至設定開啟。');
+      return;
+    }
 
     await _streamSub?.cancel();
 
@@ -149,19 +131,6 @@ class ReceiptScannerController extends Notifier<ReceiptScannerState> {
         errorMessage: e.toString(),
       );
       ref.read(notificationProvider.notifier).showError('收據分析失敗：$e');
-    }
-  }
-
-  Future<void> updateReceiptScannerRecord(ReceiptScannerRecord updatedRecord) async {
-    state = state.copyWith(receiptRecord: updatedRecord);
-    try {
-      final repository = ref.read(receiptScannerRepositoryProvider);
-      await repository.save(updatedRecord.id, updatedRecord);
-      ref.invalidate(receiptHistoryProvider);
-      ref.read(notificationProvider.notifier).showSuccess('紀錄已更新');
-    } catch (e) {
-      state = state.copyWith(errorMessage: 'Failed to update record: $e');
-      ref.read(notificationProvider.notifier).showError('更新失敗：$e');
     }
   }
 }

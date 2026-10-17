@@ -67,6 +67,7 @@ class ProductLensController extends Notifier<ProductLensState> {
         status: ProductLensStatus.error,
         errorMessage: 'AI 輔助未啟用，請至設定開啟。',
       );
+      ref.read(notificationProvider.notifier).showError('AI 輔助未啟用，請至設定開啟。');
       return;
     }
 
@@ -126,6 +127,7 @@ class ProductLensController extends Notifier<ProductLensState> {
 
   void reset() {
     _streamSub?.cancel();
+    _streamSub = null;
     state = ProductLensState();
   }
 }

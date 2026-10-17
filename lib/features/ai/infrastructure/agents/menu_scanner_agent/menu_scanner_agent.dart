@@ -9,14 +9,11 @@ import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/settings/presentation/providers/settings_provider.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/core/models/target_language.dart';
+import 'package:lens_wise/features/menu_scanner/domain/interfaces/i_menu_scanner_agent.dart';
+export 'package:lens_wise/features/menu_scanner/domain/interfaces/i_menu_scanner_agent.dart';
 import 'prompts.dart';
 
 import 'menu_scanner_payload_parser.dart';
-
-abstract class IMenuScannerAgent {
-  Future<MenuScannerRecord> execute(List<Uint8List> input);
-  Stream<StreamingSnapshot<MenuScannerRecord>> executeStreamSnapshot(List<Uint8List> input);
-}
 
 class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> implements IMenuScannerAgent {
   final TargetLanguage targetLanguage;
@@ -57,8 +54,7 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
       return MenuScannerPayloadParser.parseFinalResponse(jsonMap);
-    } catch (e, stack) {
-      print('Failed to parse AI response: $e\n$stack');
+    } catch (e) {
       throw Exception('解析或比對過程發生錯誤: $e\n請確認照片是否清晰且包含菜單。');
     }
   }

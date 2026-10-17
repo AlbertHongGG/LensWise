@@ -7,6 +7,7 @@ import 'package:lens_wise/features/menu_scanner/application/menu_scanner_service
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
+import 'package:lens_wise/features/ai/presentation/controllers/ai_config_controller.dart';
 
 enum MenuScannerStatus {
   idle,
@@ -61,19 +62,6 @@ class MenuScannerController extends Notifier<MenuScannerState> {
     return MenuScannerState();
   }
 
-  void addImage(AppImageEntity image) {
-    state = state.copyWith(
-      capturedImages: [...state.capturedImages, image],
-      errorMessage: null,
-    );
-  }
-
-  void removeImage(int index) {
-    final newList = List<AppImageEntity>.from(state.capturedImages);
-    newList.removeAt(index);
-    state = state.copyWith(capturedImages: newList);
-  }
-
   void reset() {
     _streamSub?.cancel();
     _streamSub = null;
@@ -82,6 +70,16 @@ class MenuScannerController extends Notifier<MenuScannerState> {
 
   Future<void> analyzeMenu(List<AppImageEntity> images) async {
     if (images.isEmpty) return;
+
+    final aiState = ref.read(aiConfigControllerProvider);
+    if (!aiState.isAIAgentEnabled) {
+      state = state.copyWith(
+        status: MenuScannerStatus.error,
+        errorMessage: 'AI 輔助未啟用，請至設定開啟。',
+      );
+      ref.read(notificationProvider.notifier).showError('AI 輔助未啟用，請至設定開啟。');
+      return;
+    }
 
     await _streamSub?.cancel();
 

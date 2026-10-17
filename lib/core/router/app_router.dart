@@ -1,7 +1,4 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,14 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/scanner/presentation/pages/scanner_dashboard_page.dart';
 import 'package:lens_wise/features/settings/presentation/pages/settings_page.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
-import 'package:lens_wise/features/ai/domain/models/ai_agent_type.dart';
 import 'package:lens_wise/features/ai/presentation/screens/ai_settings_screen.dart';
 import 'package:lens_wise/core/presentation/pages/splash_animation_page.dart';
 
 // History Pages
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 import 'package:lens_wise/features/history/presentation/pages/default_history_configs.dart';
-import 'package:lens_wise/features/scanner/presentation/pages/captured_image_gallery_screen.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_processing_page.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_lens/presentation/pages/product_processing_page.dart';
@@ -58,23 +53,66 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/process/product',
+        parentNavigatorKey: globalNavigatorKey,
+        pageBuilder: (context, state) {
+          final images = state.extra as List<AppImageEntity>? ?? [];
+          return CupertinoPage(
+            child: ProductProcessingPage(memoryImages: images),
+          );
+        },
+      ),
+      GoRoute(
         path: '/product/processing',
-        builder: (context, state) => const ProductProcessingPage(),
+        parentNavigatorKey: globalNavigatorKey,
+        pageBuilder: (context, state) {
+          final images = state.extra as List<AppImageEntity>? ?? [];
+          return CupertinoPage(
+            child: ProductProcessingPage(memoryImages: images),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/result/product',
+        parentNavigatorKey: globalNavigatorKey,
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final record = extra?['record'] as ProductLensRecord?;
+          final memoryImages = (extra?['memoryImages'] ?? extra?['appImages']) as List<AppImageEntity>?;
+
+          if (record == null) {
+            return const CupertinoPage(
+              child: Scaffold(body: Center(child: Text('查無商品資料'))),
+            );
+          }
+
+          return CupertinoPage(
+            child: ProductDetailPage(
+              record: record,
+              appImages: memoryImages,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/product/detail',
-        builder: (context, state) {
+        parentNavigatorKey: globalNavigatorKey,
+        pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final record = extra?['record'] as ProductLensRecord?;
-          final appImages = extra?['appImages'] as List<AppImageEntity>?;
-          
+          final memoryImages = (extra?['memoryImages'] ?? extra?['appImages']) as List<AppImageEntity>?;
+
           if (record == null) {
-            return const Scaffold(body: Center(child: Text('查無商品資料')));
+            return const CupertinoPage(
+              child: Scaffold(body: Center(child: Text('查無商品資料'))),
+            );
           }
-          
-          return ProductDetailPage(
-            record: record!,
-            appImages: appImages,
+
+          return CupertinoPage(
+            child: ProductDetailPage(
+              record: record,
+              appImages: memoryImages,
+            ),
           );
         },
       ),
