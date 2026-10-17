@@ -10,12 +10,14 @@ class ReceiptPaperCard extends StatelessWidget {
   final ReceiptScannerRecord? initialRecord;
   final ReceiptScannerRecord? record;
   final Function(ReceiptScannerRecord) onUpdate;
+  final bool isLiveSession;
 
   const ReceiptPaperCard({
     super.key,
     this.initialRecord,
     ReceiptScannerRecord? record,
     required this.onUpdate,
+    this.isLiveSession = false,
   }) : record = record ?? initialRecord;
 
   @override
@@ -42,6 +44,7 @@ class ReceiptPaperCard extends StatelessWidget {
           _ReceiptPaperHeader(
             initialRecord: baseRecord,
             onUpdate: onUpdate,
+            isLiveSession: isLiveSession,
           ),
           const Divider(height: 32, thickness: 1, color: Colors.black12),
           const Row(
@@ -55,11 +58,13 @@ class ReceiptPaperCard extends StatelessWidget {
           _ReceiptPaperItems(
             initialRecord: baseRecord,
             onUpdate: onUpdate,
+            isLiveSession: isLiveSession,
           ),
           const Divider(height: 32, thickness: 1, color: Colors.black12),
           _ReceiptPaperTotals(
             initialRecord: baseRecord,
             onUpdate: onUpdate,
+            isLiveSession: isLiveSession,
           ),
         ],
       ),
@@ -70,23 +75,31 @@ class ReceiptPaperCard extends StatelessWidget {
 class _ReceiptPaperHeader extends ConsumerWidget {
   final ReceiptScannerRecord initialRecord;
   final Function(ReceiptScannerRecord) onUpdate;
+  final bool isLiveSession;
 
   const _ReceiptPaperHeader({
     required this.initialRecord,
     required this.onUpdate,
+    this.isLiveSession = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final headerData = ref.watch(receiptScannerControllerProvider.select((state) {
-      final rec = state.receiptRecord ?? initialRecord;
-      final isStreaming = state.status == ReceiptScannerStatus.streaming;
-      return (
-        storeName: rec.storeName,
-        receiptDate: rec.receiptDate ?? (isStreaming ? null : rec.timestamp.toString().split('.')[0]),
-        isStreaming: isStreaming,
-      );
-    }));
+    final headerData = isLiveSession
+        ? ref.watch(receiptScannerControllerProvider.select((state) {
+            final rec = state.receiptRecord ?? initialRecord;
+            final isStreaming = state.status == ReceiptScannerStatus.streaming;
+            return (
+              storeName: rec.storeName,
+              receiptDate: rec.receiptDate ?? (isStreaming ? null : rec.timestamp.toString().split('.')[0]),
+              isStreaming: isStreaming,
+            );
+          }))
+        : (
+            storeName: initialRecord.storeName,
+            receiptDate: initialRecord.receiptDate ?? initialRecord.timestamp.toString().split('.')[0],
+            isStreaming: false,
+          );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +117,9 @@ class _ReceiptPaperHeader extends ConsumerWidget {
             value: headerData.storeName.isNotEmpty ? headerData.storeName : '未知商店',
             textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
             onSave: (val) {
-              final current = ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord;
+              final current = isLiveSession
+                  ? (ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord)
+                  : initialRecord;
               onUpdate(current.copyWith(storeName: val));
             },
           ),
@@ -217,24 +232,32 @@ class _ReceiptPaperHeader extends ConsumerWidget {
 class _ReceiptPaperItems extends ConsumerWidget {
   final ReceiptScannerRecord initialRecord;
   final Function(ReceiptScannerRecord) onUpdate;
+  final bool isLiveSession;
 
   const _ReceiptPaperItems({
     required this.initialRecord,
     required this.onUpdate,
+    this.isLiveSession = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final items = ref.watch(receiptScannerControllerProvider.select((state) {
-      final rec = state.receiptRecord ?? initialRecord;
-      return rec.items;
-    }));
+    final items = isLiveSession
+        ? ref.watch(receiptScannerControllerProvider.select((state) {
+            final rec = state.receiptRecord ?? initialRecord;
+            return rec.items;
+          }))
+        : initialRecord.items;
 
-    final isStreaming = ref.watch(receiptScannerControllerProvider.select((state) {
-      return state.status == ReceiptScannerStatus.streaming;
-    }));
+    final isStreaming = isLiveSession &&
+        ref.watch(receiptScannerControllerProvider.select((state) {
+          return state.status == ReceiptScannerStatus.streaming;
+        }));
 
     if (items.isEmpty) {
+      if (!isStreaming) {
+        return const SizedBox.shrink();
+      }
       return Column(
         children: const [
           StreamingSkeleton(width: double.infinity, height: 26, margin: EdgeInsets.symmetric(vertical: 4)),
@@ -244,7 +267,9 @@ class _ReceiptPaperItems extends ConsumerWidget {
       );
     }
 
-    final activeRecord = ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord;
+    final activeRecord = isLiveSession
+        ? (ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord)
+        : initialRecord;
 
     return Column(
       children: [
@@ -275,25 +300,36 @@ class _ReceiptPaperItems extends ConsumerWidget {
 class _ReceiptPaperTotals extends ConsumerWidget {
   final ReceiptScannerRecord initialRecord;
   final Function(ReceiptScannerRecord) onUpdate;
+  final bool isLiveSession;
 
   const _ReceiptPaperTotals({
     required this.initialRecord,
     required this.onUpdate,
+    this.isLiveSession = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totals = ref.watch(receiptScannerControllerProvider.select((state) {
-      final rec = state.receiptRecord ?? initialRecord;
-      return (
-        subtotal: rec.subtotal,
-        discounts: rec.discounts,
-        taxes: rec.taxes,
-        totalAmount: rec.totalAmount,
-        currency: rec.currency ?? '',
-        isStreaming: state.status == ReceiptScannerStatus.streaming,
-      );
-    }));
+    final totals = isLiveSession
+        ? ref.watch(receiptScannerControllerProvider.select((state) {
+            final rec = state.receiptRecord ?? initialRecord;
+            return (
+              subtotal: rec.subtotal,
+              discounts: rec.discounts,
+              taxes: rec.taxes,
+              totalAmount: rec.totalAmount,
+              currency: rec.currency ?? '',
+              isStreaming: state.status == ReceiptScannerStatus.streaming,
+            );
+          }))
+        : (
+            subtotal: initialRecord.subtotal,
+            discounts: initialRecord.discounts,
+            taxes: initialRecord.taxes,
+            totalAmount: initialRecord.totalAmount,
+            currency: initialRecord.currency ?? '',
+            isStreaming: false,
+          );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +464,9 @@ class _ReceiptPaperTotals extends ConsumerWidget {
                       onPressed: () {
                         final numericStr = controller.text.replaceAll(RegExp(r'[^0-9.]'), '');
                         if (double.tryParse(numericStr) != null) {
-                          final current = ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord;
+                          final current = isLiveSession
+                              ? (ref.read(receiptScannerControllerProvider).receiptRecord ?? initialRecord)
+                              : initialRecord;
                           onUpdate(current.copyWith(totalAmount: double.parse(numericStr)));
                           Navigator.pop(context);
                         }

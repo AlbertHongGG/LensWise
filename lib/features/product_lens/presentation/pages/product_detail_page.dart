@@ -8,7 +8,7 @@ import 'package:lens_wise/features/product_lens/presentation/widgets/immersive_l
 import 'package:lens_wise/core/models/app_image_entity.dart';
 import 'package:lens_wise/features/product_lens/presentation/controllers/product_lens_controller.dart';
 
-class ProductDetailPage extends ConsumerWidget {
+class ProductDetailPage extends ConsumerStatefulWidget {
   final ProductLensRecord record;
   final List<AppImageEntity>? appImages;
 
@@ -19,12 +19,27 @@ class ProductDetailPage extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductDetailPage> createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
+  bool get isLiveSession => widget.appImages != null;
+
+  @override
+  void dispose() {
+    if (isLiveSession) {
+      ref.read(productLensControllerProvider.notifier).reset();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : const Color(0xFFF8F9FA);
 
     // Static image resolution: appImages never change during the streaming session
-    final effectiveAppImages = appImages ?? ref.read(productLensControllerProvider).appImages;
+    final effectiveAppImages = widget.appImages ?? (isLiveSession ? ref.read(productLensControllerProvider).appImages : null);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -38,7 +53,7 @@ class ProductDetailPage extends ConsumerWidget {
             height: MediaQuery.of(context).size.height * 0.48,
             child: ImmersiveBackground(
               appImages: effectiveAppImages,
-              imagePaths: record.imagePaths,
+              imagePaths: widget.record.imagePaths,
             ),
           ),
 
@@ -46,7 +61,10 @@ class ProductDetailPage extends ConsumerWidget {
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             right: 16,
-            child: InteractiveDetailPanel(initialRecord: record),
+            child: InteractiveDetailPanel(
+              initialRecord: widget.record,
+              isLiveSession: isLiveSession,
+            ),
           ),
 
           // 2. Fixed Bottom Content Card
@@ -78,7 +96,8 @@ class ProductDetailPage extends ConsumerWidget {
                 children: [
                   // Title Area with Fine-Grained Reactive Selector
                   HeroTitleOverlay(
-                    initialRecord: record,
+                    initialRecord: widget.record,
+                    isLiveSession: isLiveSession,
                   ),
                   const SizedBox(height: 24),
                   // Scrollable Summary Area with Direct Text Updates
@@ -88,7 +107,8 @@ class ProductDetailPage extends ConsumerWidget {
                       clipBehavior: Clip.none,
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
                       child: VerdictFloatingCard(
-                        initialSummary: record.summary,
+                        initialSummary: widget.record.summary,
+                        isLiveSession: isLiveSession,
                       ),
                     ),
                   ),

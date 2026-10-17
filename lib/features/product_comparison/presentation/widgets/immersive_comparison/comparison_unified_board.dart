@@ -10,6 +10,7 @@ class ComparisonUnifiedBoard extends ConsumerWidget {
   final int rightIndex;
   final bool isDark;
   final bool isStreaming;
+  final bool isLiveSession;
 
   const ComparisonUnifiedBoard({
     super.key,
@@ -18,18 +19,21 @@ class ComparisonUnifiedBoard extends ConsumerWidget {
     required this.rightIndex,
     required this.isDark,
     this.isStreaming = false,
+    this.isLiveSession = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeStreaming = isStreaming ||
+    final activeStreaming = isLiveSession && (isStreaming ||
         ref.watch(productComparisonScannerControllerProvider.select((state) {
           return state.status == ProductComparisonStatus.streaming;
-        }));
+        })));
 
-    final comparisonPoints = ref.watch(productComparisonScannerControllerProvider.select((state) {
-      return state.parsingResult?.comparisonPoints ?? result.comparisonPoints;
-    }));
+    final comparisonPoints = isLiveSession
+        ? ref.watch(productComparisonScannerControllerProvider.select((state) {
+            return state.parsingResult?.comparisonPoints ?? result.comparisonPoints;
+          }))
+        : result.comparisonPoints;
 
     if (comparisonPoints.isEmpty) {
       if (!activeStreaming) {

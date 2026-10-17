@@ -10,6 +10,7 @@ class HeroTitleOverlay extends ConsumerWidget {
   final String? originalName;
   final String? brand;
   final String? origin;
+  final bool isLiveSession;
 
   const HeroTitleOverlay({
     super.key,
@@ -18,30 +19,35 @@ class HeroTitleOverlay extends ConsumerWidget {
     this.originalName,
     this.brand,
     this.origin,
+    this.isLiveSession = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Fine-grained selector: Only rebuilds when title/brand/origin values actually change!
-    final titleData = ref.watch(productLensControllerProvider.select((state) {
-      final res = state.result;
-      if (res != null) {
-        return (
-          productName: res.productName,
-          originalName: res.originalName,
-          brand: res.brand,
-          origin: res.origin,
-        );
-      }
-      return (
-        productName: productName ?? initialRecord?.productName ?? '',
-        originalName: originalName ?? initialRecord?.originalName ?? '',
-        brand: brand ?? initialRecord?.brand ?? '',
-        origin: origin ?? initialRecord?.origin ?? '',
-      );
-    }));
+    final fallbackData = (
+      productName: productName ?? initialRecord?.productName ?? '',
+      originalName: originalName ?? initialRecord?.originalName ?? '',
+      brand: brand ?? initialRecord?.brand ?? '',
+      origin: origin ?? initialRecord?.origin ?? '',
+    );
+
+    // Fine-grained selector: Only rebuilds when title/brand/origin values actually change in live mode!
+    final titleData = isLiveSession
+        ? ref.watch(productLensControllerProvider.select((state) {
+            final res = state.result;
+            if (res != null) {
+              return (
+                productName: res.productName,
+                originalName: res.originalName,
+                brand: res.brand,
+                origin: res.origin,
+              );
+            }
+            return fallbackData;
+          }))
+        : fallbackData;
 
     final effectiveProductName = titleData.productName;
     final effectiveOriginalName = titleData.originalName;
@@ -49,6 +55,9 @@ class HeroTitleOverlay extends ConsumerWidget {
     final effectiveOrigin = titleData.origin;
 
     if (effectiveProductName.isEmpty) {
+      if (!isLiveSession) {
+        return const SizedBox.shrink();
+      }
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(

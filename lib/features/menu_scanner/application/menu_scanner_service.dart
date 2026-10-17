@@ -14,29 +14,9 @@ class MenuScannerService {
   MenuScannerService(this._ref);
 
   Future<MenuScannerRecord> analyzeAndSave(List<Uint8List> images) async {
-    // 1. 調用 AI Agent 分析圖片
     final agent = _ref.read(menuScannerAgentProvider);
     final result = await agent.execute(images);
-
-    // 2. 儲存原始圖片到設備存儲
-    final localMediaService = _ref.read(localMediaServiceProvider);
-    final savedPaths = <String>[];
-    for (final imageBytes in images) {
-      final path = await localMediaService.saveImage(imageBytes);
-      savedPaths.add(path);
-    }
-
-    // 3. 組合完整的 Record，賦予 ID (使用儲存第一張圖片的回傳路徑或時間戳做唯一識別)
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
-    final completeRecord = result.copyWith(
-      id: 'menu_$id',
-      imagePaths: savedPaths,
-    );
-
-    // 4. 透過 Controller 更新狀態並寫入 Repository (SSOT)
-    await _ref.read(menuHistoryProvider.notifier).saveRecord(completeRecord);
-
-    return completeRecord;
+    return saveCompletedRecord(result, images);
   }
 
   /// 串流完成時持久化菜單記錄與圖片

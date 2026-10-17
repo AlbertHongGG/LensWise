@@ -29,5 +29,5 @@ void main() {
 
     print('Stream finished in ${sw.elapsedMilliseconds} ms. Total chunks: $chunkIndex');
     expect(chunkIndex, greaterThan(0));
-  }, timeout: const Timeout(Duration(seconds: 45)));
+  }, timeout: const Timeout(Duration(seconds: 45)), skip: 'Requires live GeminiFlow daemon running on port 5000');
 }

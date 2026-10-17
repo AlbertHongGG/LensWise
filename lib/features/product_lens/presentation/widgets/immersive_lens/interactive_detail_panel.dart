@@ -8,11 +8,13 @@ import 'package:lens_wise/features/product_lens/presentation/widgets/product_cha
 
 class InteractiveDetailPanel extends ConsumerWidget {
   final ProductLensRecord? initialRecord;
+  final bool isLiveSession;
 
   const InteractiveDetailPanel({
     super.key,
     ProductLensRecord? initialRecord,
     ProductLensRecord? record,
+    this.isLiveSession = false,
   }) : initialRecord = initialRecord ?? record;
 
   void _showIngredientsSheet(BuildContext context, ProductLensRecord record) {
@@ -179,17 +181,27 @@ class InteractiveDetailPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Fine-grained selector: Only rebuilds when boolean availability flags change!
-    final flags = ref.watch(productLensControllerProvider.select((state) {
-      final rec = state.result ?? initialRecord;
-      if (rec == null) return (hasIngredients: false, hasProsCons: false);
-      return (
-        hasIngredients: rec.ingredients.isNotEmpty || rec.allergenAlerts.isNotEmpty,
-        hasProsCons: rec.whenRecommended.isNotEmpty || rec.whenNotRecommended.isNotEmpty,
-      );
-    }));
+    // Fine-grained selector: Only rebuilds when boolean availability flags change in live mode!
+    final flags = isLiveSession
+        ? ref.watch(productLensControllerProvider.select((state) {
+            final rec = state.result ?? initialRecord;
+            if (rec == null) return (hasIngredients: false, hasProsCons: false);
+            return (
+              hasIngredients: rec.ingredients.isNotEmpty || rec.allergenAlerts.isNotEmpty,
+              hasProsCons: rec.whenRecommended.isNotEmpty || rec.whenNotRecommended.isNotEmpty,
+            );
+          }))
+        : (
+            hasIngredients: (initialRecord?.ingredients.isNotEmpty ?? false) ||
+                (initialRecord?.allergenAlerts.isNotEmpty ?? false),
+            hasProsCons: (initialRecord?.whenRecommended.isNotEmpty ?? false) ||
+                (initialRecord?.whenNotRecommended.isNotEmpty ?? false),
+          );
 
     ProductLensRecord getActiveRecord() {
+      if (!isLiveSession) {
+        return initialRecord ?? ProductLensRecord.empty();
+      }
       return ref.read(productLensControllerProvider).result ?? initialRecord ?? ProductLensRecord.empty();
     }
 

@@ -31,6 +31,18 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
   int _leftIndex = 0;
   int _rightIndex = 1;
 
+  bool get isLiveSession => widget.args.rawImages != null;
+
+  @override
+  void dispose() {
+    if (isLiveSession) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(productComparisonScannerControllerProvider.notifier).reset();
+      });
+    }
+    super.dispose();
+  }
+
 
   ImageProvider _getImageProvider(int index) {
     if (widget.args.rawImages != null) {
@@ -174,17 +186,24 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 ),
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
-                    return _buildAiVerdictContent(
-                      context,
-                      scrollController,
-                      currentResult,
-                      isDark,
-                    );
-                  },
-                ),
+                child: isLiveSession
+                    ? Consumer(
+                        builder: (context, ref, _) {
+                          final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
+                          return _buildAiVerdictContent(
+                            context,
+                            scrollController,
+                            currentResult,
+                            isDark,
+                          );
+                        },
+                      )
+                    : _buildAiVerdictContent(
+                        context,
+                        scrollController,
+                        widget.args.result,
+                        isDark,
+                      ),
               ),
             ),
           ),
@@ -214,17 +233,24 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                   color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 ),
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
-                    return _buildContendersContent(
-                      context,
-                      scrollController,
-                      currentResult,
-                      isDark,
-                    );
-                  },
-                ),
+                child: isLiveSession
+                    ? Consumer(
+                        builder: (context, ref, _) {
+                          final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
+                          return _buildContendersContent(
+                            context,
+                            scrollController,
+                            currentResult,
+                            isDark,
+                          );
+                        },
+                      )
+                    : _buildContendersContent(
+                        context,
+                        scrollController,
+                        widget.args.result,
+                        isDark,
+                      ),
               ),
             ),
           ),
@@ -236,8 +262,11 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
-    final isStreaming = ref.watch(productComparisonScannerControllerProvider.select((s) => s.status == ProductComparisonStatus.streaming));
+    final activeResult = isLiveSession
+        ? ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result))
+        : widget.args.result;
+    final isStreaming = isLiveSession &&
+        ref.watch(productComparisonScannerControllerProvider.select((s) => s.status == ProductComparisonStatus.streaming));
     final productCount = widget.args.rawImages?.length ??
         widget.args.imagePath?.split(',').length ??
         activeResult.products.length;
@@ -267,6 +296,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                           rightIndex: _rightIndex,
                           isDark: isDark,
                           isStreaming: isStreaming,
+                          isLiveSession: isLiveSession,
                         ),
                       ),
                       
@@ -276,6 +306,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                         leftIndex: _leftIndex,
                         rightIndex: _rightIndex,
                         imageProviderFactory: _getImageProvider,
+                        isLiveSession: isLiveSession,
                       ),
                     ],
                   ),
@@ -309,7 +340,9 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                     icon: Icons.auto_awesome,
                     onTap: () => showComparisonChat(
                       context,
-                      ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result,
+                      isLiveSession
+                          ? (ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result)
+                          : widget.args.result,
                     ),
                   ),
                   const SizedBox(height: 16),

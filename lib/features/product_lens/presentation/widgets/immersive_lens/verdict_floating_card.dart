@@ -8,28 +8,37 @@ class VerdictFloatingCard extends ConsumerWidget {
   final String? initialSummary;
   final String? summary;
   final bool isStreaming;
+  final bool isLiveSession;
 
   const VerdictFloatingCard({
     super.key,
     this.initialSummary,
     this.summary,
     this.isStreaming = false,
+    this.isLiveSession = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Fine-grained selector: Only rebuilds when summary text actually changes!
-    final effectiveSummary = ref.watch(productLensControllerProvider.select((state) {
-      final resSummary = state.result?.summary;
-      if (resSummary != null && resSummary.isNotEmpty) {
-        return resSummary;
-      }
-      return summary ?? initialSummary ?? '';
-    }));
+    final fallbackSummary = summary ?? initialSummary ?? '';
+
+    // Fine-grained selector: Only rebuilds when summary text actually changes in live mode!
+    final effectiveSummary = isLiveSession
+        ? ref.watch(productLensControllerProvider.select((state) {
+            final resSummary = state.result?.summary;
+            if (resSummary != null && resSummary.isNotEmpty) {
+              return resSummary;
+            }
+            return fallbackSummary;
+          }))
+        : fallbackSummary;
 
     if (effectiveSummary.isEmpty) {
+      if (!isLiveSession) {
+        return const SizedBox.shrink();
+      }
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(

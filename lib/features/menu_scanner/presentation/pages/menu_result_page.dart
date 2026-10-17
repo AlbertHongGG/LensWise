@@ -33,7 +33,12 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   bool _isDrawerOpen = false;
   int _currentCarouselIndex = 0;
 
+  bool get isLiveSession => widget.memoryImages != null;
+
   MenuScannerRecord get _effectiveRecord {
+    if (!isLiveSession) {
+      return _currentRecord;
+    }
     final liveRecord = ref.read(menuScannerControllerProvider).parsingResult;
     if (liveRecord != null && liveRecord.items.isNotEmpty) {
       return liveRecord.copyWith(
@@ -52,6 +57,14 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   void initState() {
     super.initState();
     _currentRecord = widget.record;
+  }
+
+  @override
+  void dispose() {
+    if (isLiveSession) {
+      ref.read(menuScannerControllerProvider.notifier).reset();
+    }
+    super.dispose();
   }
 
   @override
@@ -90,11 +103,13 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                       initialRecord: widget.record,
                       isDark: isDark,
                       textColor: textColor,
+                      isLiveSession: isLiveSession,
                     ),
                     MenuListSection(
                       initialRecord: widget.record,
                       isDark: isDark,
                       textColor: textColor,
+                      isLiveSession: isLiveSession,
                     ),
                     const SizedBox(height: 32), // 底部留白
                   ],
@@ -404,23 +419,30 @@ class MenuHeaderSection extends ConsumerWidget {
   final MenuScannerRecord initialRecord;
   final bool isDark;
   final Color textColor;
+  final bool isLiveSession;
 
   const MenuHeaderSection({
     super.key,
     required this.initialRecord,
     required this.isDark,
     required this.textColor,
+    this.isLiveSession = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final headerData = ref.watch(menuScannerControllerProvider.select((state) {
-      final rec = state.parsingResult ?? initialRecord;
-      return (
-        storeName: rec.storeName.isNotEmpty ? rec.storeName : '翻譯菜單',
-        itemCount: rec.items.length,
-      );
-    }));
+    final headerData = isLiveSession
+        ? ref.watch(menuScannerControllerProvider.select((state) {
+            final rec = state.parsingResult ?? initialRecord;
+            return (
+              storeName: rec.storeName.isNotEmpty ? rec.storeName : '翻譯菜單',
+              itemCount: rec.items.length,
+            );
+          }))
+        : (
+            storeName: initialRecord.storeName.isNotEmpty ? initialRecord.storeName : '翻譯菜單',
+            itemCount: initialRecord.items.length,
+          );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
@@ -468,25 +490,33 @@ class MenuListSection extends ConsumerWidget {
   final MenuScannerRecord initialRecord;
   final bool isDark;
   final Color textColor;
+  final bool isLiveSession;
 
   const MenuListSection({
     super.key,
     required this.initialRecord,
     required this.isDark,
     required this.textColor,
+    this.isLiveSession = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final items = ref.watch(menuScannerControllerProvider.select((state) {
-      return state.parsingResult?.items ?? initialRecord.items;
-    }));
+    final items = isLiveSession
+        ? ref.watch(menuScannerControllerProvider.select((state) {
+            return state.parsingResult?.items ?? initialRecord.items;
+          }))
+        : initialRecord.items;
 
-    final isStreaming = ref.watch(menuScannerControllerProvider.select((state) {
-      return state.status == MenuScannerStatus.streaming;
-    }));
+    final isStreaming = isLiveSession &&
+        ref.watch(menuScannerControllerProvider.select((state) {
+          return state.status == MenuScannerStatus.streaming;
+        }));
 
     if (items.isEmpty) {
+      if (!isStreaming) {
+        return const SizedBox.shrink();
+      }
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(

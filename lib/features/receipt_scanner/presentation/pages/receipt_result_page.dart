@@ -30,10 +30,20 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOpen = false;
 
+  bool get isLiveSession => widget.memoryImages != null;
+
   @override
   void initState() {
     super.initState();
     _currentRecord = widget.record;
+  }
+
+  @override
+  void dispose() {
+    if (isLiveSession) {
+      ref.read(receiptScannerControllerProvider.notifier).reset();
+    }
+    super.dispose();
   }
 
   @override
@@ -55,6 +65,7 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                   ReceiptPaperCard(
                     initialRecord: _currentRecord,
                     onUpdate: _updateRecord,
+                    isLiveSession: isLiveSession,
                   ),
                   const SizedBox(height: 100), // Space for FAB
                 ],
@@ -85,7 +96,9 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
                       heroTag: 'receipt_ai_btn',
                       onPressed: () => showReceiptChat(
                         context,
-                        ref.read(receiptScannerControllerProvider).receiptRecord ?? _currentRecord,
+                        isLiveSession
+                            ? (ref.read(receiptScannerControllerProvider).receiptRecord ?? _currentRecord)
+                            : _currentRecord,
                       ),
                       backgroundColor: isDark ? Colors.white24 : Colors.black87,
                       foregroundColor: Colors.white,

@@ -9,6 +9,7 @@ class ComparisonHeroSection extends ConsumerWidget {
   final int leftIndex;
   final int rightIndex;
   final ImageProvider Function(int) imageProviderFactory;
+  final bool isLiveSession;
 
   const ComparisonHeroSection({
     super.key,
@@ -16,6 +17,7 @@ class ComparisonHeroSection extends ConsumerWidget {
     required this.leftIndex,
     required this.rightIndex,
     required this.imageProviderFactory,
+    this.isLiveSession = false,
   });
 
   @override
@@ -23,18 +25,30 @@ class ComparisonHeroSection extends ConsumerWidget {
     Widget leftWidget = Image(image: imageProviderFactory(leftIndex), fit: BoxFit.cover, height: 220);
     Widget rightWidget = Image(image: imageProviderFactory(rightIndex), fit: BoxFit.cover, height: 220);
 
-    // Fine-grained selector: Only rebuilds when the visible pair's names change!
-    final products = ref.watch(productComparisonScannerControllerProvider.select((state) {
-      final rec = state.parsingResult ?? result;
-      final leftProd = leftIndex < rec.products.length ? rec.products[leftIndex] : null;
-      final rightProd = rightIndex < rec.products.length ? rec.products[rightIndex] : null;
-      return (
+    final ({String leftName, String leftOriginal, String rightName, String rightOriginal}) products;
+    if (isLiveSession) {
+      // Fine-grained selector: Only rebuilds when the visible pair's names change!
+      products = ref.watch(productComparisonScannerControllerProvider.select((state) {
+        final rec = state.parsingResult ?? result;
+        final leftProd = leftIndex < rec.products.length ? rec.products[leftIndex] : null;
+        final rightProd = rightIndex < rec.products.length ? rec.products[rightIndex] : null;
+        return (
+          leftName: leftProd?.translatedName ?? '',
+          leftOriginal: leftProd?.originalName ?? '',
+          rightName: rightProd?.translatedName ?? '',
+          rightOriginal: rightProd?.originalName ?? '',
+        );
+      }));
+    } else {
+      final leftProd = leftIndex < result.products.length ? result.products[leftIndex] : null;
+      final rightProd = rightIndex < result.products.length ? result.products[rightIndex] : null;
+      products = (
         leftName: leftProd?.translatedName ?? '',
         leftOriginal: leftProd?.originalName ?? '',
         rightName: rightProd?.translatedName ?? '',
         rightOriginal: rightProd?.originalName ?? '',
       );
-    }));
+    }
 
     return Container(
       height: 220,

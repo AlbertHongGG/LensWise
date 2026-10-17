@@ -28,10 +28,6 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
     required this.targetLanguage,
   });
 
-  MenuScannerRecord _mapJsonToRecord(Map<String, dynamic> jsonMap) {
-    return MenuScannerPayloadParser.parseStreamingSnapshot(jsonMap);
-  }
-
   @override
   Stream<StreamingSnapshot<MenuScannerRecord>> executeStreamSnapshot(List<Uint8List> input) {
     final request = GenerateRequest(
@@ -42,7 +38,7 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
 
     return executeStreamingPipeline(
       request: request,
-      mapper: _mapJsonToRecord,
+      mapper: MenuScannerPayloadParser.parseStreamingSnapshot,
       initialData: MenuScannerRecord.empty(),
     );
   }
