@@ -64,6 +64,9 @@ class GeminiFlowClient {
     final url = Uri.parse('$baseUrl/stream');
     final httpRequest = http.Request('POST', url);
     httpRequest.headers['Content-Type'] = 'application/json; charset=utf-8';
+    httpRequest.headers['Accept'] = 'text/event-stream';
+    httpRequest.headers['Cache-Control'] = 'no-cache';
+    httpRequest.headers['Connection'] = 'keep-alive';
     httpRequest.body = jsonEncode(request.toJson());
 
     final streamedResponse = await _httpClient.send(httpRequest);

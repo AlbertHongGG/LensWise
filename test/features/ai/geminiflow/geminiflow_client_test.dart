@@ -131,6 +131,8 @@ data: {}
 
       final mockClient = MockClient((request) async {
         expect(request.url.path, '/stream');
+        expect(request.headers['Accept'], 'text/event-stream');
+        expect(request.headers['Cache-Control'], 'no-cache');
         return http.Response(
           ssePayload,
           200,

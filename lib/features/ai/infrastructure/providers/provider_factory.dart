@@ -46,7 +46,7 @@ class ProviderFactory {
   }
 }
 
-final aiProviderFamily = Provider.family.autoDispose<AIProvider, AiAgentType>((ref, agentType) {
+final aiProviderFamily = Provider.family<AIProvider, AiAgentType>((ref, agentType) {
   final state = ref.watch(aiConfigControllerProvider);
   final agentConfig = state.getEffectiveConfigFor(agentType);
   return ProviderFactory.createProvider(agentConfig.activeConfig);

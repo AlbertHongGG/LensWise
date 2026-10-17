@@ -33,6 +33,21 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   bool _isDrawerOpen = false;
   int _currentCarouselIndex = 0;
 
+  MenuScannerRecord get _effectiveRecord {
+    final liveRecord = ref.read(menuScannerControllerProvider).parsingResult;
+    if (liveRecord != null && liveRecord.items.isNotEmpty) {
+      return liveRecord.copyWith(
+        translatedImagePaths: _currentRecord.translatedImagePaths.isNotEmpty
+            ? _currentRecord.translatedImagePaths
+            : liveRecord.translatedImagePaths,
+        imagePaths: liveRecord.imagePaths.isNotEmpty
+            ? liveRecord.imagePaths
+            : _currentRecord.imagePaths,
+      );
+    }
+    return _currentRecord;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -72,12 +87,12 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     MenuHeaderSection(
-                      initialRecord: _currentRecord,
+                      initialRecord: widget.record,
                       isDark: isDark,
                       textColor: textColor,
                     ),
                     MenuListSection(
-                      initialRecord: _currentRecord,
+                      initialRecord: widget.record,
                       isDark: isDark,
                       textColor: textColor,
                     ),
@@ -113,7 +128,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (_currentRecord.imagePaths.isNotEmpty || (widget.memoryImages?.isNotEmpty ?? false)) ...[
+            if (_effectiveRecord.imagePaths.isNotEmpty || (widget.memoryImages?.isNotEmpty ?? false)) ...[
               _buildSquircleButton(
                 icon: Icons.image_outlined,
                 color: buttonColor,
@@ -126,7 +141,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
               icon: Icons.auto_awesome,
               color: buttonColor,
               iconColor: iconColor,
-              onTap: () => showMenuChat(context, _currentRecord),
+              onTap: () => showMenuChat(context, _effectiveRecord),
             ),
           ],
         ),
@@ -217,7 +232,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                     final aiState = ref.watch(menuTranslationControllerProvider);
                     
                     // Build Carousel Items
-                    final items = _buildCarouselItems(_currentRecord);
+                    final items = _buildCarouselItems(_effectiveRecord);
                     final images = items.map((e) => e.image).toList();
                     final currentItem = items.isNotEmpty && _currentCarouselIndex < items.length 
                         ? items[_currentCarouselIndex] 
@@ -261,7 +276,7 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
                                               originalImage: originalBytes,
                                               originalImagePath: currentItem.originalPath!,
                                               targetLanguage: targetLang,
-                                              record: _currentRecord,
+                                              record: _effectiveRecord,
                                             );
                                         
                                         if (updatedRecord != null && mounted) {
@@ -467,6 +482,10 @@ class MenuListSection extends ConsumerWidget {
       return state.parsingResult?.items ?? initialRecord.items;
     }));
 
+    final isStreaming = ref.watch(menuScannerControllerProvider.select((state) {
+      return state.status == MenuScannerStatus.streaming;
+    }));
+
     if (items.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -484,17 +503,29 @@ class MenuListSection extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: List.generate(items.length, (index) {
-          final item = items[index];
-          final isLast = index == items.length - 1;
+        children: [
+          ...List.generate(items.length, (index) {
+            final item = items[index];
+            final isLast = index == items.length - 1 && !isStreaming;
 
-          return MenuListItemTile(
-            item: item,
-            isDark: isDark,
-            textColor: textColor,
-            isLast: isLast,
-          );
-        }),
+            return MenuListItemTile(
+              key: ValueKey('menu_item_${item.originalName}_$index'),
+              item: item,
+              isDark: isDark,
+              textColor: textColor,
+              isLast: isLast,
+            );
+          }),
+          if (isStreaming)
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: StreamingSkeleton(
+                width: double.infinity,
+                height: 60,
+                margin: EdgeInsets.only(bottom: 16),
+              ),
+            ),
+        ],
       ),
     );
   }

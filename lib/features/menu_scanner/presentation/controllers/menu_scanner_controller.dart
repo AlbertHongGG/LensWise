@@ -76,6 +76,7 @@ class MenuScannerController extends Notifier<MenuScannerState> {
 
   void reset() {
     _streamSub?.cancel();
+    _streamSub = null;
     state = MenuScannerState();
   }
 
@@ -124,6 +125,7 @@ class MenuScannerController extends Notifier<MenuScannerState> {
           );
           ref.read(notificationProvider.notifier).showError('菜單分析失敗：$e');
         },
+        onDone: () {},
       );
     } catch (e) {
       state = state.copyWith(

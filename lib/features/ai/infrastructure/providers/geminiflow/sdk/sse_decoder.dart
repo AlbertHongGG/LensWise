@@ -46,12 +46,21 @@ class SseEventDecoder extends StreamTransformerBase<String, SseEvent> {
       } else if (trimmed.startsWith(':')) {
         continue;
       } else if (trimmed.startsWith('event:')) {
-        currentEvent = trimmed.substring(6).trim();
+        var eventVal = line.substring(line.indexOf('event:') + 6);
+        if (eventVal.startsWith(' ')) eventVal = eventVal.substring(1);
+        currentEvent = eventVal.trim();
       } else if (trimmed.startsWith('data:')) {
         if (dataBuffer.isNotEmpty) {
           dataBuffer.write('\n');
         }
-        dataBuffer.write(trimmed.substring(5).trim());
+        var dataVal = line.substring(line.indexOf('data:') + 5);
+        if (dataVal.startsWith(' ')) {
+          dataVal = dataVal.substring(1);
+        }
+        if (dataVal.endsWith('\r')) {
+          dataVal = dataVal.substring(0, dataVal.length - 1);
+        }
+        dataBuffer.write(dataVal);
       }
     }
 

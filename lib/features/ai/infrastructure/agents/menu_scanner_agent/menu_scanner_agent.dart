@@ -11,25 +11,11 @@ import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_recor
 import 'package:lens_wise/core/models/target_language.dart';
 import 'prompts.dart';
 
+import 'menu_scanner_payload_parser.dart';
+
 abstract class IMenuScannerAgent {
   Future<MenuScannerRecord> execute(List<Uint8List> input);
   Stream<StreamingSnapshot<MenuScannerRecord>> executeStreamSnapshot(List<Uint8List> input);
-}
-
-class _MenuResponseDto {
-  final String status;
-  final String? message;
-  final Map<String, dynamic>? data;
-
-  _MenuResponseDto({required this.status, this.message, this.data});
-
-  factory _MenuResponseDto.fromJson(Map<String, dynamic> json) {
-    return _MenuResponseDto(
-      status: json['status'] as String? ?? 'error',
-      message: json['message'] as String?,
-      data: json['data'] as Map<String, dynamic>?,
-    );
-  }
 }
 
 class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> implements IMenuScannerAgent {
@@ -43,34 +29,7 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
   });
 
   MenuScannerRecord _mapJsonToRecord(Map<String, dynamic> jsonMap) {
-    try {
-      final dto = _MenuResponseDto.fromJson(jsonMap);
-      final data = dto.data;
-      if (data == null) {
-        return MenuScannerRecord.empty();
-      }
-      final itemsList = (data['items'] as List<dynamic>?)
-              ?.whereType<Map<String, dynamic>>()
-              .map((e) => MenuScannerItem(
-                    originalName: e['originalName'] as String? ?? '',
-                    translatedName: e['translatedName'] as String? ?? '',
-                    description: e['description'] as String?,
-                    price: (e['price'] is num) ? (e['price'] as num).toDouble() : 0.0,
-                  ))
-              .toList() ??
-          const [];
-
-      return MenuScannerRecord(
-        id: '',
-        timestamp: DateTime.now(),
-        imagePaths: const [],
-        storeName: data['storeName'] as String? ?? '',
-        items: itemsList,
-        translatedImagePaths: const {},
-      );
-    } catch (_) {
-      return MenuScannerRecord.empty();
-    }
+    return MenuScannerPayloadParser.parseStreamingSnapshot(jsonMap);
   }
 
   @override
@@ -101,22 +60,7 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
 
     try {
       final jsonMap = extractJson<Map<String, dynamic>>(responseText);
-      final dto = _MenuResponseDto.fromJson(jsonMap);
-
-      if (dto.status != 'success' || dto.data == null) {
-        throw Exception(dto.message ?? '解析過程發生錯誤');
-      }
-
-      return MenuScannerRecord(
-        id: '', // Will be assigned by service
-        timestamp: DateTime.now(),
-        imagePaths: const [], // Will be assigned by service
-        storeName: dto.data!['storeName'] as String? ?? '未知餐廳菜單',
-        items: (dto.data!['items'] as List<dynamic>?)
-                ?.map((e) => MenuScannerItem.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-      );
+      return MenuScannerPayloadParser.parseFinalResponse(jsonMap);
     } catch (e, stack) {
       print('Failed to parse AI response: $e\n$stack');
       throw Exception('解析或比對過程發生錯誤: $e\n請確認照片是否清晰且包含菜單。');
@@ -124,7 +68,7 @@ class MenuScannerAgent extends BaseAgent<List<Uint8List>, MenuScannerRecord> imp
   }
 }
 
-final menuScannerAgentProvider = Provider.autoDispose<IMenuScannerAgent>((ref) {
+final menuScannerAgentProvider = Provider<IMenuScannerAgent>((ref) {
   final language = ref.watch(settingsProvider).targetLanguage;
   return MenuScannerAgent(
     AiAgentType.menuScanner,
