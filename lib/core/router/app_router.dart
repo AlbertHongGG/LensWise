@@ -13,7 +13,7 @@ import 'package:lens_wise/core/presentation/pages/splash_animation_page.dart';
 import 'package:lens_wise/features/history/presentation/pages/unified_history_page.dart';
 import 'package:lens_wise/features/history/presentation/pages/default_history_configs.dart';
 import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_processing_page.dart';
-import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
+import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
 import 'package:lens_wise/features/product_lens/presentation/pages/product_processing_page.dart';
 import 'package:lens_wise/features/product_lens/presentation/pages/product_detail_page.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
@@ -180,9 +180,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/result/comparison',
         parentNavigatorKey: globalNavigatorKey,
         pageBuilder: (context, state) {
-          final args = state.extra as ProductComparisonRecordArgs;
+          final extra = state.extra as Map<String, dynamic>?;
+          final record = extra?['record'] as ProductComparisonRecord?;
+          final memoryImages = extra?['memoryImages'] as List<AppImageEntity>?;
+
+          if (record == null) {
+            return const CupertinoPage(
+              child: Scaffold(body: Center(child: Text('查無比對資料'))),
+            );
+          }
+
           return CupertinoPage(
-            child: ProductComparisonRecordPage(args: args),
+            child: ComparisonResultPage(
+              record: record,
+              memoryImages: memoryImages,
+            ),
           );
         },
       ),

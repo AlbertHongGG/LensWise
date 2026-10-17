@@ -1,11 +1,6 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:lens_wise/core/theme/app_colors.dart';
-import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
-import 'package:lens_wise/core/utils/app_paths.dart';
-
 import 'package:lens_wise/core/models/app_image_entity.dart';
+import 'package:lens_wise/core/utils/session_image_resolver.dart';
 
 class ImmersiveBackground extends StatefulWidget {
   final List<AppImageEntity>? appImages;
@@ -35,16 +30,16 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final hasBytes =
-        widget.appImages != null && widget.appImages!.isNotEmpty;
-    final hasPaths = widget.imagePaths.isNotEmpty;
-    final itemCount = hasBytes
-        ? widget.appImages!.length
-        : (hasPaths ? widget.imagePaths.length : 0);
+    final imageResolver = SessionImageResolver(
+      memoryImages: widget.appImages,
+      imagePaths: widget.imagePaths,
+    );
 
-    if (itemCount == 0) {
+    if (!imageResolver.hasImages) {
       return Container(color: isDark ? Colors.grey[900] : Colors.grey[300]);
     }
+
+    final itemCount = imageResolver.count;
 
     return Stack(
       fit: StackFit.expand,
@@ -58,22 +53,11 @@ class _ImmersiveBackgroundState extends State<ImmersiveBackground> {
           },
           itemCount: itemCount,
           itemBuilder: (context, index) {
-            if (hasBytes) {
-              final imageEntity = widget.appImages![index];
-              return Image.memory(
-                imageEntity.bytes,
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-                cacheWidth: 1080,
-              );
-            } else {
-              return Image.file(
-                AppPaths.getImageFile(widget.imagePaths[index]),
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-                cacheWidth: 1080,
-              );
-            }
+            return Image(
+              image: imageResolver.resolve(index),
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            );
           },
         ),
 

@@ -6,10 +6,10 @@ import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_paper_card.dart';
 import 'package:lens_wise/core/notifications/presentation/controllers/notification_controller.dart';
-import 'package:lens_wise/core/utils/app_paths.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/receipt_chat_adapter.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/controllers/receipt_scanner_controller.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
+import 'package:lens_wise/core/utils/session_image_resolver.dart';
 
 class ReceiptResultPage extends ConsumerStatefulWidget {
   final ReceiptScannerRecord record;
@@ -28,6 +28,7 @@ class ReceiptResultPage extends ConsumerStatefulWidget {
 class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
   late ReceiptScannerRecord _currentRecord;
   late final ReceiptScannerController _controller;
+  late final SessionImageResolver _imageResolver;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOpen = false;
 
@@ -37,6 +38,10 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
   void initState() {
     super.initState();
     _currentRecord = widget.record;
+    _imageResolver = SessionImageResolver(
+      memoryImages: widget.memoryImages,
+      imagePaths: widget.record.imagePaths,
+    );
     if (isLiveSession) {
       _controller = ref.read(receiptScannerControllerProvider.notifier);
     }
@@ -176,21 +181,22 @@ class _ReceiptResultPageState extends ConsumerState<ReceiptResultPage> {
   }
 
   List<CarouselItem> _buildCarouselItems() {
-    if (widget.memoryImages != null && widget.memoryImages!.isNotEmpty) {
-      return widget.memoryImages!.map((memoryImage) {
+    if (_imageResolver.isMemorySource) {
+      return List.generate(_imageResolver.count, (i) {
+        final entity = widget.memoryImages![i];
         return CarouselItem(
-          image: ResizeImage(MemoryImage(memoryImage.bytes), width: 1080),
-          fit: memoryImage.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
+          image: _imageResolver.resolve(i),
+          fit: entity.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain,
         );
-      }).toList();
+      });
     }
 
-    return _currentRecord.imagePaths.map((path) {
+    return List.generate(_currentRecord.imagePaths.length, (i) {
       return CarouselItem(
-        image: ResizeImage(FileImage(AppPaths.getImageFile(path)), width: 1080),
+        image: _imageResolver.resolve(i),
         fit: BoxFit.contain,
       );
-    }).toList();
+    });
   }
 
   Future<void> _updateRecord(ReceiptScannerRecord updated) async {

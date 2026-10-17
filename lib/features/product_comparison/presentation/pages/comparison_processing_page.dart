@@ -5,7 +5,6 @@ import 'package:lens_wise/core/theme/app_colors.dart';
 import 'package:lens_wise/core/widgets/premium_error_view.dart';
 import 'package:lens_wise/features/ai/presentation/widgets/thinking_orb.dart';
 import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
-import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/core/models/app_image_entity.dart';
 
 class ComparisonProcessingPage extends ConsumerStatefulWidget {
@@ -48,10 +47,10 @@ class _ComparisonProcessingPageState extends ConsumerState<ComparisonProcessingP
           _hasNavigated = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
-            context.pushReplacement('/result/comparison', extra: ProductComparisonRecordArgs(
-              result: next.parsingResult!,
-              rawImages: widget.memoryImages,
-            ));
+            context.pushReplacement('/result/comparison', extra: {
+              'record': next.parsingResult!,
+              'memoryImages': widget.memoryImages,
+            });
           });
         }
       }

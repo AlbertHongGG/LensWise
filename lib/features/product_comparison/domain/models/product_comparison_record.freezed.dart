@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductComparisonRecord {
 
- String get id; DateTime get timestamp; String get title; String get summary; List<ComparisonProduct> get products; List<ComparisonPoint> get comparisonPoints; String get imagePath;
+ String get id; DateTime get timestamp; String get title; String get summary; List<ComparisonProduct> get products; List<ComparisonPoint> get comparisonPoints; List<String> get imagePaths;
 /// Create a copy of ProductComparisonRecord
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ProductComparisonRecordCopyWith<ProductComparisonRecord> get copyWith => _$Prod
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductComparisonRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.title, title) || other.title == title)&&(identical(other.summary, summary) || other.summary == summary)&&const DeepCollectionEquality().equals(other.products, products)&&const DeepCollectionEquality().equals(other.comparisonPoints, comparisonPoints)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductComparisonRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.title, title) || other.title == title)&&(identical(other.summary, summary) || other.summary == summary)&&const DeepCollectionEquality().equals(other.products, products)&&const DeepCollectionEquality().equals(other.comparisonPoints, comparisonPoints)&&const DeepCollectionEquality().equals(other.imagePaths, imagePaths));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,timestamp,title,summary,const DeepCollectionEquality().hash(products),const DeepCollectionEquality().hash(comparisonPoints),imagePath);
+int get hashCode => Object.hash(runtimeType,id,timestamp,title,summary,const DeepCollectionEquality().hash(products),const DeepCollectionEquality().hash(comparisonPoints),const DeepCollectionEquality().hash(imagePaths));
 
 @override
 String toString() {
-  return 'ProductComparisonRecord(id: $id, timestamp: $timestamp, title: $title, summary: $summary, products: $products, comparisonPoints: $comparisonPoints, imagePath: $imagePath)';
+  return 'ProductComparisonRecord(id: $id, timestamp: $timestamp, title: $title, summary: $summary, products: $products, comparisonPoints: $comparisonPoints, imagePaths: $imagePaths)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ProductComparisonRecordCopyWith<$Res>  {
   factory $ProductComparisonRecordCopyWith(ProductComparisonRecord value, $Res Function(ProductComparisonRecord) _then) = _$ProductComparisonRecordCopyWithImpl;
 @useResult
 $Res call({
- String id, DateTime timestamp, String title, String summary, List<ComparisonProduct> products, List<ComparisonPoint> comparisonPoints, String imagePath
+ String id, DateTime timestamp, String title, String summary, List<ComparisonProduct> products, List<ComparisonPoint> comparisonPoints, List<String> imagePaths
 });
 
 
@@ -65,7 +65,7 @@ class _$ProductComparisonRecordCopyWithImpl<$Res>
 
 /// Create a copy of ProductComparisonRecord
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? timestamp = null,Object? title = null,Object? summary = null,Object? products = null,Object? comparisonPoints = null,Object? imagePath = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? timestamp = null,Object? title = null,Object? summary = null,Object? products = null,Object? comparisonPoints = null,Object? imagePaths = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
@@ -73,8 +73,8 @@ as DateTime,title: null == title ? _self.title : title // ignore: cast_nullable_
 as String,summary: null == summary ? _self.summary : summary // ignore: cast_nullable_to_non_nullable
 as String,products: null == products ? _self.products : products // ignore: cast_nullable_to_non_nullable
 as List<ComparisonProduct>,comparisonPoints: null == comparisonPoints ? _self.comparisonPoints : comparisonPoints // ignore: cast_nullable_to_non_nullable
-as List<ComparisonPoint>,imagePath: null == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
-as String,
+as List<ComparisonPoint>,imagePaths: null == imagePaths ? _self.imagePaths : imagePaths // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -159,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String title,  String summary,  List<ComparisonProduct> products,  List<ComparisonPoint> comparisonPoints,  String imagePath)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String title,  String summary,  List<ComparisonProduct> products,  List<ComparisonPoint> comparisonPoints,  List<String> imagePaths)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductComparisonRecord() when $default != null:
-return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.products,_that.comparisonPoints,_that.imagePath);case _:
+return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.products,_that.comparisonPoints,_that.imagePaths);case _:
   return orElse();
 
 }
@@ -180,10 +180,10 @@ return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.product
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String title,  String summary,  List<ComparisonProduct> products,  List<ComparisonPoint> comparisonPoints,  String imagePath)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String title,  String summary,  List<ComparisonProduct> products,  List<ComparisonPoint> comparisonPoints,  List<String> imagePaths)  $default,) {final _that = this;
 switch (_that) {
 case _ProductComparisonRecord():
-return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.products,_that.comparisonPoints,_that.imagePath);case _:
+return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.products,_that.comparisonPoints,_that.imagePaths);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +200,10 @@ return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.product
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DateTime timestamp,  String title,  String summary,  List<ComparisonProduct> products,  List<ComparisonPoint> comparisonPoints,  String imagePath)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DateTime timestamp,  String title,  String summary,  List<ComparisonProduct> products,  List<ComparisonPoint> comparisonPoints,  List<String> imagePaths)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductComparisonRecord() when $default != null:
-return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.products,_that.comparisonPoints,_that.imagePath);case _:
+return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.products,_that.comparisonPoints,_that.imagePaths);case _:
   return null;
 
 }
@@ -215,7 +215,7 @@ return $default(_that.id,_that.timestamp,_that.title,_that.summary,_that.product
 @JsonSerializable()
 
 class _ProductComparisonRecord extends ProductComparisonRecord {
-  const _ProductComparisonRecord({required this.id, required this.timestamp, required this.title, required this.summary, final  List<ComparisonProduct> products = const [], final  List<ComparisonPoint> comparisonPoints = const [], required this.imagePath}): _products = products,_comparisonPoints = comparisonPoints,super._();
+  const _ProductComparisonRecord({required this.id, required this.timestamp, required this.title, required this.summary, final  List<ComparisonProduct> products = const [], final  List<ComparisonPoint> comparisonPoints = const [], final  List<String> imagePaths = const []}): _products = products,_comparisonPoints = comparisonPoints,_imagePaths = imagePaths,super._();
   factory _ProductComparisonRecord.fromJson(Map<String, dynamic> json) => _$ProductComparisonRecordFromJson(json);
 
 @override final  String id;
@@ -236,7 +236,13 @@ class _ProductComparisonRecord extends ProductComparisonRecord {
   return EqualUnmodifiableListView(_comparisonPoints);
 }
 
-@override final  String imagePath;
+ final  List<String> _imagePaths;
+@override@JsonKey() List<String> get imagePaths {
+  if (_imagePaths is EqualUnmodifiableListView) return _imagePaths;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_imagePaths);
+}
+
 
 /// Create a copy of ProductComparisonRecord
 /// with the given fields replaced by the non-null parameter values.
@@ -251,16 +257,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductComparisonRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.title, title) || other.title == title)&&(identical(other.summary, summary) || other.summary == summary)&&const DeepCollectionEquality().equals(other._products, _products)&&const DeepCollectionEquality().equals(other._comparisonPoints, _comparisonPoints)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductComparisonRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.title, title) || other.title == title)&&(identical(other.summary, summary) || other.summary == summary)&&const DeepCollectionEquality().equals(other._products, _products)&&const DeepCollectionEquality().equals(other._comparisonPoints, _comparisonPoints)&&const DeepCollectionEquality().equals(other._imagePaths, _imagePaths));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,timestamp,title,summary,const DeepCollectionEquality().hash(_products),const DeepCollectionEquality().hash(_comparisonPoints),imagePath);
+int get hashCode => Object.hash(runtimeType,id,timestamp,title,summary,const DeepCollectionEquality().hash(_products),const DeepCollectionEquality().hash(_comparisonPoints),const DeepCollectionEquality().hash(_imagePaths));
 
 @override
 String toString() {
-  return 'ProductComparisonRecord(id: $id, timestamp: $timestamp, title: $title, summary: $summary, products: $products, comparisonPoints: $comparisonPoints, imagePath: $imagePath)';
+  return 'ProductComparisonRecord(id: $id, timestamp: $timestamp, title: $title, summary: $summary, products: $products, comparisonPoints: $comparisonPoints, imagePaths: $imagePaths)';
 }
 
 
@@ -271,7 +277,7 @@ abstract mixin class _$ProductComparisonRecordCopyWith<$Res> implements $Product
   factory _$ProductComparisonRecordCopyWith(_ProductComparisonRecord value, $Res Function(_ProductComparisonRecord) _then) = __$ProductComparisonRecordCopyWithImpl;
 @override @useResult
 $Res call({
- String id, DateTime timestamp, String title, String summary, List<ComparisonProduct> products, List<ComparisonPoint> comparisonPoints, String imagePath
+ String id, DateTime timestamp, String title, String summary, List<ComparisonProduct> products, List<ComparisonPoint> comparisonPoints, List<String> imagePaths
 });
 
 
@@ -288,7 +294,7 @@ class __$ProductComparisonRecordCopyWithImpl<$Res>
 
 /// Create a copy of ProductComparisonRecord
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? timestamp = null,Object? title = null,Object? summary = null,Object? products = null,Object? comparisonPoints = null,Object? imagePath = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? timestamp = null,Object? title = null,Object? summary = null,Object? products = null,Object? comparisonPoints = null,Object? imagePaths = null,}) {
   return _then(_ProductComparisonRecord(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
@@ -296,8 +302,8 @@ as DateTime,title: null == title ? _self.title : title // ignore: cast_nullable_
 as String,summary: null == summary ? _self.summary : summary // ignore: cast_nullable_to_non_nullable
 as String,products: null == products ? _self._products : products // ignore: cast_nullable_to_non_nullable
 as List<ComparisonProduct>,comparisonPoints: null == comparisonPoints ? _self._comparisonPoints : comparisonPoints // ignore: cast_nullable_to_non_nullable
-as List<ComparisonPoint>,imagePath: null == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
-as String,
+as List<ComparisonPoint>,imagePaths: null == imagePaths ? _self._imagePaths : imagePaths // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

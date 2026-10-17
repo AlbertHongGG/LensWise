@@ -128,7 +128,7 @@ class ProductComparisonPayloadParser {
       return ProductComparisonRecord(
         id: '',
         timestamp: DateTime.now(),
-        imagePath: '',
+        imagePaths: const [],
         title: title.isNotEmpty ? title : '商品比對結果',
         summary: summary,
         products: completeProducts,

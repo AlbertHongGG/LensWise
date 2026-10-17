@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AppPaths {
-  static late final String _mediaDirPath;
+  static late String _mediaDirPath;
 
   /// 必須在 runApp 之前呼叫初始化
   static Future<void> init() async {
@@ -12,6 +13,12 @@ class AppPaths {
       await mediaDir.create(recursive: true);
     }
     _mediaDirPath = mediaDir.path;
+  }
+
+  /// 設定測試用的媒體儲存目錄（僅供測試使用）
+  @visibleForTesting
+  static void setTestMediaDir(String path) {
+    _mediaDirPath = path;
   }
 
   /// 取得媒體儲存目錄的絕對路徑

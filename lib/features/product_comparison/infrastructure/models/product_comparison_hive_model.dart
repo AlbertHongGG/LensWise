@@ -23,7 +23,7 @@ class ProductComparisonHiveModel extends HiveObject {
   final String comparisonPointsJson;
 
   @HiveField(6)
-  final String imagePath;
+  final List<String> imagePaths;
 
   ProductComparisonHiveModel({
     required this.id,
@@ -32,7 +32,7 @@ class ProductComparisonHiveModel extends HiveObject {
     required this.summary,
     required this.productsJson,
     required this.comparisonPointsJson,
-    required this.imagePath,
+    required this.imagePaths,
   });
 
   factory ProductComparisonHiveModel.fromDomain(ProductComparisonRecord record) {
@@ -43,7 +43,7 @@ class ProductComparisonHiveModel extends HiveObject {
       summary: record.summary,
       productsJson: jsonEncode(record.products.map((e) => e.toJson()).toList()),
       comparisonPointsJson: jsonEncode(record.comparisonPoints.map((e) => e.toJson()).toList()),
-      imagePath: record.imagePath,
+      imagePaths: record.imagePaths,
     );
   }
 
@@ -59,7 +59,7 @@ class ProductComparisonHiveModel extends HiveObject {
       comparisonPoints: (jsonDecode(comparisonPointsJson) as List<dynamic>)
           .map((e) => ComparisonPoint.fromJson(e as Map<String, dynamic>))
           .toList(),
-      imagePath: imagePath,
+      imagePaths: imagePaths,
     );
   }
 }
@@ -77,7 +77,7 @@ class ProductComparisonHiveModelAdapter extends TypeAdapter<ProductComparisonHiv
       summary: reader.readString(),
       productsJson: reader.readString(),
       comparisonPointsJson: reader.readString(),
-      imagePath: reader.readString(),
+      imagePaths: reader.readStringList(),
     );
   }
 
@@ -89,6 +89,6 @@ class ProductComparisonHiveModelAdapter extends TypeAdapter<ProductComparisonHiv
     writer.writeString(obj.summary);
     writer.writeString(obj.productsJson);
     writer.writeString(obj.comparisonPointsJson);
-    writer.writeString(obj.imagePath);
+    writer.writeStringList(obj.imagePaths);
   }
 }

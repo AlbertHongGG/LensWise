@@ -16,7 +16,7 @@ abstract class ProductComparisonRecord with _$ProductComparisonRecord implements
     required String summary,
     @Default([]) List<ComparisonProduct> products,
     @Default([]) List<ComparisonPoint> comparisonPoints,
-    required String imagePath,
+    @Default([]) List<String> imagePaths,
   }) = _ProductComparisonRecord;
 
   factory ProductComparisonRecord.fromJson(Map<String, dynamic> json) => _$ProductComparisonRecordFromJson(json);
@@ -28,7 +28,7 @@ abstract class ProductComparisonRecord with _$ProductComparisonRecord implements
         summary: '',
         products: const [],
         comparisonPoints: const [],
-        imagePath: '',
+        imagePaths: const [],
       );
 
   @override
@@ -41,10 +41,10 @@ abstract class ProductComparisonRecord with _$ProductComparisonRecord implements
   IconData get displayIcon => Icons.compare_arrows_outlined;
 
   @override
-  String? get deletionImagePath => imagePath;
+  String? get deletionImagePath => null;
 
   @override
-  List<String>? get deletionImagePaths => imagePath.split(',');
+  List<String>? get deletionImagePaths => imagePaths;
 }
 
 @freezed

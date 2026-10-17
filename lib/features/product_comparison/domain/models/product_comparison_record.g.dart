@@ -23,7 +23,11 @@ _ProductComparisonRecord _$ProductComparisonRecordFromJson(
           ?.map((e) => ComparisonPoint.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
-  imagePath: json['imagePath'] as String,
+  imagePaths:
+      (json['imagePaths'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$ProductComparisonRecordToJson(
@@ -35,7 +39,7 @@ Map<String, dynamic> _$ProductComparisonRecordToJson(
   'summary': instance.summary,
   'products': instance.products,
   'comparisonPoints': instance.comparisonPoints,
-  'imagePath': instance.imagePath,
+  'imagePaths': instance.imagePaths,
 };
 
 _ComparisonProduct _$ComparisonProductFromJson(Map<String, dynamic> json) =>

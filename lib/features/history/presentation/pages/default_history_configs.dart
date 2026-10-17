@@ -9,7 +9,6 @@ import 'package:lens_wise/features/history/presentation/widgets/draggable_histor
 import 'package:lens_wise/features/receipt_scanner/domain/models/receipt_scanner_record.dart';
 import 'package:lens_wise/features/product_lens/domain/models/product_lens_record.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
-import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/menu_scanner/domain/models/menu_scanner_record.dart';
 
 final defaultHistoryConfigs = <HistoryTabConfig>[
@@ -178,11 +177,10 @@ final defaultHistoryConfigs = <HistoryTabConfig>[
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            final args = ProductComparisonRecordArgs(
-              result: record,
-              imagePath: record.imagePath,
-            );
-            context.push('/result/comparison', extra: args);
+            context.push('/result/comparison', extra: {
+              'record': record,
+              'memoryImages': null,
+            });
           },
           child: Padding(
             padding: const EdgeInsets.all(16.0),

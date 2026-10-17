@@ -13,6 +13,7 @@ import 'package:lens_wise/features/menu_scanner/presentation/controllers/menu_sc
 import 'package:lens_wise/core/widgets/streaming/streaming_skeleton.dart';
 import 'package:lens_wise/features/menu_scanner/presentation/widgets/menu_list_item_tile.dart';
 import 'package:lens_wise/features/receipt_scanner/presentation/widgets/immersive_receipt/receipt_image_carousel.dart';
+import 'package:lens_wise/core/utils/session_image_resolver.dart';
 
 class MenuResultPage extends ConsumerStatefulWidget {
   final MenuScannerRecord record;
@@ -31,6 +32,7 @@ class MenuResultPage extends ConsumerStatefulWidget {
 class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   late MenuScannerRecord _currentRecord;
   late final MenuScannerController _controller;
+  late final SessionImageResolver _imageResolver;
   bool _isDrawerOpen = false;
   int _currentCarouselIndex = 0;
 
@@ -58,6 +60,10 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   void initState() {
     super.initState();
     _currentRecord = widget.record;
+    _imageResolver = SessionImageResolver(
+      memoryImages: widget.memoryImages,
+      imagePaths: widget.record.imagePaths,
+    );
     if (isLiveSession) {
       _controller = ref.read(menuScannerControllerProvider.notifier);
     }
@@ -369,56 +375,37 @@ class _MenuResultPageState extends ConsumerState<MenuResultPage> {
   List<_MenuCarouselItem> _buildCarouselItems(MenuScannerRecord record) {
     List<_MenuCarouselItem> items = [];
 
-    if (widget.memoryImages != null && widget.memoryImages!.isNotEmpty) {
-      for (int i = 0; i < widget.memoryImages!.length; i++) {
-        final memoryImage = widget.memoryImages![i];
-        final path = i < record.imagePaths.length ? record.imagePaths[i] : null;
-        final fit = memoryImage.source == ImageSourceType.camera ? BoxFit.cover : BoxFit.contain;
+    final count = _imageResolver.isMemorySource
+        ? _imageResolver.count
+        : record.imagePaths.length;
 
-        // Original from memory
+    for (int i = 0; i < count; i++) {
+      final path = i < record.imagePaths.length ? record.imagePaths[i] : null;
+      final fit = (_imageResolver.isMemorySource &&
+              widget.memoryImages![i].source == ImageSourceType.camera)
+          ? BoxFit.cover
+          : BoxFit.contain;
+
+      // Original image from SessionImageResolver
+      items.add(_MenuCarouselItem(
+        image: CarouselItem(
+          image: _imageResolver.resolve(i),
+          fit: fit,
+        ),
+        originalPath: path,
+        isTranslated: false,
+      ));
+
+      // Translated image overlay
+      if (path != null && record.translatedImagePaths.containsKey(path)) {
         items.add(_MenuCarouselItem(
           image: CarouselItem(
-            image: ResizeImage(MemoryImage(memoryImage.bytes), width: 1080),
-            fit: fit,
-          ),
-          originalPath: path,
-          isTranslated: false,
-        ));
-
-        // Translated
-        if (path != null && record.translatedImagePaths.containsKey(path)) {
-          items.add(_MenuCarouselItem(
-            image: CarouselItem(
-              image: ResizeImage(FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)), width: 1080),
-              fit: BoxFit.contain,
-            ),
-            originalPath: null,
-            isTranslated: true,
-          ));
-        }
-      }
-    } else {
-      for (int i = 0; i < record.imagePaths.length; i++) {
-        final path = record.imagePaths[i];
-        items.add(_MenuCarouselItem(
-          image: CarouselItem(
-            image: ResizeImage(FileImage(AppPaths.getImageFile(path)), width: 1080),
+            image: ResizeImage(FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)), width: 1080),
             fit: BoxFit.contain,
           ),
-          originalPath: path,
-          isTranslated: false,
+          originalPath: null,
+          isTranslated: true,
         ));
-
-        if (record.translatedImagePaths.containsKey(path)) {
-          items.add(_MenuCarouselItem(
-            image: CarouselItem(
-              image: ResizeImage(FileImage(AppPaths.getImageFile(record.translatedImagePaths[path]!)), width: 1080),
-              fit: BoxFit.contain,
-            ),
-            originalPath: null,
-            isTranslated: true,
-          ));
-        }
       }
     }
 

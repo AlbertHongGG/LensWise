@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lens_wise/core/models/app_image_entity.dart';
 import 'package:lens_wise/core/theme/app_colors.dart';
-import 'package:lens_wise/core/utils/app_paths.dart';
+import 'package:lens_wise/core/utils/session_image_resolver.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lens_wise/features/product_comparison/presentation/controllers/product_comparison_scanner_controller.dart';
 import 'package:lens_wise/features/product_comparison/domain/models/product_comparison_record.dart';
-import 'package:lens_wise/features/product_comparison/presentation/pages/comparison_result_args.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_hero_section.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_unified_board.dart';
 import 'package:lens_wise/features/product_comparison/presentation/widgets/immersive_comparison/comparison_contenders_drawer.dart';
@@ -15,28 +15,37 @@ import 'package:lens_wise/features/product_comparison/presentation/widgets/immer
 import 'package:lens_wise/features/product_comparison/presentation/widgets/comparison_chat_adapter.dart';
 import 'package:lens_wise/core/widgets/glass_action_button.dart';
 
-class ProductComparisonRecordPage extends ConsumerStatefulWidget {
-  final ProductComparisonRecordArgs args;
+class ComparisonResultPage extends ConsumerStatefulWidget {
+  final ProductComparisonRecord record;
+  final List<AppImageEntity>? memoryImages;
   
-  const ProductComparisonRecordPage({
+  const ComparisonResultPage({
     super.key,
-    required this.args,
+    required this.record,
+    this.memoryImages,
   });
 
   @override
-  ConsumerState<ProductComparisonRecordPage> createState() => _ProductComparisonRecordPageState();
+  ConsumerState<ComparisonResultPage> createState() => _ComparisonResultPageState();
 }
 
-class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonRecordPage> {
+typedef ProductComparisonRecordPage = ComparisonResultPage;
+
+class _ComparisonResultPageState extends ConsumerState<ComparisonResultPage> {
   int _leftIndex = 0;
   int _rightIndex = 1;
   late final ProductComparisonScannerController _controller;
+  late final SessionImageResolver _imageResolver;
 
-  bool get isLiveSession => widget.args.rawImages != null;
+  bool get isLiveSession => widget.memoryImages != null;
 
   @override
   void initState() {
     super.initState();
+    _imageResolver = SessionImageResolver(
+      memoryImages: widget.memoryImages,
+      imagePaths: widget.record.imagePaths,
+    );
     if (isLiveSession) {
       _controller = ref.read(productComparisonScannerControllerProvider.notifier);
     }
@@ -50,16 +59,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
     super.dispose();
   }
 
-
-  ImageProvider _getImageProvider(int index) {
-    if (widget.args.rawImages != null) {
-      if (index >= widget.args.rawImages!.length) return ResizeImage(MemoryImage(widget.args.rawImages!.last.bytes), width: 1080);
-      return ResizeImage(MemoryImage(widget.args.rawImages![index].bytes), width: 1080);
-    }
-    final paths = widget.args.imagePath!.split(',');
-    if (index >= paths.length) return ResizeImage(FileImage(AppPaths.getImageFile(paths.last)), width: 1080); // Fallback for old records with only 1 image
-    return ResizeImage(FileImage(AppPaths.getImageFile(paths[index])), width: 1080);
-  }
+  ImageProvider _getImageProvider(int index) => _imageResolver.resolve(index);
 
   void _onAvatarTapped(int index) {
     if (index == _leftIndex || index == _rightIndex) return;
@@ -196,7 +196,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                 child: isLiveSession
                     ? Consumer(
                         builder: (context, ref, _) {
-                          final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
+                          final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.record));
                           return _buildAiVerdictContent(
                             context,
                             scrollController,
@@ -208,7 +208,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                     : _buildAiVerdictContent(
                         context,
                         scrollController,
-                        widget.args.result,
+                        widget.record,
                         isDark,
                       ),
               ),
@@ -243,7 +243,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                 child: isLiveSession
                     ? Consumer(
                         builder: (context, ref, _) {
-                          final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result));
+                          final currentResult = ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.record));
                           return _buildContendersContent(
                             context,
                             scrollController,
@@ -255,7 +255,7 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                     : _buildContendersContent(
                         context,
                         scrollController,
-                        widget.args.result,
+                        widget.record,
                         isDark,
                       ),
               ),
@@ -270,13 +270,13 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeResult = isLiveSession
-        ? ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.args.result))
-        : widget.args.result;
+        ? ref.watch(productComparisonScannerControllerProvider.select((s) => s.parsingResult ?? widget.record))
+        : widget.record;
     final isStreaming = isLiveSession &&
         ref.watch(productComparisonScannerControllerProvider.select((s) => s.status == ProductComparisonStatus.streaming));
-    final productCount = widget.args.rawImages?.length ??
-        widget.args.imagePath?.split(',').length ??
-        activeResult.products.length;
+    final productCount = _imageResolver.hasImages
+        ? _imageResolver.count
+        : activeResult.products.length;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -348,8 +348,8 @@ class _ProductComparisonRecordPageState extends ConsumerState<ProductComparisonR
                     onPressed: () => showComparisonChat(
                       context,
                       isLiveSession
-                          ? (ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.args.result)
-                          : widget.args.result,
+                          ? (ref.read(productComparisonScannerControllerProvider).parsingResult ?? widget.record)
+                          : widget.record,
                     ),
                   ),
                   const SizedBox(height: 12),

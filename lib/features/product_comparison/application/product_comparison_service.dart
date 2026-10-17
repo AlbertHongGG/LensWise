@@ -24,12 +24,11 @@ class ProductComparisonService {
     for (final img in imageBytes) {
       paths.add(await mediaService.saveImage(img));
     }
-    final imagePath = paths.join(',');
     
     final record = parsedRecord.copyWith(
       id: const Uuid().v4(),
       timestamp: DateTime.now(),
-      imagePath: imagePath,
+      imagePaths: paths,
     );
 
     await _ref.read(comparisonHistoryProvider.notifier).saveRecord(record);
